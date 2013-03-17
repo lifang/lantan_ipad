@@ -8,6 +8,19 @@
 
 #import <UIKit/UIKit.h>
 
-@interface MainViewController : UIViewController
+@interface MainViewController : UIViewController<UITableViewDataSource,UITableViewDelegate>
+
+@property (nonatomic,strong) NSMutableArray *waitList;
+
+@property (nonatomic,strong) IBOutlet UITextField *txtCarNum;
+@property (nonatomic,strong) IBOutlet UITableView *orderTable;
+@property (nonatomic,strong) IBOutlet UILabel *lblCount;
+@property (nonatomic,strong) IBOutlet UIButton *statusImg;
+@property (nonatomic,strong) IBOutlet UIView *mainView;
+
+- (IBAction)clickSearchBtn:(id)sender;
+- (IBAction)clickShowBtn:(id)sender;
+- (IBAction)clickRefreshBtn:(id)sender;
+- (IBAction)clickStatusImg:(id)sender;
 
 @end

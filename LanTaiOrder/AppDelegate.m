@@ -8,16 +8,31 @@
 
 #import "AppDelegate.h"
 #import "LoginViewController.h"
+#import "MainViewController.h"
 
 @implementation AppDelegate
+
+- (void)showRootView{
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    NSString *userInfo = [defaults objectForKey:@"userId"];
+//    DLog(@"%@--------%i",userInfo,[userInfo isEqualToString:@""]);
+    if (userInfo != nil) {
+        [DataService sharedService].store_id = [defaults objectForKey:@"storeId"];
+        MainViewController *messageView = [[MainViewController alloc] initWithNibName:@"MainViewController" bundle:nil];
+        UINavigationController *navigationView = [[UINavigationController alloc] initWithRootViewController:messageView];
+        self.window.rootViewController = navigationView;
+    }else{
+        LoginViewController *loginView = [[LoginViewController alloc] initWithNibName:@"LoginViewController" bundle:nil];
+        UINavigationController *navigationView = [[UINavigationController alloc] initWithRootViewController:loginView];
+        self.window.rootViewController = navigationView;
+    }
+}
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     
-    LoginViewController *loginView = [[LoginViewController alloc] initWithNibName:@"LoginViewController" bundle:nil];
-    UINavigationController *navigationView = [[UINavigationController alloc] initWithRootViewController:loginView];
-    self.window.rootViewController = navigationView;
+    [self showRootView];
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
     return YES;

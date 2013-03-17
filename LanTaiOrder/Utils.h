@@ -10,4 +10,10 @@
 
 @interface Utils : NSObject
 
++ (NSString *)isExistenceNetwork;
+
++ (NSMutableArray *)fetchWorkingList;
+
++ (NSString *)orderStatus:(int)status;
+
 @end

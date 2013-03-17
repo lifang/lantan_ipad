@@ -13,6 +13,10 @@
     IBOutlet UIButton *btnLogin;
 }
 
+@property (nonatomic,strong) IBOutlet UITextField *txtName;
+@property (nonatomic,strong) IBOutlet UITextField *txtPwd;
+@property (nonatomic,strong) IBOutlet UIView *loginView;
+
 - (IBAction)clickLogin:(id)sender;
 
 @end
