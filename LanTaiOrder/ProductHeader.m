@@ -14,7 +14,7 @@
 {
     self = [super initWithFrame:frame];
     if (self) {
-        CGRect frame = CGRectMake(125, 2, 100, 36);
+        CGRect frame = CGRectMake(100, 2, 100, 36);
         UILabel *lblName = [[UILabel alloc] initWithFrame:frame];
         lblName.text = @"服务项目";
         lblName.textAlignment = NSTextAlignmentCenter;

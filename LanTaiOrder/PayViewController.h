@@ -12,7 +12,7 @@
 #import "PackageCardCell.h"
 #import "ProductHeader.h"
 
-@interface PayViewController : UIViewController<UITableViewDataSource,UITableViewDelegate>{
+@interface PayViewController : BaseViewController<UITableViewDataSource,UITableViewDelegate>{
     
 }
 
@@ -21,7 +21,7 @@
 @property (nonatomic,strong) NSMutableArray *productList;
 @property (nonatomic,strong) NSMutableDictionary *orderInfo;
 @property (nonatomic,assign) CGFloat total_count;
-@property (nonatomic,strong) IBOutlet UIView *pleaseView;
+@property (nonatomic,strong) IBOutlet UIView *pleaseView,*orderBgView;
 @property (nonatomic,strong) IBOutlet UISegmentedControl *segBtn;
 
 - (IBAction)clickSegBtn:(UISegmentedControl *)sender;

@@ -8,14 +8,14 @@
 
 #import <UIKit/UIKit.h>
 
-@interface ConfirmViewController : UIViewController<UITableViewDataSource,UITableViewDelegate>
+@interface ConfirmViewController : BaseViewController<UITableViewDataSource,UITableViewDelegate>
 
 @property (nonatomic,strong) IBOutlet UILabel *lblCarNum,*lblBrand,*lblUsername,*lblPhone,*lblStart,*lblEnd,*lblTotal;
 @property (nonatomic,strong) IBOutlet UITableView *productTable;
 @property (nonatomic,strong) NSMutableArray *productList;
 @property (nonatomic,strong) NSMutableDictionary *orderInfo;
 @property (nonatomic,assign) CGFloat total_count;
-@property (nonatomic,strong) IBOutlet UIView *confirmView;
+@property (nonatomic,strong) IBOutlet UIView *confirmView,*confirmBgView;
 
 
 - (IBAction)clickConfirm:(id)sender;

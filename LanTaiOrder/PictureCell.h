@@ -12,7 +12,7 @@
 
 @interface PictureCell : UIView{
     UIButton *addBtn;
-    UIImageView *carImage;
+    UIImageView *carImageView;
     id<PictureCellDelegate> delegate;
 }
 
@@ -20,7 +20,7 @@
 @property (nonatomic,strong) UIImageView *carImageView;
 @property (nonatomic,strong) id<PictureCellDelegate> delegate;
 
-- (id)initWithFrame:(CGRect)frame title:(NSString *)title delegate:(id)delegate;
+- (id)initWithFrame:(CGRect)frame title:(NSString *)title delegate:(id)delegate img:(NSString *)image;
 
 @end
 

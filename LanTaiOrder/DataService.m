@@ -10,7 +10,7 @@
 
 @implementation DataService
 
-@synthesize user_id,reserve_count,car_num;
+@synthesize user_id,reserve_count,car_num,reserve_list;
 
 - (id)init{
     if (self == [super init]) {
@@ -19,6 +19,7 @@
         self.store_id = [NSString string];
         self.workingOrders = [NSMutableArray array];
         self.car_num = [NSString string];
+        self.reserve_list = [NSMutableArray array];
     }
     return self;
 }

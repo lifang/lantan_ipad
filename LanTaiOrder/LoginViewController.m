@@ -32,7 +32,12 @@
     self.loginView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"login"]];
     self.navigationController.navigationBar.hidden = YES;
     [super viewDidLoad];
-    // Do any additional setup after loading the view from its nib.
+    CGRect frame = self.txtName.frame;
+    frame.size.height = 35;
+    self.txtName.frame = frame;
+    frame = txtPwd.frame;
+    frame.size.height = 35;
+    txtPwd.frame = frame;
 }
 
 - (void)didReceiveMemoryWarning
@@ -94,5 +99,24 @@
     }
 }
 
+- (void)textFieldDidBeginEditing:(UITextField *)textField{
+    [UIView beginAnimations:nil context:nil];
+    CGRect frame = self.loginView.frame;
+    if (frame.origin.y==100) {
+        frame.origin.y = -30;
+    }
+    self.loginView.frame = frame;
+    [UIView commitAnimations];
+}
+
+- (void)textFieldDidEndEditing:(UITextField *)textField{
+    [UIView beginAnimations:nil context:nil];
+    CGRect frame = self.loginView.frame;
+    if (frame.origin.y==-30) {
+        frame.origin.y = 100;
+    }
+    self.loginView.frame = frame;
+    [UIView commitAnimations];
+}
 
 @end

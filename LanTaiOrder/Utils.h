@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <CommonCrypto/CommonCrypto.h>
 
 @interface Utils : NSObject
 
@@ -15,5 +16,7 @@
 + (NSMutableArray *)fetchWorkingList;
 
 + (NSString *)orderStatus:(int)status;
++ (NSString *)formateDate:(NSString *)date;
++ (NSString *)MD5:(NSString *)str;
 
 @end

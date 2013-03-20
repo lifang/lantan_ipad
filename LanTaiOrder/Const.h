@@ -6,7 +6,7 @@
 //  Copyright (c) 2013年 LanTai. All rights reserved.
 //
 
-#define kHost @"http://192.168.1.102:3000/api"
+#define kHost @"http://192.168.0.103:3000/api"
 
 #define kLogin @"/orders/login"
 #define kIndex @"/orders/index_list"
@@ -14,6 +14,13 @@
 #define kBrandProduct @"/orders/brands_products"
 #define kFinish @"/orders/finish"
 #define kDone @"/orders/add"
+#define kComplaint @"/orders/complaint"
+#define kConfirmReserv @"/orders/confirm_reservation"
+#define kPay @"/orders/pay"
+#define kSendCode @"/orders/send_code"
+#define kRefresh @"/orders/refresh"
 
 #define kTip @"提示"
 #define kNoReachable @"无网络连接"
+
+#define kPosAppId @"15295652460"

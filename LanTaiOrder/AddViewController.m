@@ -15,10 +15,10 @@
 @implementation AddViewController
 
 @synthesize stepView_0,stepView_1,stepView_2,stepView_3,stepView_4,step,btnDone,btnNext,btnPre;
-@synthesize picView_0,picView_1,picView_2,picView_3;
+@synthesize picView_0,picView_1,picView_2,picView_3,stepImg;
 @synthesize brandView,modelView,productsView;
 @synthesize txtBirth,txtCarNum,txtCarYear,txtEmail,txtName,txtPhone;
-@synthesize getPic,brandList,brandResult,productList,selectedIndexs;
+@synthesize getPic,brandList,brandResult,productList,selectedIndexs,customer;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -70,10 +70,10 @@
 }
 
 - (void)initPicView{
-    picView_0 = [[PictureCell alloc] initWithFrame:CGRectMake(300, 60, 152, 182) title:@"车前" delegate:self];
-    picView_1 = [[PictureCell alloc] initWithFrame:CGRectMake(520, 60, 152, 182) title:@"车后" delegate:self];
-    picView_2 = [[PictureCell alloc] initWithFrame:CGRectMake(300, 260, 152, 182) title:@"车左" delegate:self];
-    picView_3 = [[PictureCell alloc] initWithFrame:CGRectMake(520, 260, 152, 182) title:@"车右" delegate:self];
+    picView_0 = [[PictureCell alloc] initWithFrame:CGRectMake(250, 60, 172, 182) title:@"车前" delegate:self img:@"front"];
+    picView_1 = [[PictureCell alloc] initWithFrame:CGRectMake(520, 60, 172, 182) title:@"车后" delegate:self img:@"behind"];
+    picView_2 = [[PictureCell alloc] initWithFrame:CGRectMake(250, 260, 172, 182) title:@"车左" delegate:self img:@"left"];
+    picView_3 = [[PictureCell alloc] initWithFrame:CGRectMake(520, 260, 172, 182) title:@"车右" delegate:self img:@"right"];
     [stepView_0 addSubview:picView_0];
     [stepView_0 addSubview:picView_1];
     [stepView_0 addSubview:picView_2];
@@ -120,6 +120,20 @@
     [self initBrandView];
     [self initProdView];
     self.txtCarNum.text = [DataService sharedService].car_num;
+    if (![self.navigationItem rightBarButtonItem]) {
+        [self addRightnaviItemWithImage:@"back"];
+    }
+    if (self.customer) {
+        self.txtName.text = [customer objectForKey:@"name"];
+        self.txtPhone.text = [customer objectForKey:@"phone"];
+        self.txtEmail.text = [customer objectForKey:@"email"];
+        self.txtBirth.text = [customer objectForKey:@"birth"];
+        self.txtCarYear.text = [NSString stringWithFormat:@"%@",[customer objectForKey:@"year"]];
+    }
+    if (self.step) {
+        [self.stepImg setImage:[UIImage imageNamed:[NSString stringWithFormat:@"step_%@",step]]];
+    }
+    self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"view_bg"]];
 }
 
 - (void)didReceiveMemoryWarning
@@ -179,8 +193,9 @@
             }
             confirmView.total_count = [[result objectForKey:@"total"] floatValue];
             [self.navigationController pushViewController:confirmView animated:YES];
-        }else{
-            
+        }else if([[result objectForKey:@"status"] intValue] == 2){
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:[result objectForKey:@"content"] delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+            [alert show];
         }
     }else{
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"请选择所需的产品、服务" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
@@ -216,6 +231,7 @@
         }
         
     }
+    [self.stepImg setImage:[UIImage imageNamed:[NSString stringWithFormat:@"step_%d",x]]];
     step = [NSString stringWithFormat:@"%d",x];
     [self initView];
 }
@@ -283,7 +299,7 @@
     CollectionCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:CellIdentifier forIndexPath:indexPath];
     cell.prodName.hidden = YES;
     cell.prodImage.hidden = YES;
-    cell.backgroundColor = [UIColor clearColor];
+    cell.contentView.backgroundColor = [UIColor clearColor];
     for (int x=0; x<4; x++) {
         if (indexPath.row == x) {
             int len = [[self.productList objectAtIndex:x] count];
@@ -293,14 +309,18 @@
                 cell.prodName.hidden = NO;
                 cell.prodImage.hidden = NO;
                 if ([self isSelected:indexPath]) {
-                    cell.backgroundColor = [UIColor redColor];
+                    cell.contentView.backgroundColor = [UIColor redColor];
                 }else{
-                    cell.backgroundColor = [UIColor whiteColor];
+                    cell.contentView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"collectioncell_bg"]];
                 }
                 if (![[prod objectForKey:@"img"] isEqual:[NSNull null]]) {
                     cell.prodImage.image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:[prod objectForKey:@"img"]]]];
                 }
                 
+            }else{
+                cell.prodName.hidden = YES;
+                cell.prodImage.hidden = YES;
+                cell.contentView.backgroundColor = [UIColor clearColor];
             }
         }
     }

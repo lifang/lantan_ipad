@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "ProductHeader.h"
 
-@interface OrderViewController : UIViewController<UITableViewDataSource,UITableViewDelegate>{
+@interface OrderViewController : BaseViewController<UITableViewDataSource,UITableViewDelegate>{
     NSString *car_num;
 }
 
@@ -21,6 +21,7 @@
 
 @property (nonatomic,strong) NSMutableArray *orderList,*orderItems;
 @property (nonatomic,strong) NSString *car_num;
+@property (nonatomic,strong) NSMutableDictionary *customer;
 
 - (IBAction)clickDone:(id)sender;
 - (IBAction)clickReg:(id)sender;

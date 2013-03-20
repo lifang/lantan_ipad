@@ -93,16 +93,16 @@
     [sourceView addSubview:overlayView];
     
     if(animationType == MJPopupViewAnimationSlideBottomTop) {
-//        [dismissButton addTarget:self action:@selector(dismissPopupViewControllerWithanimationTypeSlideBottomTop) forControlEvents:UIControlEventTouchUpInside];
+        [dismissButton addTarget:self action:@selector(dismissPopupViewControllerWithanimationTypeSlideBottomTop) forControlEvents:UIControlEventTouchUpInside];
         [self slideViewIn:popupView sourceView:sourceView overlayView:overlayView withAnimationType:animationType];
     } else if (animationType == MJPopupViewAnimationSlideRightLeft) {
-//        [dismissButton addTarget:self action:@selector(dismissPopupViewControllerWithanimationTypeSlideRightLeft) forControlEvents:UIControlEventTouchUpInside];
+        [dismissButton addTarget:self action:@selector(dismissPopupViewControllerWithanimationTypeSlideRightLeft) forControlEvents:UIControlEventTouchUpInside];
         [self slideViewIn:popupView sourceView:sourceView overlayView:overlayView withAnimationType:animationType];
     } else if (animationType == MJPopupViewAnimationSlideBottomBottom) {
-//        [dismissButton addTarget:self action:@selector(dismissPopupViewControllerWithanimationTypeSlideBottomBottom) forControlEvents:UIControlEventTouchUpInside];
+        [dismissButton addTarget:self action:@selector(dismissPopupViewControllerWithanimationTypeSlideBottomBottom) forControlEvents:UIControlEventTouchUpInside];
         [self slideViewIn:popupView sourceView:sourceView overlayView:overlayView withAnimationType:animationType];
     } else {
-//        [dismissButton addTarget:self action:@selector(dismissPopupViewControllerWithanimationTypeFade) forControlEvents:UIControlEventTouchUpInside];
+        [dismissButton addTarget:self action:@selector(dismissPopupViewControllerWithanimationTypeFade) forControlEvents:UIControlEventTouchUpInside];
         [self fadeViewIn:popupView sourceView:sourceView overlayView:overlayView];
     }    
 }

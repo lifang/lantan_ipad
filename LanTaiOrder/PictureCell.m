@@ -12,24 +12,27 @@
 
 @synthesize addBtn,carImageView,delegate;
 
-- (id)initWithFrame:(CGRect)frame title:(NSString *)title delegate:(id)deleg
+- (id)initWithFrame:(CGRect)frame title:(NSString *)title delegate:(id)deleg img:(NSString *)image
 {
     self = [super initWithFrame:frame];
     if (self) {
         self.delegate = deleg;
-        CGRect f = CGRectMake(2, 2, 150, 150);
+        CGRect f = CGRectMake(10, 2, 150, 150);
         self.carImageView = [[UIImageView alloc] initWithFrame:f];
-        carImageView.backgroundColor = [UIColor whiteColor];
+        carImageView.image = [UIImage imageNamed:image];
+        carImageView.contentMode = UIViewContentModeCenter;
         [self addSubview:carImageView];
         self.addBtn = [UIButton buttonWithType:UIButtonTypeCustom];
-        f.origin.y += 150;
-        f.size.height = 30;
+        f.origin.y += 145;
+        f.size.height = 25;
         self.addBtn.frame = f;
+        [addBtn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+        [addBtn setTitleColor:[UIColor blueColor] forState:UIControlStateHighlighted];
         [self.addBtn setTitle:title forState:UIControlStateNormal];
         [self.addBtn setTitle:title forState:UIControlStateHighlighted];
         [addBtn addTarget:self action:@selector(clickPhoto:) forControlEvents:UIControlEventTouchUpInside];
         [self addSubview:addBtn];
-        self.backgroundColor = [UIColor greenColor];
+        self.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"piccell_bg"]];
     }
     return self;
 }

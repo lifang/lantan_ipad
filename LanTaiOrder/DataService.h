@@ -11,7 +11,7 @@
 @interface DataService : NSObject
 
 @property (nonatomic,strong) NSString *user_id,*reserve_count,*store_id,*car_num;
-@property (nonatomic,strong) NSMutableArray *workingOrders;
+@property (nonatomic,strong) NSMutableArray *workingOrders,*reserve_list;
 
 + (DataService *)sharedService;
 

@@ -20,7 +20,10 @@
         self.cellType = type;
         self.selectedArr = [NSMutableArray arrayWithArray:[prod objectForKey:@"products"]];
         int len = selectedArr.count;
-        CGRect frame = CGRectMake(350, 0, 100, 44);
+        CGRect frame = CGRectMake(320, 0, 180, 44);
+        if (cellType == 1) {
+            frame.origin.x = 400;
+        }
         for (int i=0; i<len; i++) {
             frame.origin.y += 44 * i;
             UILabel *lblProd = [[UILabel alloc] initWithFrame:frame];
@@ -28,29 +31,32 @@
             lblProd.textAlignment = NSTextAlignmentRight;
             [self addSubview:lblProd];
             if(cellType == 0){
-            frame.origin.x += 125;
-            frame.size.width = 80;
-            frame.origin.y += 10;
-            UISwitch *btnSwitch = [[UISwitch alloc] initWithFrame:frame];
-            btnSwitch.tag = 100 + i;
-            [btnSwitch addTarget:self action:@selector(clickSwitch:) forControlEvents:UIControlEventValueChanged];
-            [self addSubview:btnSwitch];
-            NSDictionary *dic = [selectedArr objectAtIndex:i];
-            if ([[dic objectForKey:@"selected"] intValue] == 0) {
-                [btnSwitch setOn:YES animated:NO];
+                frame.origin.x += 185;
+                frame.size.width = 80;
+                frame.origin.y += 10;
+                UISwitch *btnSwitch = [[UISwitch alloc] initWithFrame:frame];
+                btnSwitch.tag = 100 + i;
+                [btnSwitch addTarget:self action:@selector(clickSwitch:) forControlEvents:UIControlEventValueChanged];
+                [self addSubview:btnSwitch];
+                NSDictionary *dic = [selectedArr objectAtIndex:i];
+                if ([[dic objectForKey:@"selected"] intValue] == 0) {
+                    [btnSwitch setOn:YES animated:NO];
+                }else{
+                    [btnSwitch setOn:NO animated:NO];
+                }
+                frame.origin.x = 320;
             }else{
-                [btnSwitch setOn:NO animated:NO];
+                frame.origin.x = 400;
             }
-            }
-            frame.origin.x = 350;
-            frame.size.width = 100;
+            
+            frame.size.width = 180;
             frame.origin.y -= 10;
         }
-        frame = CGRectMake(10, 10, 200, self.frame.size.height);
+        frame = CGRectMake(20, 10, 260, self.frame.size.height);
         lblName = [[UILabel alloc] initWithFrame:frame];
         [self addSubview:lblName];
-        frame.origin.x += 250;
-        frame.size.width = 80;
+        frame.origin.x = 300;
+        frame.size.width = 60;
         lblPrice = [[UILabel alloc] initWithFrame:frame];
         [self addSubview:lblPrice];
     }

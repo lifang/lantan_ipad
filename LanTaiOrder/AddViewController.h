@@ -14,7 +14,7 @@
 #import "CollectionViewLayout.h"
 #import "ConfirmViewController.h"
 
-@interface AddViewController : UIViewController<GetPictureFromDeviceDelegate,PictureCellDelegate,UIPickerViewDataSource,UIPickerViewDelegate,UICollectionViewDataSource,UICollectionViewDelegate,UICollectionViewDelegateFlowLayout>{
+@interface AddViewController : BaseViewController<GetPictureFromDeviceDelegate,PictureCellDelegate,UIPickerViewDataSource,UIPickerViewDelegate,UICollectionViewDataSource,UICollectionViewDelegate,UICollectionViewDelegateFlowLayout>{
     PictureCell *picView_0,*picView_1,*picView_2,*picView_3;
     GetPictureFromDevice *getPic;
 }
@@ -25,9 +25,10 @@
 @property (nonatomic,strong) IBOutlet UIPickerView *brandView,*modelView;
 @property (nonatomic,strong) IBOutlet UICollectionView *productsView;
 @property (nonatomic,strong) IBOutlet UITextField *txtCarNum,*txtCarYear,*txtName,*txtPhone,*txtBirth,*txtEmail;
+@property (nonatomic,strong) IBOutlet UIImageView *stepImg;
 @property (nonatomic,strong) NSString *step;
 @property (nonatomic,strong) GetPictureFromDevice *getPic;
-@property (nonatomic,strong) NSMutableDictionary *brandResult;
+@property (nonatomic,strong) NSMutableDictionary *brandResult,*customer;
 @property (nonatomic,strong) NSMutableArray *brandList,*productList,*selectedIndexs;
 
 - (IBAction)clickNext:(id)sender;

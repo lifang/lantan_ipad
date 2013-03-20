@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface MainViewController : UIViewController<UITableViewDataSource,UITableViewDelegate>
+@interface MainViewController : BaseViewController<UITableViewDataSource,UITableViewDelegate>
 
 @property (nonatomic,strong) NSMutableArray *waitList;
 
@@ -21,6 +21,6 @@
 - (IBAction)clickSearchBtn:(id)sender;
 - (IBAction)clickShowBtn:(id)sender;
 - (IBAction)clickRefreshBtn:(id)sender;
-- (IBAction)clickStatusImg:(id)sender;
+- (IBAction)clickStatusImg:(UIButton *)sender;
 
 @end

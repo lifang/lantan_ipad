@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "MainViewController.h"
 
-@interface LoginViewController : UIViewController{
+@interface LoginViewController : UIViewController<UITextFieldDelegate>{
     IBOutlet UIButton *btnLogin;
 }
 

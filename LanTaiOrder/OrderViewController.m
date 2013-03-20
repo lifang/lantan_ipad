@@ -23,7 +23,7 @@
 @synthesize orderView,carInfoBgView,noInfoView,carInfoView,orderTable,workingTable;
 @synthesize orderList,orderItems;
 @synthesize lblOrderNum,lblReceiver,lblStatus,lblWorkingCar,lblWorkingName,lblTotal;
-@synthesize car_num;
+@synthesize car_num,customer;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -54,6 +54,14 @@
                 self.lblBrand.text = brand;
                 self.lblUserName.text = [[result objectForKey:@"customer"] objectForKey:@"name"];
                 self.lblPhone.text = [[result objectForKey:@"customer"] objectForKey:@"mobilephone"];
+                [self.customer setObject:[[result objectForKey:@"customer"] objectForKey:@"num"] forKey:@"carNum"];
+                [self.customer setObject:[[result objectForKey:@"customer"] objectForKey:@"name"] forKey:@"name"];
+                [self.customer setObject:[[result objectForKey:@"customer"] objectForKey:@"mobilephone"] forKey:@"phone"];
+                [self.customer setObject:[[result objectForKey:@"customer"] objectForKey:@"car_num_id"] forKey:@"car_num_id"];
+                [self.customer setObject:[[result objectForKey:@"customer"] objectForKey:@"customer_id"] forKey:@"customer_id"];
+                [self.customer setObject:[[result objectForKey:@"customer"] objectForKey:@"email"] forKey:@"email"];
+                [self.customer setObject:[[result objectForKey:@"customer"] objectForKey:@"birth"] forKey:@"birth"];
+                [self.customer setObject:[[result objectForKey:@"customer"] objectForKey:@"year"] forKey:@"year"];
                 if ([[result objectForKey:@"working"] count]==0) {
                   self.lblProduct.text = @"";
                   self.lblTime.text = @"";
@@ -61,16 +69,8 @@
                     self.noWorkingView.hidden = NO;
                     self.orderTable.hidden = YES;
                 }else{
-                    NSDateFormatter *inputFormatter = [[NSDateFormatter alloc] init];
-                    [inputFormatter setLocale:[[NSLocale alloc] init]];
-                    [inputFormatter setDateFormat:@"yyyy-MM-dd'T'HH:mm:ssz"];
-                    NSDate* startDate = [inputFormatter dateFromString:[[result objectForKey:@"working"] objectForKey:@"started_at"]];
-                    NSDate *endDate = [inputFormatter dateFromString:[[result objectForKey:@"working"] objectForKey:@"ended_at"]];
-                    NSDateFormatter *outputFormatter = [[NSDateFormatter alloc] init];
-                    [outputFormatter setLocale:[NSLocale currentLocale]];
-                    [outputFormatter setDateFormat:@"yyyy.MM.dd HH:mm"];
-                    NSString *str = [outputFormatter stringFromDate:startDate];
-                    NSString *time = [NSString stringWithFormat:@"%@--%@",str,[outputFormatter stringFromDate:endDate]];
+                    NSString *str = [Utils formateDate:[[result objectForKey:@"working"] objectForKey:@"started_at"]];
+                    NSString *time = [NSString stringWithFormat:@"%@--%@",str,[Utils formateDate:[[result objectForKey:@"working"] objectForKey:@"ended_at"]]];
                     self.lblTime.text = time;
                     NSMutableString *prod = [NSMutableString string];
                     NSArray *products = [[result objectForKey:@"working"] objectForKey:@"products"];
@@ -103,12 +103,19 @@
 
 - (void)viewDidLoad
 {
-    self.navigationController.navigationBar.hidden = NO;
     self.orderList = [NSMutableArray array];
     self.orderItems = [NSMutableArray array];
+    self.customer = [NSMutableDictionary dictionary];
     [self searchOrderByCarNum];
     [super viewDidLoad];
-    // Do any additional setup after loading the view from its nib.
+    self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"login_bg.jpg"]];
+    self.carInfoBgView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"info_bg"]];
+    self.orderView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"content_bg"]];
+    self.carInfoView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"dot_bg"]];
+    self.noInfoView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"dot_bg"]];
+    if (![self.navigationItem rightBarButtonItem]) {
+        [self addRightnaviItemWithImage:@"back"];
+    }
 }
 
 - (void)didReceiveMemoryWarning
@@ -163,28 +170,9 @@
         cell.lblTotal.text = [NSString stringWithFormat:@"%.2f",[[order objectForKey:@"price"] floatValue]];
         cell.lblPay.text = [order objectForKey:@"pay_type"];
         [cell.btnComplaint addTarget:self action:@selector(clickComplaint:) forControlEvents:UIControlEventTouchUpInside];
+        cell.btnComplaint.tag = 200 + indexPath.row;
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
         return cell;
-    }
-}
-
-- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section{
-    if ([tableView isEqual:workingTable]) {
-        CGRect frame = tableView.bounds;
-        frame.origin.x = 0;
-        frame.origin.y = 0;
-        frame.size.width = 700;
-        frame.size.height = 44;
-        return [[ProductHeader alloc] initWithFrame:frame];
-    }
-    return nil;
-}
-
-- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section{
-    if ([tableView isEqual:workingTable]) {
-    return 44;
-    }else{
-        return 0;
     }
 }
 
@@ -199,7 +187,21 @@
 }
 
 - (void)clickComplaint:(id)sender{
+    UIButton *btn = (UIButton *)sender;
+    NSDictionary *order = [orderList objectAtIndex:btn.tag - 200];
     ComplaintViewController *complaintView = [[ComplaintViewController alloc] initWithNibName:@"ComplaintViewController" bundle:nil];
+    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+    [dic setObject:self.lblUserName.text forKey:@"name"];
+    [dic setObject:self.lblCarNum.text forKey:@"carNum"];
+    [dic setObject:[order objectForKey:@"code"] forKey:@"code"];
+    [dic setObject:[order objectForKey:@"id"] forKey:@"order_id"];
+    [dic setObject:@"1" forKey:@"from"];
+    NSMutableString *prods = [NSMutableString string];
+    for (NSDictionary *prod in [order objectForKey:@"products"]) {
+        [prods appendFormat:@"%@,",[prod objectForKey:@"name"]];
+    }
+    [dic setObject:[prods substringToIndex:prods.length - 1] forKey:@"prods"];
+    complaintView.info = [NSMutableDictionary dictionaryWithDictionary:dic];
     [self.navigationController pushViewController:complaintView animated:YES];
     
 }
@@ -212,10 +214,12 @@
     UIButton *btn = (UIButton *)sender;
     
     AddViewController *addOrder = [[AddViewController alloc] initWithNibName:@"AddViewController" bundle:nil];
+    addOrder.customer = [NSMutableDictionary dictionaryWithDictionary:self.customer];
     if (btn.tag==101) {
         addOrder.step = @"0";
     }else if (btn.tag==100){
         [DataService sharedService].car_num = self.lblCarNum.text;
+        
         addOrder.step = @"3";
     }
     [self.navigationController pushViewController:addOrder animated:YES];

@@ -9,6 +9,7 @@
 #import "MainViewController.h"
 #import "OrderViewController.h"
 #import "ReservationViewController.h"
+#import "AppDelegate.h"
 
 @interface MainViewController ()
 
@@ -28,9 +29,21 @@
     return self;
 }
 
+- (void)rightTapped:(id)sender{
+    DLog(@"logout");
+    [DataService sharedService].user_id = nil;
+    [DataService sharedService].reserve_list = nil;
+    [DataService sharedService].reserve_count = nil;
+    [DataService sharedService].store_id = nil;
+    [DataService sharedService].car_num = nil;
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"userId"];
+    [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"storeId"];
+    [(AppDelegate *)[UIApplication sharedApplication].delegate showRootView];
+}
+
 - (void)viewDidLoad
 {
-    self.navigationController.navigationBar.hidden = YES;
+//    self.navigationController.navigationBar.hidden = YES;
     orderTable.delegate = self;
     waitList = [NSMutableArray array];
     [Utils fetchWorkingList];
@@ -40,7 +53,16 @@
     }else{
         self.lblCount.text = @"0";
     }
+    self.mainView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"search_bg"]];
+    
+    self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"login_bg.jpg"]];
     [super viewDidLoad];
+    if (![self.navigationItem rightBarButtonItem]) {
+        [self addRightnaviItemWithImage:@"back"];
+    }
+    CGRect frame = self.txtCarNum.frame;
+    frame.size.height = 48;
+    self.txtCarNum.frame = frame;
 }
 
 - (void)didReceiveMemoryWarning
@@ -50,7 +72,23 @@
 }
 
 - (IBAction)clickRefreshBtn:(id)sender{
-    
+    if ([DataService sharedService].store_id) {
+        STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kRefresh]];
+        [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id", nil]];
+        [r setPostDataEncoding:NSUTF8StringEncoding];
+        r.completionBlock = ^(NSDictionary *headers,NSString *boby){
+            NSDictionary *result = [boby objectFromJSONString];
+            DLog(@"%@",result);
+            if ([[result objectForKey:@"status"] intValue]==1) {
+               [DataService sharedService].reserve_list = [result objectForKey:@"reservation"];
+                self.lblCount.text = [NSString stringWithFormat:@"%d",[[DataService sharedService].reserve_list count]];
+            }
+        };
+        r.errorBlock = ^(NSError *error){
+            
+        };
+        [r startAsynchronous];
+    }
 }
 
 - (IBAction)clickSearchBtn:(id)sender{
@@ -67,12 +105,12 @@
 
 - (IBAction)clickShowBtn:(id)sender{
     ReservationViewController *reservationView = [[ReservationViewController alloc] initWithNibName:@"ReservationViewController" bundle:nil];
-    
+    reservationView.reservList = [NSMutableArray arrayWithArray:[DataService sharedService].reserve_list];
     [self.navigationController pushViewController:reservationView animated:YES];
     
 }
 
-- (IBAction)clickStatusImg:(id)sender{
+- (IBAction)clickStatusImg:(UIButton *)sender{
     CGRect frame = self.view.bounds;
     [UIView beginAnimations:nil context:nil];
     CGRect btnFrame = self.statusImg.frame;
@@ -80,9 +118,13 @@
     if (btnFrame.origin.x + btnFrame.size.width == frame.size.width) {
         btnFrame.origin.x -= tFrame.size.width;
         tFrame.origin.x -= tFrame.size.width;
+        [sender setImage:[UIImage imageNamed:@"open_btn"] forState:UIControlStateNormal];
+        [sender setImage:[UIImage imageNamed:@"open_btn"] forState:UIControlStateHighlighted];
     }else{
         btnFrame.origin.x += tFrame.size.width;
         tFrame.origin.x += tFrame.size.width;
+        [sender setImage:[UIImage imageNamed:@"close_btn"] forState:UIControlStateNormal];
+        [sender setImage:[UIImage imageNamed:@"close_btn"] forState:UIControlStateHighlighted];
     }
     self.statusImg.frame = btnFrame;
     self.orderTable.frame = tFrame;
@@ -105,6 +147,8 @@
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
     }
     cell.textLabel.text = [NSString stringWithFormat:@"%@ 施工中",[order objectForKey:@"num"]];
+    cell.textLabel.font = [UIFont systemFontOfSize:18.0];
+    cell.textLabel.textColor = [UIColor colorWithRed:51.0/255.0 green:51.0/255.0 blue:51.0/255.0 alpha:1.0];
     cell.selectionStyle = UITableViewCellSelectionStyleBlue;
     return cell;
 }

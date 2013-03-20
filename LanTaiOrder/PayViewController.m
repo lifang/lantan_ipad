@@ -21,7 +21,7 @@
 
 @synthesize lblBrand,lblCarNum,lblEnd,lblPhone,lblStart,lblTotal,lblUsername;
 @synthesize productTable,productList,orderInfo,total_count;
-@synthesize segBtn,pleaseView;
+@synthesize segBtn,pleaseView,orderBgView;
 
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
@@ -41,7 +41,7 @@
         lblUsername.text = [orderInfo objectForKey:@"username"];
         lblStart.text = [orderInfo objectForKey:@"start"];
         lblEnd.text = [orderInfo objectForKey:@"end"];
-        lblTotal.text = [NSString stringWithFormat:@"总计：%.2f(元)",[[orderInfo objectForKey:@"price"] floatValue]];
+        lblTotal.text = [NSString stringWithFormat:@"总计：%.2f(元)",[[orderInfo objectForKey:@"total"] floatValue]];
         
         self.productList = [NSMutableArray array];
         if ([orderInfo objectForKey:@"products"]) {
@@ -58,7 +58,11 @@
         }
     }
     [super viewDidLoad];
-    // Do any additional setup after loading the view from its nib.
+    if (![self.navigationItem rightBarButtonItem]) {
+        [self addRightnaviItemWithImage:@"back"];
+    }
+    self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"view_bg"]];
+    self.orderBgView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"confirm_bg"]];
 }
 
 - (void)didReceiveMemoryWarning
@@ -128,19 +132,6 @@
     return nil;
 }
 
-- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section{
-    CGRect frame = tableView.bounds;
-    frame.origin.x = 0;
-    frame.origin.y = 0;
-    frame.size.width = 500;
-    frame.size.height = 44;
-    return [[ProductHeader alloc] initWithFrame:frame];
-}
-
-- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section{
-    return 44.0;
-}
-
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
     NSDictionary *product = [productList objectAtIndex:indexPath.row];
     int count = [[product objectForKey:@"products"] count];
@@ -151,17 +142,39 @@
 - (IBAction)clickSegBtn:(UISegmentedControl *)sender{
     if (sender.selectedSegmentIndex == 0) {
         ComplaintViewController *complaint = [[ComplaintViewController alloc] initWithNibName:@"ComplaintViewController" bundle:nil];
+        NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+        [dic setObject:self.lblUsername.text forKey:@"name"];
+        [dic setObject:self.lblCarNum.text forKey:@"carNum"];
+        [dic setObject:[orderInfo objectForKey:@"code"] forKey:@"code"];
+        [dic setObject:[orderInfo objectForKey:@"id"] forKey:@"order_id"];
+        [dic setObject:@"0" forKey:@"from"];
+        NSMutableString *prods = [NSMutableString string];
+        for (NSDictionary *prod in productList) {
+            if ([[prod objectForKey:@"type"] intValue]==0) {
+               [prods appendFormat:@"%@,",[prod objectForKey:@"name"]]; 
+            }
+        }
+        [dic setObject:[prods substringToIndex:prods.length - 1] forKey:@"prods"];
+        complaint.info = [NSMutableDictionary dictionaryWithDictionary:dic];
         [self.navigationController pushViewController:complaint animated:YES];
     }else{
         payStyleView = nil;
         payStyleView = [[PayStyleViewController alloc] initWithNibName:@"PayStyleViewController" bundle:nil];
         payStyleView.delegate = self;
+        NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+        [dic setObject:[orderInfo objectForKey:@"id"] forKey:@"order_id"];
+        [dic setObject:[NSNumber numberWithInt:sender.selectedSegmentIndex] forKey:@"is_please"];
+        [dic setObject:[orderInfo objectForKey:@"total"] forKey:@"price"];
+        payStyleView.order = [NSMutableDictionary dictionaryWithDictionary:dic];
         [self presentPopupViewController:payStyleView animationType:MJPopupViewAnimationSlideBottomBottom];
     }
 }
 
 - (void)closePopView:(PayStyleViewController *)payStyleViewController{
     [self dismissPopupViewControllerWithanimationType:MJPopupViewAnimationFade];
+    if (payStyleViewController.isSuccess) {
+        [self.navigationController popToRootViewControllerAnimated:YES];
+    }
     payStyleView = nil;
 }
 

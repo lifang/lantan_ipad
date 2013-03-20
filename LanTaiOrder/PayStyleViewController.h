@@ -13,6 +13,16 @@
 @interface PayStyleViewController : UIViewController
 
 @property (nonatomic,assign) id<PayStyleViewDelegate> delegate;
+@property (nonatomic,strong) NSMutableDictionary *order;
+@property (nonatomic,strong) IBOutlet UISwitch *billingBtn;
+@property (nonatomic,assign) BOOL isSuccess;
+@property (nonatomic,strong) IBOutlet UIView *payStyle,*phoneView,*codeView;
+@property (nonatomic,strong) IBOutlet UITextField *txtPhone,*txtCode;
+
+@property (nonatomic,strong) NSString *codeStr;
+
+- (IBAction)clickSendCode:(id)sender;
+- (IBAction)clickCodeBtn:(id)sender;
 
 @end
 

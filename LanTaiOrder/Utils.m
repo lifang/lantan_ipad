@@ -40,8 +40,9 @@
     DLog(@"%@",jsonData);
     if ([[jsonData objectForKey:@"status"] intValue] == 1) {
         if ([jsonData objectForKey:@"reservations"]!=nil) {
-            NSArray *arr = [NSArray arrayWithArray:[jsonData objectForKey:@"reservations"]];
+            NSMutableArray *arr = [NSMutableArray arrayWithArray:[jsonData objectForKey:@"reservations"]];
             [DataService sharedService].reserve_count = [NSString stringWithFormat:@"%d",[arr count]];
+            [DataService sharedService].reserve_list = arr;
         }
         if ([jsonData objectForKey:@"orders"]!=nil) {
             [DataService sharedService].workingOrders = [NSMutableArray arrayWithArray:[jsonData objectForKey:@"orders"]];
@@ -63,6 +64,31 @@
         return @"已结束";
     }
     return @"";
+}
+
++ (NSString *)formateDate:(NSString *)date{
+    NSDateFormatter *inputFormatter = [[NSDateFormatter alloc] init];
+    [inputFormatter setLocale:[[NSLocale alloc] init]];
+    [inputFormatter setDateFormat:@"yyyy-MM-dd'T'HH:mm:ssz"];
+    NSDate* startDate = [inputFormatter dateFromString:date];
+    NSDateFormatter *outputFormatter = [[NSDateFormatter alloc] init];
+    [outputFormatter setLocale:[NSLocale currentLocale]];
+    [outputFormatter setDateFormat:@"yyyy.MM.dd HH:mm"];
+    NSString *str = [outputFormatter stringFromDate:startDate];
+    return str;
+}
+
++ (NSString *)MD5:(NSString *)str{
+    const char *cStr = [str UTF8String];
+    unsigned char result[16];
+    CC_MD5(cStr, strlen(cStr), result); // This is the md5 call
+    return [NSString stringWithFormat:
+            @"%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
+            result[0], result[1], result[2], result[3],
+            result[4], result[5], result[6], result[7],
+            result[8], result[9], result[10], result[11],
+            result[12], result[13], result[14], result[15]
+            ];
 }
 
 @end

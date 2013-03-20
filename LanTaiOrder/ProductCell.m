@@ -16,12 +16,13 @@
 {
     self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
     if (self) {
-        CGRect frame = CGRectMake(10, 2, 330, 44);
+        CGRect frame = CGRectMake(10, 2, 300, 44);
         lblName = [[UILabel alloc] initWithFrame:frame];
         lblName.backgroundColor = [UIColor clearColor];
         lblName.textAlignment = NSTextAlignmentCenter;
         [self addSubview:lblName];
-        frame.origin.x += 350;
+        frame.origin.x += 400;
+        frame.size.width = 100;
         lblPrice = [[UILabel alloc] initWithFrame:frame];
         lblPrice.backgroundColor = [UIColor clearColor];
         lblPrice.textAlignment = NSTextAlignmentCenter;

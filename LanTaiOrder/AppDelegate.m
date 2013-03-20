@@ -20,12 +20,16 @@
         [DataService sharedService].store_id = [defaults objectForKey:@"storeId"];
         MainViewController *messageView = [[MainViewController alloc] initWithNibName:@"MainViewController" bundle:nil];
         UINavigationController *navigationView = [[UINavigationController alloc] initWithRootViewController:messageView];
+        if ([navigationView.navigationBar respondsToSelector:@selector(setBackgroundImage:forBarMetrics:)]) {
+            [navigationView.navigationBar setBackgroundImage:[UIImage imageNamed:@"nav_bg"] forBarMetrics:UIBarMetricsDefault];
+        }
         self.window.rootViewController = navigationView;
     }else{
         LoginViewController *loginView = [[LoginViewController alloc] initWithNibName:@"LoginViewController" bundle:nil];
         UINavigationController *navigationView = [[UINavigationController alloc] initWithRootViewController:loginView];
         self.window.rootViewController = navigationView;
     }
+    
 }
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
@@ -65,4 +69,33 @@
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
 }
 
+- (BOOL)decode:(NSString *)urlStr{
+    NSArray *params = [urlStr componentsSeparatedByString:@"//"];
+    NSArray *dic = [[params objectAtIndex:1] componentsSeparatedByString:@"&"];
+    int x = 0;
+    for (NSString *item in dic) {
+        if([item isEqualToString:[NSString stringWithFormat:@"appid=%@",kPosAppId]]){
+            x++;
+        }
+        if ([item isEqualToString:[NSString stringWithFormat:@"resultmsg=success"]]) {
+            x++;
+        }
+        if (x==2) {
+            break;
+        }
+    }
+    if (x==2) {
+        return YES;
+    }
+    return NO;
+}
+- (BOOL)application:(UIApplication *)application handleOpenURL:(NSURL *)url{
+    NSString *urlString = [url absoluteString];
+    if ([self decode:urlString]) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"payQFPOS" object:@"success"];
+    }else{
+      [[NSNotificationCenter defaultCenter] postNotificationName:@"payQFPOS" object:@"fail"];  
+    }
+    return YES;
+}
 @end

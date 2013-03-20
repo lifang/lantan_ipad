@@ -8,6 +8,14 @@
 
 #import <UIKit/UIKit.h>
 
-@interface ComplaintViewController : UIViewController
+@interface ComplaintViewController : BaseViewController
+
+@property (nonatomic,strong) IBOutlet UILabel *lblName,*lblCarNum,*lblCode,*lblProduct;
+@property (nonatomic,strong) IBOutlet UITextView *reasonView,*requestView;
+@property (nonatomic,strong) IBOutlet UIView *infoBgView;
+
+@property (nonatomic,strong) NSMutableDictionary *info;
+
+- (IBAction)clickSubmit:(id)sender;
 
 @end

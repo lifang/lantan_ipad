@@ -8,6 +8,9 @@
 
 #import <UIKit/UIKit.h>
 
-@interface ReservationViewController : UIViewController
+@interface ReservationViewController : BaseViewController<UITableViewDataSource,UITableViewDelegate>
+
+@property (nonatomic,strong) IBOutlet UITableView *reservTable;
+@property (nonatomic,strong) NSMutableArray *reservList;
 
 @end

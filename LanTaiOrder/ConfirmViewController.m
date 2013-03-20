@@ -12,6 +12,7 @@
 #import "PackageCardCell.h"
 #import "ProductHeader.h"
 #import "PayViewController.h"
+#import "AppDelegate.h"
 
 @interface ConfirmViewController ()
 
@@ -21,7 +22,7 @@
 
 @synthesize lblBrand,lblCarNum,lblEnd,lblPhone,lblStart,lblTotal,lblUsername;
 @synthesize productTable,productList,orderInfo,total_count;
-@synthesize confirmView;
+@synthesize confirmView,confirmBgView;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -45,7 +46,11 @@
     }
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateTotal:) name:@"update_total" object:nil];
     [super viewDidLoad];
-    // Do any additional setup after loading the view from its nib.
+    if (![self.navigationItem rightBarButtonItem]) {
+        [self addRightnaviItemWithImage:@"back"];
+    }
+    self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"view_bg"]];
+    self.confirmBgView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"confirm_bg"]];
 }
 
 - (void)didReceiveMemoryWarning
@@ -130,19 +135,6 @@
     return nil;
 }
 
-- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section{
-        CGRect frame = tableView.bounds;
-        frame.origin.x = 0;
-        frame.origin.y = 0;
-        frame.size.width = 500;
-        frame.size.height = 44;
-        return [[ProductHeader alloc] initWithFrame:frame];
-}
-
-- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section{
-    return 44.0;
-}
-
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
     NSDictionary *product = [productList objectAtIndex:indexPath.row];
     int count = [[product objectForKey:@"products"] count];
@@ -194,7 +186,8 @@
 }
 - (IBAction)clickConfirm:(id)sender{
     NSString *str = [self checkForm];
-    if ([str length]>0) {
+    DLog(@"%@",[DataService sharedService].user_id);
+    if ([str length]>0 && [[DataService sharedService].user_id intValue] > 0) {
         STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kDone]];
         NSMutableDictionary *data = [NSMutableDictionary dictionary];
         [data setObject:[orderInfo objectForKey:@"c_id"] forKey:@"c_id"];
@@ -219,6 +212,17 @@
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:[result objectForKey:@"content"] delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
             [alert show];
         }
+    }else if([[DataService sharedService].user_id intValue] == 0){
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"请登录" delegate:self cancelButtonTitle:@"" otherButtonTitles:nil, nil];
+        [alert show];
+        [DataService sharedService].user_id = nil;
+        [DataService sharedService].reserve_list = nil;
+        [DataService sharedService].reserve_count = nil;
+        [DataService sharedService].store_id = nil;
+        [DataService sharedService].car_num = nil;
+        [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"userId"];
+        [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"storeId"];
+        [(AppDelegate *)[UIApplication sharedApplication].delegate showRootView];
     }else{
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"活动，打折卡，套餐卡每类最多可以选择一个" delegate:self cancelButtonTitle:@"" otherButtonTitles:nil, nil];
         [alert show];
