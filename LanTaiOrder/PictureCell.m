@@ -17,13 +17,13 @@
     self = [super initWithFrame:frame];
     if (self) {
         self.delegate = deleg;
-        CGRect f = CGRectMake(10, 2, 150, 150);
+        CGRect f = CGRectMake(10, 5, 150, 150);
         self.carImageView = [[UIImageView alloc] initWithFrame:f];
         carImageView.image = [UIImage imageNamed:image];
-        carImageView.contentMode = UIViewContentModeCenter;
+        carImageView.contentMode = UIViewContentModeScaleAspectFit;
         [self addSubview:carImageView];
         self.addBtn = [UIButton buttonWithType:UIButtonTypeCustom];
-        f.origin.y += 145;
+        f.origin.y += 152;
         f.size.height = 25;
         self.addBtn.frame = f;
         [addBtn setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];

@@ -70,6 +70,7 @@
     // Configure the view for the selected state
 }
 
+//选择开关
 - (void)clickSwitch:(UISwitch *)sender{
     NSMutableDictionary *dic = [[selectedArr objectAtIndex:sender.tag - 100] mutableCopy];
     CGFloat x = [self.lblPrice.text floatValue];

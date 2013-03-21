@@ -8,7 +8,6 @@
 
 #import "PayStyleViewController.h"
 #import <CommonCrypto/CommonCrypto.h>
-#import "SVCardViewController.h"
 #import "UIViewController+MJPopupViewController.h"
 
 @interface PayStyleViewController ()
@@ -23,6 +22,7 @@
 @synthesize isSuccess,codeStr;
 @synthesize payStyle,phoneView,codeView,txtCode,txtPhone;
 
+//支付
 - (void)pay:(int)type{
     if (self.order) {
         STHTTPRequest *r  = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kPay]];
@@ -52,6 +52,7 @@
     }
 }
 
+//刷卡支付，调用钱方
 - (BOOL)payPal{
 //    NSString *busicode = @"";
     NSString *callback = @"pospal";//[[[NSBundle mainBundle] infoDictionary] objectForKey:@"C"];
@@ -76,6 +77,7 @@
 
 - (IBAction)closePopup:(UISegmentedControl *)sender
 {
+    //根据不同的支付方式
     if (sender.selectedSegmentIndex == 0) {
         [self pay:sender.selectedSegmentIndex];
     }else if (sender.selectedSegmentIndex == 1 && order){
@@ -98,6 +100,7 @@
     }
 }
 
+//提交输入的验证码
 - (IBAction)clickCodeBtn:(id)sender{
     if (self.txtCode.text.length == 0) {
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"请输入验证码！" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
@@ -107,6 +110,7 @@
     }
 }
 
+//发送验证码
 - (IBAction)clickSendCode:(id)sender{
     if (self.txtPhone.text.length == 0) {
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"请输入手机号！" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];

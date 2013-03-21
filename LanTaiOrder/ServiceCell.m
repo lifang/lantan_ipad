@@ -34,6 +34,7 @@
     [super setSelected:selected animated:animated];
 }
 
+//增减数量
 - (IBAction)stepCount:(UIStepper *)sender{
     double val = [sender value];
     double old = [self.lblCount.text doubleValue];

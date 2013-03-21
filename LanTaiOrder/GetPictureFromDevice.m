@@ -95,7 +95,7 @@
         NSString *str = [NSDate dateToStringByFormat:[NSDate date] format:@"yyyyMMddHHmmss"];
         fullName = [NSString stringWithFormat:@"%@takephoto.jpg",str];
         uploadData = UIImageJPEGRepresentation(image, 0.7);
-		
+		UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil);
 	}
 	else if(fileType_ == kMovieType){
 		NSURL *videoURL = [info objectForKey:UIImagePickerControllerMediaURL];
@@ -114,7 +114,7 @@
 			fullName = [NSString stringWithFormat:@"%@takevideo.mov",str];
 		}
 	}
-    NSLog(@"image full name is:%@",fullName);
+    DLog(@"image full name is:%@",fullName);
     
 	self.fileName = fullName;
 	self.fileData = uploadData;
@@ -122,7 +122,7 @@
     if ([picker respondsToSelector:@selector(dismissViewControllerAnimated:completion:)]) {
         [picker dismissViewControllerAnimated:YES completion:nil];
     }else{
-        [picker dismissModalViewControllerAnimated:YES];
+//        [picker dismissModalViewControllerAnimated:YES];
     }
 }
 - (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker
@@ -130,7 +130,7 @@
     if ([picker respondsToSelector:@selector(dismissViewControllerAnimated:completion:)]) {
         [picker dismissViewControllerAnimated:YES completion:nil];
     }else{
-        [picker dismissModalViewControllerAnimated:YES];
+//        [picker dismissModalViewControllerAnimated:YES];
     }
 }
 @end

@@ -29,6 +29,7 @@
     return self;
 }
 
+//返回按钮，到登录页面
 - (void)rightTapped:(id)sender{
     DLog(@"logout");
     [DataService sharedService].user_id = nil;
@@ -46,6 +47,7 @@
 //    self.navigationController.navigationBar.hidden = YES;
     orderTable.delegate = self;
     waitList = [NSMutableArray array];
+    //获取正在进行中的订单和预约信息
     [Utils fetchWorkingList];
     waitList = [DataService sharedService].workingOrders;
     if ([DataService sharedService].reserve_count && [[DataService sharedService].reserve_count intValue] > 0) {
@@ -54,7 +56,9 @@
         self.lblCount.text = @"0";
     }
     self.mainView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"search_bg"]];
-    
+    UIImageView *imageview = [[UIImageView alloc] initWithFrame:self.view.bounds];
+    [imageview setImage:[UIImage imageNamed:@"open_bg"]];
+    [self.orderTable setBackgroundView:imageview];
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"login_bg.jpg"]];
     [super viewDidLoad];
     if (![self.navigationItem rightBarButtonItem]) {
@@ -71,6 +75,7 @@
     // Dispose of any resources that can be recreated.
 }
 
+//刷新按钮
 - (IBAction)clickRefreshBtn:(id)sender{
     if ([DataService sharedService].store_id) {
         STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kRefresh]];
@@ -90,7 +95,7 @@
         [r startAsynchronous];
     }
 }
-
+//根据车牌号查询
 - (IBAction)clickSearchBtn:(id)sender{
     [txtCarNum resignFirstResponder];
     if(self.txtCarNum.text.length==0){
@@ -103,6 +108,7 @@
     }
 }
 
+//查看预约信息
 - (IBAction)clickShowBtn:(id)sender{
     ReservationViewController *reservationView = [[ReservationViewController alloc] initWithNibName:@"ReservationViewController" bundle:nil];
     reservationView.reservList = [NSMutableArray arrayWithArray:[DataService sharedService].reserve_list];
@@ -110,6 +116,7 @@
     
 }
 
+//显示隐藏正在进行中的订单
 - (IBAction)clickStatusImg:(UIButton *)sender{
     CGRect frame = self.view.bounds;
     [UIView beginAnimations:nil context:nil];
@@ -138,7 +145,7 @@
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
     return waitList.count;
 }
-
+//进行中订单
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
     NSDictionary *order = [waitList objectAtIndex:indexPath.row];
     static NSString *CellIdentifier = @"Cell";

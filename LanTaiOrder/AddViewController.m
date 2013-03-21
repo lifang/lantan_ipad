@@ -70,10 +70,10 @@
 }
 
 - (void)initPicView{
-    picView_0 = [[PictureCell alloc] initWithFrame:CGRectMake(250, 60, 172, 182) title:@"车前" delegate:self img:@"front"];
-    picView_1 = [[PictureCell alloc] initWithFrame:CGRectMake(520, 60, 172, 182) title:@"车后" delegate:self img:@"behind"];
-    picView_2 = [[PictureCell alloc] initWithFrame:CGRectMake(250, 260, 172, 182) title:@"车左" delegate:self img:@"left"];
-    picView_3 = [[PictureCell alloc] initWithFrame:CGRectMake(520, 260, 172, 182) title:@"车右" delegate:self img:@"right"];
+    picView_0 = [[PictureCell alloc] initWithFrame:CGRectMake(250, 50, 172, 192) title:@"车前" delegate:self img:@"front"];
+    picView_1 = [[PictureCell alloc] initWithFrame:CGRectMake(520, 50, 172, 192) title:@"车后" delegate:self img:@"behind"];
+    picView_2 = [[PictureCell alloc] initWithFrame:CGRectMake(250, 260, 172, 192) title:@"车左" delegate:self img:@"left"];
+    picView_3 = [[PictureCell alloc] initWithFrame:CGRectMake(520, 260, 172, 192) title:@"车右" delegate:self img:@"right"];
     [stepView_0 addSubview:picView_0];
     [stepView_0 addSubview:picView_1];
     [stepView_0 addSubview:picView_2];
@@ -119,16 +119,19 @@
     [self initPicView];
     [self initBrandView];
     [self initProdView];
-    self.txtCarNum.text = [DataService sharedService].car_num;
+
     if (![self.navigationItem rightBarButtonItem]) {
         [self addRightnaviItemWithImage:@"back"];
     }
     if (self.customer) {
+        self.txtCarNum.text = [customer objectForKey:@"carNum"];
         self.txtName.text = [customer objectForKey:@"name"];
         self.txtPhone.text = [customer objectForKey:@"phone"];
         self.txtEmail.text = [customer objectForKey:@"email"];
         self.txtBirth.text = [customer objectForKey:@"birth"];
-        self.txtCarYear.text = [NSString stringWithFormat:@"%@",[customer objectForKey:@"year"]];
+        if([customer objectForKey:@"year"]!= NULL){
+            self.txtCarYear.text = [NSString stringWithFormat:@"%@",[customer objectForKey:@"year"]];
+        }
     }
     if (self.step) {
         [self.stepImg setImage:[UIImage imageNamed:[NSString stringWithFormat:@"step_%@",step]]];
@@ -156,7 +159,6 @@
           NSDictionary *prod = [[self.productList objectAtIndex:idx.row] objectAtIndex:idx.section];
             [prod_ids appendFormat:@"%@_%d,",[prod objectForKey:@"id"],idx.row];
         }
-//        DLog(@"ssss:%@",prod_ids);
         NSMutableDictionary *dic = [NSMutableDictionary dictionary];
         [dic setObject:txtCarNum.text forKey:@"carNum"];
         [dic setObject:txtName.text forKey:@"userName"];
@@ -167,6 +169,10 @@
         [dic setObject:[NSString stringWithFormat:@"%@_%@",brandStr,modelStr] forKey:@"brand"];
         [dic setObject:prod_ids forKey:@"prod_ids"];
         [dic setObject:[DataService sharedService].store_id forKey:@"store_id"];
+        if ([customer objectForKey:@"reserv_at"]) {
+          [dic setObject:[customer objectForKey:@"reserv_at"] forKey:@"res_time"];  
+        }
+        
         [r setPostDataEncoding:NSUTF8StringEncoding];
         [r setPOSTDictionary:dic];
 //        DLog(@"%@",dic);
@@ -204,6 +210,7 @@
 
 }
 
+//上一步，下一步
 - (IBAction)clickNext:(id)sender{
     UIButton *btn = (UIButton *)sender;
     int x = [step intValue];
@@ -236,6 +243,7 @@
     [self initView];
 }
 
+//拍照
 - (void)getCarPicture:(PictureCell *)cell{
     GetPictureFromDevice *pic = [[GetPictureFromDevice alloc] initWithParentViewController:self];
     self.getPic = pic;
@@ -294,6 +302,7 @@
     return [[self.brandResult objectForKey:@"count"] integerValue];
 }
 
+//产品，服务的单元格
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath{
     static NSString *CellIdentifier = @"CollectionCell";
     CollectionCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:CellIdentifier forIndexPath:indexPath];
@@ -324,7 +333,6 @@
             }
         }
     }
-    cell.prodImage.image = [UIImage imageNamed:@"status_img"];
     
     return cell;
 
@@ -340,6 +348,8 @@
 - (BOOL)collectionView:(UICollectionView *)collectionView shouldSelectItemAtIndexPath:(NSIndexPath *)indexPath{
     return TRUE;
 }
+
+//设置选中效果
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath{
 //    DLog(@"select:%d",indexPath.section);
     CollectionCell *cell = (CollectionCell *)[collectionView cellForItemAtIndexPath:indexPath];

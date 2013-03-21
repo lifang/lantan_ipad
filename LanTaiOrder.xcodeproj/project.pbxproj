@@ -91,8 +91,10 @@
 		70C6C9D216E4907F008AFFA7 /* ProductHeader.m in Sources */ = {isa = PBXBuildFile; fileRef = 70C6C9D116E4907F008AFFA7 /* ProductHeader.m */; };
 		70C6C9D516E4A6B2008AFFA7 /* ProductCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 70C6C9D416E4A6B2008AFFA7 /* ProductCell.m */; };
 		70D552C516F6DBA20023B575 /* QPOS HD.ipa in Resources */ = {isa = PBXBuildFile; fileRef = 70D552C416F6DBA20023B575 /* QPOS HD.ipa */; };
-		70D552C916F71AE80023B575 /* SVCardViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 70D552C716F71AE70023B575 /* SVCardViewController.m */; };
-		70D552CA16F71AE80023B575 /* SVCardViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 70D552C816F71AE70023B575 /* SVCardViewController.xib */; };
+		70D8CEDC16F956400028F1F8 /* r_head.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 70D8CEDB16F956400028F1F8 /* r_head.jpg */; };
+		70D8CEE016F98CA20028F1F8 /* PicViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 70D8CEDE16F98CA20028F1F8 /* PicViewController.m */; };
+		70D8CEE116F98CA20028F1F8 /* PicViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 70D8CEDF16F98CA20028F1F8 /* PicViewController.xib */; };
+		70D8CEE316F99D450028F1F8 /* open_bg.png in Resources */ = {isa = PBXBuildFile; fileRef = 70D8CEE216F99D450028F1F8 /* open_bg.png */; };
 		70D8E14516AFABFB00BC8F16 /* MainViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 70D8E14316AFABFB00BC8F16 /* MainViewController.m */; };
 		70D8E14616AFABFB00BC8F16 /* MainViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 70D8E14416AFABFB00BC8F16 /* MainViewController.xib */; };
 		70E8288A16E85C1700A8AA70 /* ConfirmViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 70E8288816E85C1700A8AA70 /* ConfirmViewController.m */; };
@@ -221,9 +223,11 @@
 		70C6C9D316E4A6B2008AFFA7 /* ProductCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ProductCell.h; sourceTree = "<group>"; };
 		70C6C9D416E4A6B2008AFFA7 /* ProductCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ProductCell.m; sourceTree = "<group>"; };
 		70D552C416F6DBA20023B575 /* QPOS HD.ipa */ = {isa = PBXFileReference; lastKnownFileType = file; name = "QPOS HD.ipa"; path = "LanTaiOrder/QPOS HD.ipa"; sourceTree = "<group>"; };
-		70D552C616F71AE70023B575 /* SVCardViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SVCardViewController.h; sourceTree = "<group>"; };
-		70D552C716F71AE70023B575 /* SVCardViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SVCardViewController.m; sourceTree = "<group>"; };
-		70D552C816F71AE70023B575 /* SVCardViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = SVCardViewController.xib; sourceTree = "<group>"; };
+		70D8CEDB16F956400028F1F8 /* r_head.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = r_head.jpg; sourceTree = "<group>"; };
+		70D8CEDD16F98CA20028F1F8 /* PicViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PicViewController.h; sourceTree = "<group>"; };
+		70D8CEDE16F98CA20028F1F8 /* PicViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PicViewController.m; sourceTree = "<group>"; };
+		70D8CEDF16F98CA20028F1F8 /* PicViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = PicViewController.xib; sourceTree = "<group>"; };
+		70D8CEE216F99D450028F1F8 /* open_bg.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = open_bg.png; sourceTree = "<group>"; };
 		70D8E14216AFABFB00BC8F16 /* MainViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MainViewController.h; sourceTree = "<group>"; };
 		70D8E14316AFABFB00BC8F16 /* MainViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MainViewController.m; sourceTree = "<group>"; };
 		70D8E14416AFABFB00BC8F16 /* MainViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = MainViewController.xib; sourceTree = "<group>"; };
@@ -480,6 +484,8 @@
 		70A6F0E916E09671004869EE /* images */ = {
 			isa = PBXGroup;
 			children = (
+				70D8CEE216F99D450028F1F8 /* open_bg.png */,
+				70D8CEDB16F956400028F1F8 /* r_head.jpg */,
 				7099961616F8531D0039C761 /* dot_1_bg.png */,
 				7099961416F84BC60039C761 /* p_head_1.png */,
 				7099961216F841B40039C761 /* order_head.png */,
@@ -541,9 +547,9 @@
 				709AED2C16F065A20028C706 /* PayStyleViewController.h */,
 				709AED2D16F065A20028C706 /* PayStyleViewController.m */,
 				709AED2E16F065A20028C706 /* PayStyleViewController.xib */,
-				70D552C616F71AE70023B575 /* SVCardViewController.h */,
-				70D552C716F71AE70023B575 /* SVCardViewController.m */,
-				70D552C816F71AE70023B575 /* SVCardViewController.xib */,
+				70D8CEDD16F98CA20028F1F8 /* PicViewController.h */,
+				70D8CEDE16F98CA20028F1F8 /* PicViewController.m */,
+				70D8CEDF16F98CA20028F1F8 /* PicViewController.xib */,
 			);
 			name = Order;
 			sourceTree = "<group>";
@@ -636,7 +642,6 @@
 				7024914816F5A9E4009EC28D /* btn_cancel.jpg in Resources */,
 				7024915116F5BB27009EC28D /* ReservationCell.xib in Resources */,
 				70D552C516F6DBA20023B575 /* QPOS HD.ipa in Resources */,
-				70D552CA16F71AE80023B575 /* SVCardViewController.xib in Resources */,
 				7099D44D16F74D910006818E /* close_btn.png in Resources */,
 				7099D44E16F74D910006818E /* open_btn.png in Resources */,
 				7099D44F16F74D910006818E /* search_btn.png in Resources */,
@@ -664,6 +669,9 @@
 				7099961316F841B40039C761 /* order_head.png in Resources */,
 				7099961516F84BC60039C761 /* p_head_1.png in Resources */,
 				7099961716F8531D0039C761 /* dot_1_bg.png in Resources */,
+				70D8CEDC16F956400028F1F8 /* r_head.jpg in Resources */,
+				70D8CEE116F98CA20028F1F8 /* PicViewController.xib in Resources */,
+				70D8CEE316F99D450028F1F8 /* open_bg.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -708,7 +716,7 @@
 				7024914B16F5B14F009EC28D /* BaseViewController.m in Sources */,
 				7024914F16F5BB0E009EC28D /* ReservationCell.m in Sources */,
 				7024915416F60376009EC28D /* UITextView+Border.m in Sources */,
-				70D552C916F71AE80023B575 /* SVCardViewController.m in Sources */,
+				70D8CEE016F98CA20028F1F8 /* PicViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

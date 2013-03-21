@@ -2,10 +2,10 @@
 <archive type="com.apple.InterfaceBuilder3.CocoaTouch.iPad.XIB" version="8.00">
 	<data>
 		<int key="IBDocument.SystemTarget">1552</int>
-		<string key="IBDocument.SystemVersion">12C3012</string>
+		<string key="IBDocument.SystemVersion">12D78</string>
 		<string key="IBDocument.InterfaceBuilderVersion">3084</string>
-		<string key="IBDocument.AppKitVersion">1187.34</string>
-		<string key="IBDocument.HIToolboxVersion">625.00</string>
+		<string key="IBDocument.AppKitVersion">1187.37</string>
+		<string key="IBDocument.HIToolboxVersion">626.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.IBCocoaTouchPlugin</string>
 			<string key="NS.object.0">2083</string>
@@ -172,7 +172,7 @@
 								<bool key="IBUIAdjustsFontSizeToFit">NO</bool>
 							</object>
 						</array>
-						<string key="NSFrameSize">{327, 176}</string>
+						<string key="NSFrameSize">{328, 178}</string>
 						<reference key="NSSuperview" ref="394002259"/>
 						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="435867115"/>
@@ -268,7 +268,7 @@
 								<reference key="IBUIFont" ref="344039505"/>
 							</object>
 						</array>
-						<string key="NSFrameSize">{327, 176}</string>
+						<string key="NSFrameSize">{328, 178}</string>
 						<reference key="NSSuperview" ref="394002259"/>
 						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="942807301"/>
@@ -359,7 +359,6 @@
 								<string key="NSFrame">{{207, 129}, {94, 27}}</string>
 								<reference key="NSSuperview" ref="921814244"/>
 								<reference key="NSWindow"/>
-								<reference key="NSNextKeyView"/>
 								<string key="NSReuseIdentifierKey">_NS:9</string>
 								<bool key="IBUIOpaque">NO</bool>
 								<string key="targetRuntimeIdentifier">IBIPadFramework</string>
@@ -394,7 +393,7 @@
 								<bool key="IBUIAdjustsFontSizeToFit">NO</bool>
 							</object>
 						</array>
-						<string key="NSFrameSize">{327, 176}</string>
+						<string key="NSFrameSize">{328, 178}</string>
 						<reference key="NSSuperview" ref="394002259"/>
 						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="356437670"/>
@@ -407,15 +406,14 @@
 						<string key="targetRuntimeIdentifier">IBIPadFramework</string>
 					</object>
 				</array>
-				<string key="NSFrameSize">{327, 176}</string>
+				<string key="NSFrameSize">{328, 178}</string>
 				<reference key="NSSuperview"/>
 				<reference key="NSWindow"/>
 				<reference key="NSNextKeyView" ref="324809632"/>
 				<string key="NSReuseIdentifierKey">_NS:9</string>
 				<object class="NSColor" key="IBUIBackgroundColor">
 					<int key="NSColorSpace">3</int>
-					<bytes key="NSWhite">MQA</bytes>
-					<reference key="NSCustomColorSpace" ref="610832323"/>
+					<bytes key="NSWhite">MCAwAA</bytes>
 				</object>
 				<string key="targetRuntimeIdentifier">IBIPadFramework</string>
 			</object>

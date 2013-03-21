@@ -11,19 +11,24 @@
 #import "ProductCell.h"
 #import "OldProductCell.h"
 #import "ComplaintViewController.h"
+#import "PicViewController.h"
+#import "UIViewController+MJPopupViewController.h"
+#import "PayViewController.h"
 
-@interface OrderViewController ()
+@interface OrderViewController ()<PicViewDelegate>{
+    PicViewController *picView;
+}
 
 @end
 
 @implementation OrderViewController
 
 @synthesize lblBrand,lblCarNum,lblPhone,lblProduct,lblTime,lblUserName;
-@synthesize btnCheckIn,btnDone,btnOldRecord,btnOrderRecord;
+@synthesize btnCheckIn,btnDone,btnOldRecord,btnOrderRecord,btnCancel,btnPay;
 @synthesize orderView,carInfoBgView,noInfoView,carInfoView,orderTable,workingTable;
 @synthesize orderList,orderItems;
 @synthesize lblOrderNum,lblReceiver,lblStatus,lblWorkingCar,lblWorkingName,lblTotal;
-@synthesize car_num,customer;
+@synthesize car_num,customer,workingOrder;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -34,6 +39,7 @@
     return self;
 }
 
+//发送查询请求
 - (void)searchOrderByCarNum{
     if (car_num) {
         STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kSearchCar]];
@@ -54,6 +60,7 @@
                 self.lblBrand.text = brand;
                 self.lblUserName.text = [[result objectForKey:@"customer"] objectForKey:@"name"];
                 self.lblPhone.text = [[result objectForKey:@"customer"] objectForKey:@"mobilephone"];
+                //客户信息
                 [self.customer setObject:[[result objectForKey:@"customer"] objectForKey:@"num"] forKey:@"carNum"];
                 [self.customer setObject:[[result objectForKey:@"customer"] objectForKey:@"name"] forKey:@"name"];
                 [self.customer setObject:[[result objectForKey:@"customer"] objectForKey:@"mobilephone"] forKey:@"phone"];
@@ -62,7 +69,11 @@
                 [self.customer setObject:[[result objectForKey:@"customer"] objectForKey:@"email"] forKey:@"email"];
                 [self.customer setObject:[[result objectForKey:@"customer"] objectForKey:@"birth"] forKey:@"birth"];
                 [self.customer setObject:[[result objectForKey:@"customer"] objectForKey:@"year"] forKey:@"year"];
+                //正在进行中的订单
+                self.workingOrder = [result objectForKey:@"working"];
+                
                 if ([[result objectForKey:@"working"] count]==0) {
+                    //没有正在进行中的订单
                   self.lblProduct.text = @"";
                   self.lblTime.text = @"";
                     self.workingView.hidden = YES;
@@ -92,7 +103,18 @@
                     self.lblWorkingCar.text = [[result objectForKey:@"customer"] objectForKey:@"num"];
                     self.lblTotal.text = [NSString stringWithFormat:@"%@(元)",[[result objectForKey:@"working"] objectForKey:@"price"]];
                     self.orderItems = [[result objectForKey:@"working"] objectForKey:@"products"];
+                    if ([[workingOrder objectForKey:@"status"] intValue]==0) {
+                        self.btnCancel.hidden = NO;
+                    }else{
+                        self.btnCancel.hidden = YES;
+                    }
+                    if ([[workingOrder objectForKey:@"status"] intValue]==1 || [[workingOrder objectForKey:@"status"] intValue]==2) {
+                        self.btnPay.hidden = NO;
+                    }else{
+                        self.btnPay.hidden = YES;
+                    }
                 }
+                //过往订单
                 if ([[result objectForKey:@"old"] count]>0) {
                     self.orderList = [result objectForKey:@"old"];
                 }
@@ -106,6 +128,7 @@
     self.orderList = [NSMutableArray array];
     self.orderItems = [NSMutableArray array];
     self.customer = [NSMutableDictionary dictionary];
+    self.workingOrder = [NSMutableDictionary dictionary];
     [self searchOrderByCarNum];
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"login_bg.jpg"]];
@@ -158,6 +181,7 @@
             cell = [[OldProductCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier items:[order objectForKey:@"products"]];
         }
         cell.lblCode.text = [order objectForKey:@"code"];
+        //时间格式化
         NSDateFormatter *inputFormatter = [[NSDateFormatter alloc] init];
         [inputFormatter setLocale:[[NSLocale alloc] init]];
         [inputFormatter setDateFormat:@"yyyy-MM-dd'T'HH:mm:ssz"];
@@ -186,6 +210,7 @@
     }
 }
 
+//点击投诉按钮
 - (void)clickComplaint:(id)sender{
     UIButton *btn = (UIButton *)sender;
     NSDictionary *order = [orderList objectAtIndex:btn.tag - 200];
@@ -193,9 +218,9 @@
     NSMutableDictionary *dic = [NSMutableDictionary dictionary];
     [dic setObject:self.lblUserName.text forKey:@"name"];
     [dic setObject:self.lblCarNum.text forKey:@"carNum"];
-    [dic setObject:[order objectForKey:@"code"] forKey:@"code"];
+    [dic setObject:[order objectForKey:@"code"] forKey:@"code"];//订单号
     [dic setObject:[order objectForKey:@"id"] forKey:@"order_id"];
-    [dic setObject:@"1" forKey:@"from"];
+    [dic setObject:@"1" forKey:@"from"]; // 进入投诉页面的来源
     NSMutableString *prods = [NSMutableString string];
     for (NSDictionary *prod in [order objectForKey:@"products"]) {
         [prods appendFormat:@"%@,",[prod objectForKey:@"name"]];
@@ -206,10 +231,26 @@
     
 }
 
+//取消订单（未施工）
 - (IBAction)clickCancel:(id)sender{
-    
+    if ([workingOrder objectForKey:@"id"] != NULL) {
+        STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kPayOrder]];
+        [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[workingOrder objectForKey:@"id"],@"order_id",@"1",@"opt_type", nil]];
+        [r setPostDataEncoding:NSUTF8StringEncoding];
+        NSError *error = nil;
+        NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
+        if ([[result objectForKey:@"status"] intValue]==1) {
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"订单已取消" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+            [alert show];
+            [self.navigationController popToRootViewControllerAnimated:YES];
+        }else{
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"订单取消失败" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+            [alert show];
+        }
+    }
 }
 
+//点击下单按钮
 - (IBAction)clickDone:(id)sender{
     UIButton *btn = (UIButton *)sender;
     
@@ -229,16 +270,38 @@
 - (IBAction)clickOld:(id)sender{
     self.orderTable.hidden = NO;
     self.workingView.hidden = YES;
+    self.noWorkingView.hidden = YES;
+    UIColor *c = [UIColor colorWithRed:147.0/255.0 green:2.0/255.0 blue:5.0/255.0 alpha:1.0];
+    [btnOldRecord setTitleColor:c forState:UIControlStateNormal];
+    [btnOldRecord setTitleColor:c forState:UIControlStateHighlighted];
+    [btnOrderRecord setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
+    [btnOrderRecord setTitleColor:[UIColor lightGrayColor] forState:UIControlStateHighlighted];
 }
 
+//付款
 - (IBAction)clickPay:(id)sender{
-    
+    if ([workingOrder objectForKey:@"id"] != NULL) {
+        STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kPayOrder]];
+        [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[workingOrder objectForKey:@"id"],@"order_id",@"0",@"opt_type", nil]];
+        [r setPostDataEncoding:NSUTF8StringEncoding];
+        NSError *error = nil;
+        NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
+        if ([[result objectForKey:@"status"] intValue]==1) {
+            PayViewController *payView  = [[PayViewController alloc] initWithNibName:@"PayViewController" bundle:nil];
+            payView.orderInfo = [result objectForKey:@"order"];
+            [self.navigationController pushViewController:payView animated:YES];
+        }
+    }
 }
 
 - (IBAction)clickPic:(id)sender{
-    
+    picView = [[PicViewController alloc] initWithNibName:@"PicViewController" bundle:nil];
+    picView.parentController = self;
+    picView.delegate = self;
+    [self presentPopupViewController:picView animationType:MJPopupViewAnimationSlideBottomBottom];
 }
 
+//或登记信息
 - (IBAction)clickReg:(id)sender{
     AddViewController *addOrder = [[AddViewController alloc] initWithNibName:@"AddViewController" bundle:nil];
     addOrder.step = @"0";
@@ -246,8 +309,25 @@
 }
 
 - (IBAction)clickWorking:(id)sender{
-    self.workingView.hidden = NO;
+    UIColor *c = [UIColor colorWithRed:147.0/255.0 green:2.0/255.0 blue:5.0/255.0 alpha:1.0];
+    [btnOrderRecord setTitleColor:c forState:UIControlStateNormal];
+    [btnOrderRecord setTitleColor:c forState:UIControlStateHighlighted];
+    [btnOldRecord setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
+    [btnOldRecord setTitleColor:[UIColor lightGrayColor] forState:UIControlStateHighlighted];
+    if([self.workingOrder objectForKey:@"customer_id"] != NULL){
+        self.workingView.hidden = NO;
+        self.noWorkingView.hidden = YES;
+    }else{
+        self.workingView.hidden = YES;
+        self.noWorkingView.hidden = NO;
+    }
     self.orderTable.hidden = YES;
+}
+
+//关闭弹出框
+- (void)closePopView:(PicViewController *)picViewController{
+    [self dismissPopupViewControllerWithanimationType:MJPopupViewAnimationFade];
+    picView = nil;
 }
 
 @end

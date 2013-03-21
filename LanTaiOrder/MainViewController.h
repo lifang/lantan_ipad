@@ -4,7 +4,7 @@
 //
 //  Created by Ruby on 13-1-23.
 //  Copyright (c) 2013年 LanTai. All rights reserved.
-//
+// 首页面
 
 #import <UIKit/UIKit.h>
 

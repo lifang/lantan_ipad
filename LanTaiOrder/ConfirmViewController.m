@@ -44,6 +44,7 @@
         lblEnd.text = [orderInfo objectForKey:@"end"];
         lblTotal.text = [NSString stringWithFormat:@"总计：%.2f(元)",self.total_count];
     }
+    //更新总价
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateTotal:) name:@"update_total" object:nil];
     [super viewDidLoad];
     if (![self.navigationItem rightBarButtonItem]) {
@@ -70,7 +71,7 @@
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
     NSMutableDictionary *product = [productList objectAtIndex:indexPath.row];
     
-    DLog(@"%@",product);
+    //产品，服务
     if ([product objectForKey:@"id"] && ![product objectForKey:@"has_p_card"]) {
         static NSString *CellIdentifier = @"ServiceCell";
         ServiceCell *cell = (ServiceCell *)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
@@ -86,6 +87,7 @@
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
         return cell;
     }else if([product objectForKey:@"sale_id"]){
+        //活动
         static NSString *CellIdentifier = @"SVCardCell";
         SVCardCell *cell = (SVCardCell *)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
         if (cell == nil) {
@@ -94,13 +96,14 @@
         cell.lblName.text = [product objectForKey:@"sale_name"];
         cell.lblPrice.text = [NSString stringWithFormat:@"%@",[product objectForKey:@"show_price"]];
         if ([[product objectForKey:@"selected"] intValue]== 0) {
-            [cell.switchBtn setOn:YES animated:YES];
+            [cell.switchBtn setOn:YES animated:NO];
         }else{
-            [cell.switchBtn setOn:NO animated:YES];
+            [cell.switchBtn setOn:NO animated:NO];
         }
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
         return cell;
     }else if([product objectForKey:@"scard_id"]){
+        //打折卡
         static NSString *CellIdentifier = @"SVCardCell";
         SVCardCell *cell = (SVCardCell *)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
         if (cell == nil) {
@@ -116,6 +119,7 @@
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
         return cell;
     }else if([product objectForKey:@"products"]){
+        //套餐卡
         static NSString *CellIdentifier = @"PackageCardCell";
         PackageCardCell *cell = (PackageCardCell *)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
         if (cell == nil) {
@@ -136,6 +140,7 @@
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+    //根据套餐卡相关产品的数量，设置cell 高度
     NSDictionary *product = [productList objectAtIndex:indexPath.row];
     int count = [[product objectForKey:@"products"] count];
     count = count == 0 ? 1 : count;
@@ -184,10 +189,12 @@
     }
     return prod_ids;
 }
+
 - (IBAction)clickConfirm:(id)sender{
     NSString *str = [self checkForm];
     DLog(@"%@",[DataService sharedService].user_id);
     if ([str length]>0 && [[DataService sharedService].user_id intValue] > 0) {
+        //确定生成订单后进入订单详情页面
         STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kDone]];
         NSMutableDictionary *data = [NSMutableDictionary dictionary];
         [data setObject:[orderInfo objectForKey:@"c_id"] forKey:@"c_id"];

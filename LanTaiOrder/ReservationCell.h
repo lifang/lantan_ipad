@@ -10,9 +10,12 @@
 
 @interface ReservationCell : UITableViewCell
 
-@property (nonatomic,strong) IBOutlet UILabel *lblCreatedAt,*lblCarNum,*lblUsername,*lblPhone,*lblEmail,*lblReservAt,*lblStatus;
+@property (nonatomic,strong) IBOutlet UILabel *lblCreatedAt,*lblCarNum,*lblUsername,*lblPhone,*lblEmail,*lblStatus;
+@property (nonatomic,strong) IBOutlet UITextField *txtReservAt;
+@property (nonatomic,strong) IBOutlet UIButton *btnConfirm,*btnCancel;
 
 @property (nonatomic,strong) NSString *reserv_id;
+@property (nonatomic,assign) id viewController;
 
 - (IBAction)clickConfirm:(id)sender;
 - (IBAction)clickCancel:(id)sender;

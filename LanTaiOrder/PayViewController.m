@@ -140,6 +140,7 @@
 }
 
 - (IBAction)clickSegBtn:(UISegmentedControl *)sender{
+    //评价，不满意
     if (sender.selectedSegmentIndex == 0) {
         ComplaintViewController *complaint = [[ComplaintViewController alloc] initWithNibName:@"ComplaintViewController" bundle:nil];
         NSMutableDictionary *dic = [NSMutableDictionary dictionary];
@@ -158,6 +159,7 @@
         complaint.info = [NSMutableDictionary dictionaryWithDictionary:dic];
         [self.navigationController pushViewController:complaint animated:YES];
     }else{
+        //评价，弹出框
         payStyleView = nil;
         payStyleView = [[PayStyleViewController alloc] initWithNibName:@"PayStyleViewController" bundle:nil];
         payStyleView.delegate = self;

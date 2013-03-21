@@ -34,6 +34,7 @@
 
 }
 
+//选择开关
 - (IBAction)clickSwitch:(UISwitch *)sender{
     CGFloat x = 0;
     if ([sender isOn]) {

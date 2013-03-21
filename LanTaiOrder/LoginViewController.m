@@ -38,6 +38,9 @@
     frame = txtPwd.frame;
     frame.size.height = 35;
     txtPwd.frame = frame;
+    //监听键盘
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyBoardWillShow:) name:UIKeyboardWillShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyBoardWillHide:) name: UIKeyboardWillHideNotification object:nil];
 }
 
 - (void)didReceiveMemoryWarning
@@ -66,7 +69,6 @@
 }
 
 - (IBAction)clickLogin:(id)sender{
-    DLog(@"login");
     [self.txtPwd resignFirstResponder];
     [self.txtPwd resignFirstResponder];
     if ([self checkForm]) {
@@ -99,7 +101,7 @@
     }
 }
 
-- (void)textFieldDidBeginEditing:(UITextField *)textField{
+- (void)keyBoardWillShow:(id)sender{
     [UIView beginAnimations:nil context:nil];
     CGRect frame = self.loginView.frame;
     if (frame.origin.y==100) {
@@ -109,7 +111,7 @@
     [UIView commitAnimations];
 }
 
-- (void)textFieldDidEndEditing:(UITextField *)textField{
+- (void)keyBoardWillHide:(id)sender{
     [UIView beginAnimations:nil context:nil];
     CGRect frame = self.loginView.frame;
     if (frame.origin.y==-30) {

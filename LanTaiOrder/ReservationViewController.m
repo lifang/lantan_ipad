@@ -57,25 +57,36 @@
     ReservationCell *cell = (ReservationCell *)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
     if (cell == nil) {
         cell =  [[ReservationCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
+        cell.viewController = self.navigationController;
     }
-//    DLog(@"%@",dic);
     cell.lblCreatedAt.text = [Utils formateDate:[dic objectForKey:@"created_at"]];
     cell.lblCarNum.text = [dic objectForKey:@"num"];
     cell.lblUsername.text = [dic objectForKey:@"name"];
     cell.lblPhone.text = [dic objectForKey:@"phone"];
     cell.lblEmail.text = [dic objectForKey:@"email"];
-    cell.lblReservAt.text = [Utils formateDate:[dic objectForKey:@"reserv_at"]];
+    cell.txtReservAt.text = [Utils formateDate:[dic objectForKey:@"reserv_at"]];
     cell.reserv_id = [dic objectForKey:@"id"];
     if ([[dic objectForKey:@"status"] intValue]==0) {
         cell.lblStatus.text = @"未确认";
+        cell.btnConfirm.enabled = YES;
+        cell.btnCancel.enabled = YES;
+        cell.txtReservAt.enabled = YES;
     }else{
         cell.lblStatus.text = @"已确认";
+        cell.btnConfirm.enabled = NO;
+        cell.btnCancel.enabled = NO;
+        cell.txtReservAt.enabled = NO;
     }
+    cell.selectionStyle = UITableViewCellSelectionStyleNone;
     return cell;
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
     return 84.0;
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    [tableView deselectRowAtIndexPath:indexPath animated:YES];
 }
 
 - (void)refreshData:(NSNotification *)notification{

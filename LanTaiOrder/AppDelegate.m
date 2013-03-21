@@ -20,6 +20,7 @@
         [DataService sharedService].store_id = [defaults objectForKey:@"storeId"];
         MainViewController *messageView = [[MainViewController alloc] initWithNibName:@"MainViewController" bundle:nil];
         UINavigationController *navigationView = [[UINavigationController alloc] initWithRootViewController:messageView];
+        //设置导航条背景
         if ([navigationView.navigationBar respondsToSelector:@selector(setBackgroundImage:forBarMetrics:)]) {
             [navigationView.navigationBar setBackgroundImage:[UIImage imageNamed:@"nav_bg"] forBarMetrics:UIBarMetricsDefault];
         }
@@ -89,6 +90,7 @@
     }
     return NO;
 }
+//回调钱方的反馈信息
 - (BOOL)application:(UIApplication *)application handleOpenURL:(NSURL *)url{
     NSString *urlString = [url absoluteString];
     if ([self decode:urlString]) {

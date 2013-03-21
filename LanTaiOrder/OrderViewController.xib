@@ -2,10 +2,10 @@
 <archive type="com.apple.InterfaceBuilder3.CocoaTouch.iPad.XIB" version="8.00">
 	<data>
 		<int key="IBDocument.SystemTarget">1552</int>
-		<string key="IBDocument.SystemVersion">12C3012</string>
+		<string key="IBDocument.SystemVersion">12D78</string>
 		<string key="IBDocument.InterfaceBuilderVersion">3084</string>
-		<string key="IBDocument.AppKitVersion">1187.34</string>
-		<string key="IBDocument.HIToolboxVersion">625.00</string>
+		<string key="IBDocument.AppKitVersion">1187.37</string>
+		<string key="IBDocument.HIToolboxVersion">626.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.IBCocoaTouchPlugin</string>
 			<string key="NS.object.0">2083</string>
@@ -434,7 +434,7 @@
 						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="839229932"/>
 						<string key="NSReuseIdentifierKey">_NS:9</string>
-						<object class="NSColor" key="IBUIBackgroundColor">
+						<object class="NSColor" key="IBUIBackgroundColor" id="1027584258">
 							<int key="NSColorSpace">3</int>
 							<bytes key="NSWhite">MC42NjY2NjY2NjY3AA</bytes>
 						</object>
@@ -484,10 +484,7 @@
 								<int key="IBUIContentVerticalAlignment">0</int>
 								<string key="IBUINormalTitle">过往消费记录</string>
 								<reference key="IBUIHighlightedTitleColor" ref="194862578"/>
-								<object class="NSColor" key="IBUINormalTitleColor">
-									<int key="NSColorSpace">1</int>
-									<bytes key="NSRGB">MC41NzY0NzA1ODgyIDAuMDA3ODQzMTM3MjU1IDAuMDE5NjA3ODQzMTQAA</bytes>
-								</object>
+								<reference key="IBUINormalTitleColor" ref="1027584258"/>
 								<reference key="IBUINormalTitleShadowColor" ref="900550539"/>
 								<reference key="IBUINormalBackgroundImage" ref="590133069"/>
 								<reference key="IBUIFontDescription" ref="18230990"/>
@@ -814,7 +811,7 @@
 									</object>
 									<object class="IBUIButton" id="753012340">
 										<reference key="NSNextResponder" ref="914549980"/>
-										<int key="NSvFlags">292</int>
+										<int key="NSvFlags">-2147483356</int>
 										<string key="NSFrame">{{532, 390}, {80, 37}}</string>
 										<reference key="NSSuperview" ref="914549980"/>
 										<reference key="NSWindow"/>
@@ -847,7 +844,7 @@
 									</object>
 									<object class="IBUIButton" id="129368905">
 										<reference key="NSNextResponder" ref="914549980"/>
-										<int key="NSvFlags">292</int>
+										<int key="NSvFlags">-2147483356</int>
 										<string key="NSFrame">{{633, 390}, {80, 37}}</string>
 										<reference key="NSSuperview" ref="914549980"/>
 										<reference key="NSWindow"/>
@@ -1165,6 +1162,22 @@
 						<reference key="destination" ref="453148715"/>
 					</object>
 					<int key="connectionID">85</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBCocoaTouchOutletConnection" key="connection">
+						<string key="label">btnPay</string>
+						<reference key="source" ref="841351856"/>
+						<reference key="destination" ref="129368905"/>
+					</object>
+					<int key="connectionID">87</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBCocoaTouchOutletConnection" key="connection">
+						<string key="label">btnCancel</string>
+						<reference key="source" ref="841351856"/>
+						<reference key="destination" ref="753012340"/>
+					</object>
+					<int key="connectionID">88</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBCocoaTouchOutletConnection" key="connection">
@@ -1624,7 +1637,7 @@
 			<nil key="activeLocalization"/>
 			<dictionary class="NSMutableDictionary" key="localizations"/>
 			<nil key="sourceID"/>
-			<int key="maxID">86</int>
+			<int key="maxID">88</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<array class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -1679,10 +1692,12 @@
 						</object>
 					</dictionary>
 					<dictionary class="NSMutableDictionary" key="outlets">
+						<string key="btnCancel">UIButton</string>
 						<string key="btnCheckIn">UIButton</string>
 						<string key="btnDone">UIButton</string>
 						<string key="btnOldRecord">UIButton</string>
 						<string key="btnOrderRecord">UIButton</string>
+						<string key="btnPay">UIButton</string>
 						<string key="carInfoBgView">UIView</string>
 						<string key="carInfoView">UIView</string>
 						<string key="lblBrand">UILabel</string>
@@ -1705,6 +1720,10 @@
 						<string key="workingView">UIView</string>
 					</dictionary>
 					<dictionary class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<object class="IBToOneOutletInfo" key="btnCancel">
+							<string key="name">btnCancel</string>
+							<string key="candidateClassName">UIButton</string>
+						</object>
 						<object class="IBToOneOutletInfo" key="btnCheckIn">
 							<string key="name">btnCheckIn</string>
 							<string key="candidateClassName">UIButton</string>
@@ -1719,6 +1738,10 @@
 						</object>
 						<object class="IBToOneOutletInfo" key="btnOrderRecord">
 							<string key="name">btnOrderRecord</string>
+							<string key="candidateClassName">UIButton</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="btnPay">
+							<string key="name">btnPay</string>
 							<string key="candidateClassName">UIButton</string>
 						</object>
 						<object class="IBToOneOutletInfo" key="carInfoBgView">
