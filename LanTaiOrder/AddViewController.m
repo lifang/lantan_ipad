@@ -163,8 +163,13 @@
         [dic setObject:txtCarNum.text forKey:@"carNum"];
         [dic setObject:txtName.text forKey:@"userName"];
         [dic setObject:txtPhone.text forKey:@"phone"];
-        [dic setObject:txtEmail.text forKey:@"email"];
-        [dic setObject:txtBirth.text forKey:@"birth"];
+        if (txtEmail.text.length > 0) {
+            [dic setObject:txtEmail.text forKey:@"email"];
+        }
+        if (txtBirth.text.length>0) {
+            [dic setObject:txtBirth.text forKey:@"birth"];
+        }
+        
         [dic setObject:txtCarYear.text forKey:@"year"];
         [dic setObject:[NSString stringWithFormat:@"%@_%@",brandStr,modelStr] forKey:@"brand"];
         [dic setObject:prod_ids forKey:@"prod_ids"];
