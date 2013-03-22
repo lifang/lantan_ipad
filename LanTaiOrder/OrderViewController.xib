@@ -828,7 +828,7 @@
 											<bytes key="NSRGB">MCAwIDAAA</bytes>
 										</object>
 										<reference key="IBUINormalTitleShadowColor" ref="900550539"/>
-										<object class="NSCustomResource" key="IBUINormalBackgroundImage" id="622432">
+										<object class="NSCustomResource" key="IBUINormalBackgroundImage">
 											<string key="NSClassName">NSImage</string>
 											<string key="NSResourceName">btn_cancel.jpg</string>
 										</object>
@@ -848,6 +848,7 @@
 										<string key="NSFrame">{{633, 390}, {80, 37}}</string>
 										<reference key="NSSuperview" ref="914549980"/>
 										<reference key="NSWindow"/>
+										<reference key="NSNextKeyView"/>
 										<string key="NSReuseIdentifierKey">_NS:9</string>
 										<bool key="IBUIOpaque">NO</bool>
 										<string key="targetRuntimeIdentifier">IBIPadFramework</string>
@@ -864,7 +865,7 @@
 									<object class="IBUIButton" id="227372128">
 										<reference key="NSNextResponder" ref="914549980"/>
 										<int key="NSvFlags">292</int>
-										<string key="NSFrame">{{420, 390}, {93, 37}}</string>
+										<string key="NSFrame">{{396, 390}, {117, 37}}</string>
 										<reference key="NSSuperview" ref="914549980"/>
 										<reference key="NSWindow"/>
 										<reference key="NSNextKeyView" ref="753012340"/>
@@ -873,11 +874,18 @@
 										<string key="targetRuntimeIdentifier">IBIPadFramework</string>
 										<int key="IBUIContentHorizontalAlignment">0</int>
 										<int key="IBUIContentVerticalAlignment">0</int>
+										<double key="IBUIContentEdgeInsets.top">0.0</double>
+										<double key="IBUIContentEdgeInsets.bottom">0.0</double>
+										<double key="IBUIContentEdgeInsets.left">24</double>
+										<double key="IBUIContentEdgeInsets.right">0.0</double>
 										<string key="IBUINormalTitle">车况拍摄</string>
 										<reference key="IBUIHighlightedTitleColor" ref="194862578"/>
 										<reference key="IBUINormalTitleColor" ref="361388946"/>
 										<reference key="IBUINormalTitleShadowColor" ref="900550539"/>
-										<reference key="IBUINormalBackgroundImage" ref="622432"/>
+										<object class="NSCustomResource" key="IBUINormalBackgroundImage">
+											<string key="NSClassName">NSImage</string>
+											<string key="NSResourceName">pic_bg.jpg</string>
+										</object>
 										<reference key="IBUIFontDescription" ref="6000742"/>
 										<reference key="IBUIFont" ref="142535358"/>
 									</object>
@@ -1841,6 +1849,7 @@
 			<string key="btn_cancel.jpg">{102, 37}</string>
 			<string key="lbl_bg.png">{150, 29}</string>
 			<string key="order_head.png">{600, 44}</string>
+			<string key="pic_bg.jpg">{114, 37}</string>
 		</dictionary>
 		<string key="IBCocoaTouchPluginVersion">2083</string>
 	</data>

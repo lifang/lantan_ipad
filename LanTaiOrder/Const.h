@@ -6,7 +6,7 @@
 //  Copyright (c) 2013年 LanTai. All rights reserved.
 //
 
-#define kHost @"http://192.168.0.101:3000/api"
+#define kHost @"http://192.168.0.115:3000/api"
 
 #define kLogin @"/orders/login"
 #define kIndex @"/orders/index_list"
