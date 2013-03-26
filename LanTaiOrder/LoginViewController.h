@@ -16,6 +16,7 @@
 @property (nonatomic,strong) IBOutlet UITextField *txtName;
 @property (nonatomic,strong) IBOutlet UITextField *txtPwd;
 @property (nonatomic,strong) IBOutlet UIView *loginView;
+@property (nonatomic,strong) MBProgressHUD *hud;
 
 - (IBAction)clickLogin:(id)sender;
 

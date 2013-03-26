@@ -61,6 +61,7 @@
         [r setPostDataEncoding:NSUTF8StringEncoding];
         NSError *error = nil;
         NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
+        DLog(@"%@",result);
         if ([[result objectForKey:@"status"] intValue] == 1) {
             if([[info objectForKey:@"from"] intValue]==1){
                 [self.navigationController popViewControllerAnimated:YES];

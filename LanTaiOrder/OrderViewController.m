@@ -14,6 +14,7 @@
 #import "PicViewController.h"
 #import "UIViewController+MJPopupViewController.h"
 #import "PayViewController.h"
+#import "TabHeader.h"
 
 @interface OrderViewController ()<PicViewDelegate>{
     PicViewController *picView;
@@ -29,6 +30,7 @@
 @synthesize orderList,orderItems;
 @synthesize lblOrderNum,lblReceiver,lblStatus,lblWorkingCar,lblWorkingName,lblTotal;
 @synthesize car_num,customer,workingOrder;
+@synthesize addOrderView;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -123,6 +125,10 @@
     }
 }
 
+-(void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [self searchOrderByCarNum];
+}
 - (void)viewDidLoad
 {
     self.orderList = [NSMutableArray array];
@@ -131,14 +137,19 @@
     self.workingOrder = [NSMutableDictionary dictionary];
     [self searchOrderByCarNum];
     [super viewDidLoad];
-    self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"login_bg.jpg"]];
-    self.carInfoBgView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"info_bg"]];
-    self.orderView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"content_bg"]];
+    self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"order_bg"]];
     self.carInfoView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"dot_bg"]];
     self.noInfoView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"dot_bg"]];
     if (![self.navigationItem rightBarButtonItem]) {
         [self addRightnaviItemWithImage:@"back"];
     }
+    
+    //加摄像头
+    UIImageView *imageView = [[UIImageView alloc]initWithFrame:CGRectMake(0, 0, 37, 37)];
+    UIImage *image = [UIImage imageNamed:@""];
+    imageView.image = image;
+    [self.btnCheckIn addSubview:imageView];
+    
 }
 
 - (void)didReceiveMemoryWarning
@@ -159,7 +170,27 @@
     }
     return 0;
 }
+- (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section{
+    if ([tableView isEqual:workingTable]) {
+        return 0;
+    }else {
+        return 44;
+    }
+}
+- (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
+    return @"";
+}
+- (UIView *)tableView:(UITableView *)tableView viewForHeaderInSection:(NSInteger)section {
+    NSString *sectionTitle = [self tableView:tableView titleForHeaderInSection:section];
+    if (sectionTitle == nil) {
+        return nil;
+    }
+   
+    CGRect frame = CGRectMake(0, 0, 844, 43);
+    TabHeader *tabHeader = [[TabHeader alloc] initWithFrame:frame];
+    return tabHeader;
 
+}
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
     
     if ([tableView isEqual:workingTable]) {
@@ -174,7 +205,7 @@
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
         return cell;
     }else{
-        static NSString *CellIdentifier = @"OldProductCell";
+        NSString *CellIdentifier = [NSString stringWithFormat:@"OldProductCell%d", [indexPath row]];
         OldProductCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
         NSDictionary *order = [orderList objectAtIndex:indexPath.row];
         if (cell == nil) {
@@ -206,7 +237,7 @@
     }else{
         NSDictionary *order = [orderList objectAtIndex:indexPath.row];
         int count = [[order objectForKey:@"products"] count];
-        return (count + 1) * 44;
+        return count * 44 +20;
     }
 }
 
@@ -251,19 +282,31 @@
 }
 
 //点击下单按钮
+-(void)showAddView {
+    self.addOrderView = [[AddViewController alloc] initWithNibName:@"AddViewController" bundle:nil];
+    self.addOrderView.customer = [NSMutableDictionary dictionaryWithDictionary:self.customer];
+    [DataService sharedService].car_num = self.lblCarNum.text;
+    [DataService sharedService].number = 0;
+    self.addOrderView.step = @"3";
+    [self.navigationController pushViewController:self.addOrderView animated:YES];
+    [MBProgressHUD hideHUDForView:self.view animated:YES];
+}
 - (IBAction)clickDone:(id)sender{
     UIButton *btn = (UIButton *)sender;
     
-    AddViewController *addOrder = [[AddViewController alloc] initWithNibName:@"AddViewController" bundle:nil];
-    addOrder.customer = [NSMutableDictionary dictionaryWithDictionary:self.customer];
     if (btn.tag==101) {
-        addOrder.step = @"0";
+        self.addOrderView = [[AddViewController alloc] initWithNibName:@"AddViewController" bundle:nil];
+        self.addOrderView.customer = [NSMutableDictionary dictionaryWithDictionary:self.customer];
+        self.addOrderView.step = @"0";
+        [self.navigationController pushViewController:self.addOrderView animated:YES];
     }else if (btn.tag==100){
-        [DataService sharedService].car_num = self.lblCarNum.text;
+        MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+        hud.dimBackground = NO;
+        [hud showWhileExecuting:@selector(showAddView) onTarget:self withObject:nil animated:YES];
+        hud.labelText = @"正在努力加载...";
+        [self.view addSubview:hud];
         
-        addOrder.step = @"3";
     }
-    [self.navigationController pushViewController:addOrder animated:YES];
     
 }
 
@@ -304,7 +347,8 @@
 //或登记信息
 - (IBAction)clickReg:(id)sender{
     AddViewController *addOrder = [[AddViewController alloc] initWithNibName:@"AddViewController" bundle:nil];
-    addOrder.step = @"0";
+    addOrder.step = @"1";
+    [DataService sharedService].number = 1;
     [self.navigationController pushViewController:addOrder animated:YES];
 }
 
@@ -314,7 +358,7 @@
     [btnOrderRecord setTitleColor:c forState:UIControlStateHighlighted];
     [btnOldRecord setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
     [btnOldRecord setTitleColor:[UIColor lightGrayColor] forState:UIControlStateHighlighted];
-    if([self.workingOrder objectForKey:@"customer_id"] != NULL){
+    if(self.workingOrder.count != 0){
         self.workingView.hidden = NO;
         self.noWorkingView.hidden = YES;
     }else{

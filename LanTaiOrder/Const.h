@@ -22,6 +22,7 @@
 #define kSendCode @"/orders/send_code"
 #define kRefresh @"/orders/refresh"
 #define kPayOrder @"/orders/pay_order"
+#define kcheckIn @"/orders/checkin"
 
 #define kTip @"提示"
 #define kNoReachable @"无网络连接"

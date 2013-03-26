@@ -11,6 +11,8 @@
 @implementation DataService
 
 @synthesize user_id,reserve_count,car_num,reserve_list;
+@synthesize number;
+
 
 - (id)init{
     if (self == [super init]) {

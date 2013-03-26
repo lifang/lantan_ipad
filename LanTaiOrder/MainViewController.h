@@ -8,7 +8,8 @@
 
 #import <UIKit/UIKit.h>
 
-@interface MainViewController : BaseViewController<UITableViewDataSource,UITableViewDelegate>
+@class OrderViewController;
+@interface MainViewController : BaseViewController<UITableViewDataSource,UITableViewDelegate,MBProgressHUDDelegate>
 
 @property (nonatomic,strong) NSMutableArray *waitList;
 
@@ -23,4 +24,5 @@
 - (IBAction)clickRefreshBtn:(id)sender;
 - (IBAction)clickStatusImg:(UIButton *)sender;
 
+@property (nonatomic, strong) OrderViewController *orderView2;
 @end

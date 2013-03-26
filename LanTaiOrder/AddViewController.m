@@ -53,11 +53,21 @@
         stepView_3.hidden = YES;
         stepView_4.hidden = YES;
     }else if ([step intValue]==3) {
-        stepView_0.hidden = YES;
-        stepView_1.hidden = YES;
-        stepView_2.hidden = YES;
-        stepView_3.hidden = NO;
-        stepView_4.hidden = YES;
+        if ([DataService sharedService].number == 1) {
+            stepView_0.hidden = YES;
+            stepView_1.hidden = YES;
+            stepView_2.hidden = YES;
+            stepView_3.hidden = NO;
+            stepView_4.hidden = YES;
+            self.btnNext.hidden = YES;
+            self.btnDone.hidden = NO;
+        }else {
+            stepView_0.hidden = YES;
+            stepView_1.hidden = YES;
+            stepView_2.hidden = YES;
+            stepView_3.hidden = NO;
+            stepView_4.hidden = YES;
+        }
     }else if ([step intValue]==4) {
         self.btnNext.hidden = YES;
         self.btnDone.hidden = NO;
@@ -113,6 +123,7 @@
 
 - (void)viewDidLoad
 {
+    DLog(@"number = %d",[DataService sharedService].number);
     [self initData];
     [super viewDidLoad];
     [self initView];
@@ -146,19 +157,8 @@
 }
 
 - (IBAction)clickFinished:(id)sender{
-    if (selectedIndexs && selectedIndexs.count > 0) {
-        STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kFinish]];
-        NSDictionary *brand  = [brandList objectAtIndex:[brandView selectedRowInComponent:0]];
-        NSString *brandStr = [brand objectForKey:@"id"];
-        NSString *modelStr = @"";
-        if ([[brand objectForKey:@"models"] count]>0) {
-            modelStr = [[[brand objectForKey:@"models"] objectAtIndex:[modelView selectedRowInComponent:0]] objectForKey:@"id"];
-        }
-        NSMutableString *prod_ids = [NSMutableString string];
-        for (NSIndexPath *idx in selectedIndexs) {
-          NSDictionary *prod = [[self.productList objectAtIndex:idx.row] objectAtIndex:idx.section];
-            [prod_ids appendFormat:@"%@_%d,",[prod objectForKey:@"id"],idx.row];
-        }
+    if ([DataService sharedService].number == 1) {
+        STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kcheckIn]];
         NSMutableDictionary *dic = [NSMutableDictionary dictionary];
         [dic setObject:txtCarNum.text forKey:@"carNum"];
         [dic setObject:txtName.text forKey:@"userName"];
@@ -171,48 +171,96 @@
         }
         
         [dic setObject:txtCarYear.text forKey:@"year"];
-        [dic setObject:[NSString stringWithFormat:@"%@_%@",brandStr,modelStr] forKey:@"brand"];
-        [dic setObject:prod_ids forKey:@"prod_ids"];
         [dic setObject:[DataService sharedService].store_id forKey:@"store_id"];
-        if ([customer objectForKey:@"reserv_at"]) {
-          [dic setObject:[customer objectForKey:@"reserv_at"] forKey:@"res_time"];  
+        NSDictionary *brand  = [brandList objectAtIndex:[brandView selectedRowInComponent:0]];
+        NSString *brandStr = [brand objectForKey:@"id"];
+        NSString *modelStr = @"";
+        if ([[brand objectForKey:@"models"] count]>0) {
+            modelStr = [[[brand objectForKey:@"models"] objectAtIndex:[modelView selectedRowInComponent:0]] objectForKey:@"id"];
         }
-        
+        [dic setObject:[NSString stringWithFormat:@"%@_%@",brandStr,modelStr] forKey:@"brand"];
         [r setPostDataEncoding:NSUTF8StringEncoding];
         [r setPOSTDictionary:dic];
-//        DLog(@"%@",dic);
+        
         NSError *error = nil;
         NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
-        DLog(@"%@",result);
+        DLog(@"re = %@",result);
         if ([[result objectForKey:@"status"] intValue]==1) {
-           ConfirmViewController *confirmView = [[ConfirmViewController alloc] initWithNibName:@"ConfirmViewController" bundle:nil];
-            confirmView.productList = [NSMutableArray array];
-            if ([result objectForKey:@"info"]) {
-                confirmView.orderInfo = [result objectForKey:@"info"];
-            }
-            if ([result objectForKey:@"products"]) {
-                [confirmView.productList addObjectsFromArray:[result objectForKey:@"products"]];
-            }
-            if ([result objectForKey:@"sales"]) {
-                [confirmView.productList addObjectsFromArray:[result objectForKey:@"sales"]];
-            }
-            if ([result objectForKey:@"svcards"]) {
-                [confirmView.productList addObjectsFromArray:[result objectForKey:@"svcards"]];
-            }
-            if ([result objectForKey:@"pcards"]) {
-                [confirmView.productList addObjectsFromArray:[result objectForKey:@"pcards"]];
-            }
-            confirmView.total_count = [[result objectForKey:@"total"] floatValue];
-            [self.navigationController pushViewController:confirmView animated:YES];
-        }else if([[result objectForKey:@"status"] intValue] == 2){
+            [self.navigationController popToRootViewControllerAnimated:YES];
+        }else {
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:[result objectForKey:@"content"] delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
             [alert show];
         }
-    }else{
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"请选择所需的产品、服务" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-        [alert show];
+        
+        
+    }else {
+        if (selectedIndexs && selectedIndexs.count > 0) {
+            STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kFinish]];
+            NSDictionary *brand  = [brandList objectAtIndex:[brandView selectedRowInComponent:0]];
+            NSString *brandStr = [brand objectForKey:@"id"];
+            NSString *modelStr = @"";
+            if ([[brand objectForKey:@"models"] count]>0) {
+                modelStr = [[[brand objectForKey:@"models"] objectAtIndex:[modelView selectedRowInComponent:0]] objectForKey:@"id"];
+            }
+            NSMutableString *prod_ids = [NSMutableString string];
+            for (NSIndexPath *idx in selectedIndexs) {
+                NSDictionary *prod = [[self.productList objectAtIndex:idx.row] objectAtIndex:idx.section];
+                [prod_ids appendFormat:@"%@_%d,",[prod objectForKey:@"id"],idx.row];
+            }
+            NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+            [dic setObject:txtCarNum.text forKey:@"carNum"];
+            [dic setObject:txtName.text forKey:@"userName"];
+            [dic setObject:txtPhone.text forKey:@"phone"];
+            if (txtEmail.text.length > 0) {
+                [dic setObject:txtEmail.text forKey:@"email"];
+            }
+            if (txtBirth.text.length>0) {
+                [dic setObject:txtBirth.text forKey:@"birth"];
+            }
+            
+            [dic setObject:txtCarYear.text forKey:@"year"];
+            [dic setObject:[NSString stringWithFormat:@"%@_%@",brandStr,modelStr] forKey:@"brand"];
+            [dic setObject:prod_ids forKey:@"prod_ids"];
+            [dic setObject:[DataService sharedService].store_id forKey:@"store_id"];
+            if ([customer objectForKey:@"reserv_at"]) {
+                [dic setObject:[customer objectForKey:@"reserv_at"] forKey:@"res_time"];
+            }
+            
+            [r setPostDataEncoding:NSUTF8StringEncoding];
+            [r setPOSTDictionary:dic];
+            //        DLog(@"%@",dic);
+            NSError *error = nil;
+            NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
+            DLog(@"%@",result);
+            if ([[result objectForKey:@"status"] intValue]==1) {
+                ConfirmViewController *confirmView = [[ConfirmViewController alloc] initWithNibName:@"ConfirmViewController" bundle:nil];
+                confirmView.productList = [NSMutableArray array];
+                if ([result objectForKey:@"info"]) {
+                    confirmView.orderInfo = [result objectForKey:@"info"];
+                }
+                if ([result objectForKey:@"products"]) {
+                    [confirmView.productList addObjectsFromArray:[result objectForKey:@"products"]];
+                }
+                if ([result objectForKey:@"sales"]) {
+                    [confirmView.productList addObjectsFromArray:[result objectForKey:@"sales"]];
+                }
+                if ([result objectForKey:@"svcards"]) {
+                    [confirmView.productList addObjectsFromArray:[result objectForKey:@"svcards"]];
+                }
+                if ([result objectForKey:@"pcards"]) {
+                    [confirmView.productList addObjectsFromArray:[result objectForKey:@"pcards"]];
+                }
+                confirmView.total_count = [[result objectForKey:@"total"] floatValue];
+                [self.navigationController pushViewController:confirmView animated:YES];
+            }else if([[result objectForKey:@"status"] intValue] == 2){
+                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:[result objectForKey:@"content"] delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+                [alert show];
+            }
+        }else{
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"请选择所需的产品、服务" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+            [alert show];
+        }
     }
-
 }
 
 //上一步，下一步
@@ -226,13 +274,73 @@
         NSString *str = @"";
         if (x==1 && txtCarNum.text.length==0) {
             str = @"请输入你的车牌号";
-        }else if(x==2 && txtCarYear.text.length == 0){
-            str = @"请输入购车时间";
-        }else if(x==3){
+        }
+        //判断购车时间
+        else if(x==2){
+            //获取年份
+            NSDate *now = [NSDate date];
+            NSCalendar *calendar = [NSCalendar currentCalendar];
+            NSUInteger unitFlags = NSYearCalendarUnit;
+            NSDateComponents *dateComponent = [calendar components:unitFlags fromDate:now];
+            int year = [dateComponent year];
+            
+            if (txtCarYear.text.length == 0) {
+                str = @"请输入购车时间";
+            }else {
+                //判断年份
+                NSString *regexCall = @"(19[0-9]{2})|(2[0-9]{3})";
+                NSPredicate *predicateCall = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regexCall];
+                if ([predicateCall evaluateWithObject:txtCarYear.text]) {
+                    int car_year = [txtCarYear.text intValue];
+                    if (car_year > year) {
+                        str = @"请输入准确的购车时间";
+                    }
+                }else {
+                    str = @"请输入准确的购车时间";
+                }
+            }
+        }
+        else if(x==3){
             if(txtName.text.length==0){
                 str = @"请输入您的名称";
-            }else if(txtPhone.text.length == 0){
-                str = @"请输入联系电话";
+            }else {
+                //判断联系电话
+                if(txtPhone.text.length == 0){
+                    str = @"请输入联系电话";
+                }else {
+                    NSString *regexCall = @"((\\d{11})|^((\\d{7,8})|(\\d{4}|\\d{3})-(\\d{7,8})|(\\d{4}|\\d{3})-(\\d{7,8})-(\\d{4}|\\d{3}|\\d{2}|\\d{1})|(\\d{7,8})-(\\d{4}|\\d{3}|\\d{2}|\\d{1}))|(((\\+86)|(86))?+\\d{11})$)";
+                    NSPredicate *predicateCall = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regexCall];
+                    if ([predicateCall evaluateWithObject:txtPhone.text]) {
+                        
+                    }else {
+                        str = @"请输入准确的联系电话";
+                    }
+                }
+                //判断生日
+                if (txtBirth.text.length == 0) {
+                    str = @"请输入出生年月日";
+                }else {
+
+                    NSString *regexCall =@"((19[0-9]{2})|(2[0-9]{3})）-((1[0-2])|(0[1-9]))-((0[1-9])|([1-2][0-9])|3[0-1])";
+                    NSPredicate *predicateCall = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regexCall];
+                    if ([predicateCall evaluateWithObject:txtBirth.text]) {
+                        //获取年份
+                        NSDate *now = [NSDate date];
+                        NSCalendar *calendar = [NSCalendar currentCalendar];
+                        NSUInteger unitFlags = NSYearCalendarUnit;
+                        NSDateComponents *dateComponent = [calendar components:unitFlags fromDate:now];
+                        int year = [dateComponent year];
+                        
+                        NSString *yearStr = [txtBirth.text substringToIndex:4];
+                        int brith_year = [yearStr intValue];
+                        if (brith_year >= year) {
+                            str = @"请输入准确的出生年月日";
+                        }
+                    }else {
+                        str = @"请输入准确的出生年月日";
+                    }
+                }
+                
             }
         }
         if (str.length==0) {
@@ -310,6 +418,7 @@
 //产品，服务的单元格
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath{
     static NSString *CellIdentifier = @"CollectionCell";
+//    NSString *CellIdentifier = [NSString stringWithFormat:@"CollectionCell%d", [indexPath row]];
     CollectionCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:CellIdentifier forIndexPath:indexPath];
     cell.prodName.hidden = YES;
     cell.prodImage.hidden = YES;
@@ -338,6 +447,14 @@
             }
         }
     }
+    
+    //****************判断cell是否已被选中
+    if ([self.selectedIndexs containsObject:indexPath]) {
+        cell.backgroundColor = [UIColor redColor];
+    }else{
+        cell.backgroundColor = [UIColor clearColor];
+    }
+
     
     return cell;
 
@@ -371,17 +488,17 @@
             }
         }
     }
+    //***************刷新页面
+    [self.productsView reloadData];
     
 }
 
 - (BOOL)isSelected:(NSIndexPath *)indexPath{
-    for (NSIndexPath *idx in selectedIndexs) {
-        if ([idx isEqual:indexPath]) {
-            return TRUE;
-            break;
-        }
+    //*****************判断是否选中行已添加进数组
+    if ([self.selectedIndexs containsObject:indexPath]) {
+        return YES;
     }
-    return FALSE;
+    return NO;
 }
 
 @end
