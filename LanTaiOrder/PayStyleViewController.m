@@ -106,7 +106,19 @@
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"请输入验证码！" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
         [alert show];
     }else{
-        [self pay:2];
+        STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@",kSendVerifyCode]];
+        [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:self.txtPhone.text,@"mobilephone",[order objectForKey:@"price"],@"price",self.txtCode.text,@"verify_code",[order objectForKey:@"content"],@"content", nil]];
+        [r setPostDataEncoding:NSUTF8StringEncoding];
+        NSError *error = nil;
+        NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
+        DLog(@"%@",result);
+        if ([[result objectForKey:@"status"] integerValue] == 1) {
+            [self pay:2];
+        }else{
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:[result objectForKey:@"content"] delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+            [alert show];
+        }
+        
     }
 }
 
@@ -116,8 +128,8 @@
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"请输入手机号！" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
         [alert show];
     }else{
-        STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kSendCode]];
-        [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:self.txtPhone.text,@"phone",[order objectForKey:@"order_id"],@"order_id", nil]];
+        STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@",kSendMeg]];
+        [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:self.txtPhone.text,@"mobilephone",[order objectForKey:@"price"],@"price", nil]];
         [r setPostDataEncoding:NSUTF8StringEncoding];
         NSError *error = nil;
         NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];

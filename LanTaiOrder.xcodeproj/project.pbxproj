@@ -45,6 +45,7 @@
 		7053132616E3228200F64A16 /* PayViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7053132416E3228200F64A16 /* PayViewController.xib */; };
 		7053132A16E324E300F64A16 /* ReservationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7053132816E324E300F64A16 /* ReservationViewController.m */; };
 		7053132B16E324E300F64A16 /* ReservationViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7053132916E324E300F64A16 /* ReservationViewController.xib */; };
+		708D385B16FC45D0001E352D /* pic_bg.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 708D385A16FC45D0001E352D /* pic_bg.jpg */; };
 		709995FF16F7FEE50039C761 /* collectioncell_bg.png in Resources */ = {isa = PBXBuildFile; fileRef = 709995FE16F7FEE50039C761 /* collectioncell_bg.png */; };
 		7099960516F8055B0039C761 /* behind.png in Resources */ = {isa = PBXBuildFile; fileRef = 7099960016F8055B0039C761 /* behind.png */; };
 		7099960616F8055B0039C761 /* front.png in Resources */ = {isa = PBXBuildFile; fileRef = 7099960116F8055B0039C761 /* front.png */; };
@@ -165,6 +166,7 @@
 		7053132716E324E300F64A16 /* ReservationViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ReservationViewController.h; sourceTree = "<group>"; };
 		7053132816E324E300F64A16 /* ReservationViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ReservationViewController.m; sourceTree = "<group>"; };
 		7053132916E324E300F64A16 /* ReservationViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ReservationViewController.xib; sourceTree = "<group>"; };
+		708D385A16FC45D0001E352D /* pic_bg.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = pic_bg.jpg; sourceTree = "<group>"; };
 		709995FE16F7FEE50039C761 /* collectioncell_bg.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = collectioncell_bg.png; sourceTree = "<group>"; };
 		7099960016F8055B0039C761 /* behind.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = behind.png; sourceTree = "<group>"; };
 		7099960116F8055B0039C761 /* front.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = front.png; sourceTree = "<group>"; };
