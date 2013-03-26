@@ -16,6 +16,8 @@
 @implementation LoginViewController
 
 @synthesize txtName,txtPwd,loginView;
+@synthesize hud;
+
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -33,14 +35,16 @@
     self.navigationController.navigationBar.hidden = YES;
     [super viewDidLoad];
     CGRect frame = self.txtName.frame;
-    frame.size.height = 35;
+    frame.size.height = 45;
     self.txtName.frame = frame;
     frame = txtPwd.frame;
-    frame.size.height = 35;
+    frame.size.height = 45;
     txtPwd.frame = frame;
     //监听键盘
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyBoardWillShow:) name:UIKeyboardWillShowNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyBoardWillHide:) name: UIKeyboardWillHideNotification object:nil];
+    
+   
 }
 
 - (void)didReceiveMemoryWarning
@@ -67,8 +71,33 @@
     }
     return TRUE;
 }
-
+-(void)login {
+    STHTTPRequest *request = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kLogin]];
+    [request setPOSTDictionary:[NSMutableDictionary dictionaryWithObjectsAndKeys:self.txtName.text,@"user_name",self.txtPwd.text,@"user_password", nil]];
+    [request setPostDataEncoding:NSUTF8StringEncoding];
+    NSError *error = nil;
+    NSString *result = [request startSynchronousWithError:&error];
+    NSDictionary *jsonData = [result objectFromJSONString];
+    //            DLog(@"%@",jsonData);
+    NSString *text = [jsonData objectForKey:@"info"];
+    
+    if (text.length == 0) {
+        NSDictionary *staff = [jsonData objectForKey:@"staff"];
+        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        [defaults setObject:[NSString stringWithFormat:@"%@",[staff objectForKey:@"id"]] forKey:@"userId"];
+        [defaults setObject:[NSString stringWithFormat:@"%@",[staff objectForKey:@"store_id"]] forKey:@"storeId"];
+        [DataService sharedService].user_id = [NSString stringWithFormat:@"%@",[staff objectForKey:@"id"]];
+        [DataService sharedService].store_id = [NSString stringWithFormat:@"%@",[staff objectForKey:@"store_id"]];
+        [(AppDelegate *)[UIApplication sharedApplication].delegate showRootView];
+        
+    }else{
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:text delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+        [alert show];
+    }
+    [MBProgressHUD hideHUDForView:self.loginView animated:YES];
+}
 - (IBAction)clickLogin:(id)sender{
+    
     [self.txtPwd resignFirstResponder];
     [self.txtPwd resignFirstResponder];
     if ([self checkForm]) {
@@ -76,27 +105,11 @@
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
             [alert show];
         }else{
-            STHTTPRequest *request = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kLogin]];
-            [request setPOSTDictionary:[NSMutableDictionary dictionaryWithObjectsAndKeys:self.txtName.text,@"user_name",self.txtPwd.text,@"user_password", nil]];
-            [request setPostDataEncoding:NSUTF8StringEncoding];
-            NSError *error = nil;
-            NSString *result = [request startSynchronousWithError:&error];
-            NSDictionary *jsonData = [result objectFromJSONString];
-//            DLog(@"%@",jsonData);
-            NSString *text = [jsonData objectForKey:@"info"];
-            if (text.length == 0) {
-                NSDictionary *staff = [jsonData objectForKey:@"staff"];
-                NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-                [defaults setObject:[NSString stringWithFormat:@"%@",[staff objectForKey:@"id"]] forKey:@"userId"];
-                [defaults setObject:[NSString stringWithFormat:@"%@",[staff objectForKey:@"store_id"]] forKey:@"storeId"];
-                [DataService sharedService].user_id = [NSString stringWithFormat:@"%@",[staff objectForKey:@"id"]];
-                [DataService sharedService].store_id = [NSString stringWithFormat:@"%@",[staff objectForKey:@"store_id"]];
-                [(AppDelegate *)[UIApplication sharedApplication].delegate showRootView];
- 
-            }else{
-                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:text delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-                [alert show];
-            }
+            self.hud = [[MBProgressHUD alloc] initWithView:self.loginView];
+            hud.dimBackground = NO;
+            [hud showWhileExecuting:@selector(login) onTarget:self withObject:nil animated:YES];
+            hud.labelText = @"正在努力加载...";
+            [self.loginView addSubview:hud];
         }
     }
 }

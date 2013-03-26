@@ -2,17 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>CFBundleURLTypes</key>
-	<array>
-		<dict>
-			<key>CFBundleURLSchemes</key>
-			<array>
-				<string>pospal</string>
-			</array>
-			<key>CFBundleURLName</key>
-			<string>com.comdosoft.pospal</string>
-		</dict>
-	</array>
 	<key>AppId</key>
 	<string>15295652460</string>
 	<key>CFBundleDevelopmentRegion</key>
@@ -33,6 +22,17 @@
 	<string>1.0</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.comdosoft.pospal</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>pospal</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleVersion</key>
 	<string>1.0</string>
 	<key>LSRequiresIPhoneOS</key>

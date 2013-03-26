@@ -19,6 +19,7 @@
 
 @synthesize txtCarNum,lblCount,orderTable,statusImg,mainView;
 @synthesize waitList;
+@synthesize orderView2;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -67,6 +68,7 @@
     CGRect frame = self.txtCarNum.frame;
     frame.size.height = 48;
     self.txtCarNum.frame = frame;
+    
 }
 
 - (void)didReceiveMemoryWarning
@@ -78,6 +80,10 @@
 //刷新按钮
 - (IBAction)clickRefreshBtn:(id)sender{
     if ([DataService sharedService].store_id) {
+        MBProgressHUD *hud = [[MBProgressHUD alloc]init];
+        hud = [MBProgressHUD showHUDAddedTo:self.mainView animated:YES];
+        hud.labelText = @"正在努力加载...";
+        
         STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kRefresh]];
         [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id", nil]];
         [r setPostDataEncoding:NSUTF8StringEncoding];
@@ -87,6 +93,7 @@
             if ([[result objectForKey:@"status"] intValue]==1) {
                [DataService sharedService].reserve_list = [result objectForKey:@"reservation"];
                 self.lblCount.text = [NSString stringWithFormat:@"%d",[[DataService sharedService].reserve_list count]];
+                [MBProgressHUD hideHUDForView:self.mainView animated:YES];
             }
         };
         r.errorBlock = ^(NSError *error){
@@ -96,15 +103,23 @@
     }
 }
 //根据车牌号查询
+-(void)showSearchResult {
+    OrderViewController *orderView = [[OrderViewController alloc] initWithNibName:@"OrderViewController" bundle:nil];
+    orderView.car_num = self.txtCarNum.text;
+    [self.navigationController pushViewController:orderView animated:YES];
+    [MBProgressHUD hideHUDForView:self.mainView animated:YES];
+}
 - (IBAction)clickSearchBtn:(id)sender{
     [txtCarNum resignFirstResponder];
     if(self.txtCarNum.text.length==0){
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"请输入车牌号" delegate:self cancelButtonTitle:@"" otherButtonTitles:nil, nil];
         [alert show];
     }else{
-        OrderViewController *orderView = [[OrderViewController alloc] initWithNibName:@"OrderViewController" bundle:nil];
-        orderView.car_num = self.txtCarNum.text;
-        [self.navigationController pushViewController:orderView animated:YES];
+        MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.mainView];
+        hud.dimBackground = NO;
+        [hud showWhileExecuting:@selector(showSearchResult) onTarget:self withObject:nil animated:YES];
+        hud.labelText = @"正在努力加载...";
+        [self.mainView addSubview:hud];
     }
 }
 
@@ -159,9 +174,28 @@
     cell.selectionStyle = UITableViewCellSelectionStyleBlue;
     return cell;
 }
-
+//施工中的信息
+-(void)showOrderView {
+    [self.navigationController pushViewController:self.orderView2 animated:YES];
+    [MBProgressHUD hideHUDForView:self.mainView animated:YES];
+}
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
+    
+    self.orderView2 = [[OrderViewController alloc] initWithNibName:@"OrderViewController" bundle:nil];
+    NSDictionary *order = [waitList objectAtIndex:indexPath.row];
+    orderView2.car_num = [order objectForKey:@"num"];
+    
+    MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.mainView];
+    hud.dimBackground = NO;
+    [hud showWhileExecuting:@selector(showOrderView) onTarget:self withObject:nil animated:YES];
+    hud.labelText = @"正在努力加载...";
+    [self.mainView addSubview:hud];
+    
+    //施工中的信息
+    
+    
+    
 }
 
 @end

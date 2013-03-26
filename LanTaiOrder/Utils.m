@@ -37,7 +37,7 @@
     NSError *error = nil;
     NSString *result = [r startSynchronousWithError:&error];
     NSDictionary *jsonData = [result objectFromJSONString];
-    DLog(@"%@",jsonData);
+//    DLog(@"%@",jsonData);
     if ([[jsonData objectForKey:@"status"] intValue] == 1) {
         if ([jsonData objectForKey:@"reservations"]!=nil) {
             NSMutableArray *arr = [NSMutableArray arrayWithArray:[jsonData objectForKey:@"reservations"]];
@@ -90,5 +90,6 @@
             result[12], result[13], result[14], result[15]
             ];
 }
+
 
 @end

@@ -11,6 +11,8 @@
 #import "MainViewController.h"
 
 @implementation AppDelegate
+@synthesize versionUrlStr,definitionData;
+
 
 - (void)showRootView{
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -40,9 +42,54 @@
     [self showRootView];
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
+    
+//    //新版本链接
+//    //获取appstore中的应用版本信息
+//    //异步请求信息
+//    self.definitionData = [NSMutableData data];//数据缓存对象
+//    //实际上架后需要更改应用id 
+//    NSURL *url=[NSURL URLWithString:@"http://itunes.apple.com/lookup?id=584371753"];
+//    NSURLRequest *req = [NSURLRequest requestWithURL:url];
+//	[NSURLConnection connectionWithRequest:req delegate:self];
+    
     return YES;
 }
 
+- (void)connection:(NSURLConnection *)connection didReceiveData:(NSData *)data {
+	[self.definitionData appendData:data];
+}
+
+- (void)connectionDidFinishLoading:(NSURLConnection *)connection {
+    NSError *error=nil;
+    NSDictionary *jsonData=[NSJSONSerialization JSONObjectWithData:self.definitionData options:NSJSONReadingMutableLeaves error:&error];
+    NSArray *infoArray = [jsonData objectForKey:@"results"];
+    if ([infoArray count]>0) {
+        NSDictionary *releaseInfo = [infoArray objectAtIndex:0];
+        NSString *latestVersion = [releaseInfo objectForKey:@"version"];
+        NSString *trackViewUrl = [releaseInfo objectForKey:@"trackViewUrl"];
+        self.versionUrlStr=trackViewUrl;
+        
+        NSString* appver=[[[NSBundle mainBundle] infoDictionary] objectForKey:@"CFBundleVersion"];
+        
+        double clientVer = [appver doubleValue];
+        double serverVer = [latestVersion doubleValue];
+        if (clientVer>=serverVer) {
+            
+        }else {
+            NSString *message = [NSString stringWithFormat:@"软件有最新版本%@，您是否升级？",latestVersion];
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:message delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
+            [alert show];
+        }
+    }
+}
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
+    if (buttonIndex == 0) {
+        [alertView dismissWithClickedButtonIndex:0 animated:YES];
+    }else {
+        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:self.versionUrlStr]];
+        [alertView dismissWithClickedButtonIndex:1 animated:YES];
+    }
+}
 - (void)applicationWillResignActive:(UIApplication *)application
 {
     // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.

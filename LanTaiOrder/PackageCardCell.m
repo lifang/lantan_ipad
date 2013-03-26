@@ -74,7 +74,7 @@
 - (void)clickSwitch:(UISwitch *)sender{
     NSMutableDictionary *dic = [[selectedArr objectAtIndex:sender.tag - 100] mutableCopy];
     CGFloat x = [self.lblPrice.text floatValue];
-    int num = [dic objectForKey:@"num"];
+    int num = [[dic objectForKey:@"num"]intValue];
     if ([sender isOn]) {
         x -= [[dic objectForKey:@"product_price"] floatValue];
         [dic setValue:@"1" forKey:@"selected"];

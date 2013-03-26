@@ -11,5 +11,5 @@
 @interface ProductCell : UITableViewCell
 
 @property (nonatomic,strong) UILabel *lblName,*lblPrice;
-
+@property (nonatomic,strong) UIImageView *imageview;
 @end

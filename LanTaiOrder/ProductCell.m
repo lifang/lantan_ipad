@@ -11,6 +11,7 @@
 @implementation ProductCell
 
 @synthesize lblPrice,lblName;
+@synthesize imageView;
 
 - (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier
 {
@@ -21,6 +22,12 @@
         lblName.backgroundColor = [UIColor clearColor];
         lblName.textAlignment = NSTextAlignmentCenter;
         [self addSubview:lblName];
+        
+        imageView = [[UIImageView alloc]initWithFrame:CGRectMake(300, 0, 1, 44)];
+        UIImage *image = [UIImage imageNamed:@"divider"];
+        imageView.image = image; 
+        [self addSubview:imageView];
+        
         frame.origin.x += 400;
         frame.size.width = 100;
         lblPrice = [[UILabel alloc] initWithFrame:frame];
