@@ -167,6 +167,7 @@
         [dic setObject:[orderInfo objectForKey:@"id"] forKey:@"order_id"];
         [dic setObject:[NSNumber numberWithInt:sender.selectedSegmentIndex] forKey:@"is_please"];
         [dic setObject:[orderInfo objectForKey:@"total"] forKey:@"price"];
+        [dic setObject:[orderInfo objectForKey:@"content"] forKey:@"content"];
         payStyleView.order = [NSMutableDictionary dictionaryWithDictionary:dic];
         [self presentPopupViewController:payStyleView animationType:MJPopupViewAnimationSlideBottomBottom];
     }

@@ -6,7 +6,9 @@
 //  Copyright (c) 2013年 LanTai. All rights reserved.
 //
 
-#define kHost @"http://192.168.0.115:3000/api"
+#define kHost @"http://192.168.0.108:3000/api"
+#define kSendMeg @"http://192.168.0.105:3001/apis/get_user_svcard"
+#define kSendVerifyCode @"http://192.168.0.105:3001/apis/use_svcard"
 
 #define kLogin @"/orders/login"
 #define kIndex @"/orders/index_list"

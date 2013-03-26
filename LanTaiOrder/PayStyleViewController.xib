@@ -235,6 +235,7 @@
 								<bool key="IBUIAdjustsFontSizeToFit">YES</bool>
 								<float key="IBUIMinimumFontSize">17</float>
 								<object class="IBUITextInputTraits" key="IBUITextInputTraits">
+									<int key="IBUIKeyboardType">4</int>
 									<string key="targetRuntimeIdentifier">IBCocoaTouchFramework</string>
 								</object>
 								<object class="IBUIFontDescription" key="IBUIFontDescription">
@@ -650,6 +651,7 @@
 					<dictionary class="NSMutableDictionary" key="actions">
 						<string key="clickCodeBtn:">id</string>
 						<string key="clickSendCode:">id</string>
+						<string key="closePopup:">UISegmentedControl</string>
 					</dictionary>
 					<dictionary class="NSMutableDictionary" key="actionInfosByName">
 						<object class="IBActionInfo" key="clickCodeBtn:">
@@ -659,6 +661,10 @@
 						<object class="IBActionInfo" key="clickSendCode:">
 							<string key="name">clickSendCode:</string>
 							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="closePopup:">
+							<string key="name">closePopup:</string>
+							<string key="candidateClassName">UISegmentedControl</string>
 						</object>
 					</dictionary>
 					<dictionary class="NSMutableDictionary" key="outlets">
