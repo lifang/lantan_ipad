@@ -437,7 +437,7 @@
                     cell.contentView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"collectioncell_bg"]];
                 }
                 if (![[prod objectForKey:@"img"] isEqual:[NSNull null]]) {
-                    cell.prodImage.image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:[prod objectForKey:@"img"]]]];
+                    cell.prodImage.image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",kDomain,[prod objectForKey:@"img"]]]]];
                 }
                 
             }else{
