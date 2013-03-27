@@ -252,7 +252,7 @@
                 }
                 confirmView.total_count = [[result objectForKey:@"total"] floatValue];
                 [self.navigationController pushViewController:confirmView animated:YES];
-            }else if([[result objectForKey:@"status"] intValue] == 2){
+            }else{
                 UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:[result objectForKey:@"content"] delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
                 [alert show];
             }
