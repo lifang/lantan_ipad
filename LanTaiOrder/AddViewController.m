@@ -266,10 +266,40 @@
             if ([result objectForKey:@"pcards"]) {
                 [confirmView.productList addObjectsFromArray:[result objectForKey:@"pcards"]];
             }
+            [r setPostDataEncoding:NSUTF8StringEncoding];
+            [r setPOSTDictionary:dic];
+            //        DLog(@"%@",dic);
+            NSError *error = nil;
+            NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
+            DLog(@"%@",result);
+            if ([[result objectForKey:@"status"] intValue]==1) {
+                ConfirmViewController *confirmView = [[ConfirmViewController alloc] initWithNibName:@"ConfirmViewController" bundle:nil];
+                confirmView.productList = [NSMutableArray array];
+                if ([result objectForKey:@"info"]) {
+                    confirmView.orderInfo = [result objectForKey:@"info"];
+                }
+                if ([result objectForKey:@"products"]) {
+                    [confirmView.productList addObjectsFromArray:[result objectForKey:@"products"]];
+                }
+                if ([result objectForKey:@"sales"]) {
+                    [confirmView.productList addObjectsFromArray:[result objectForKey:@"sales"]];
+                }
+                if ([result objectForKey:@"svcards"]) {
+                    [confirmView.productList addObjectsFromArray:[result objectForKey:@"svcards"]];
+                }
+                if ([result objectForKey:@"pcards"]) {
+                    [confirmView.productList addObjectsFromArray:[result objectForKey:@"pcards"]];
+                }
+                confirmView.total_count = [[result objectForKey:@"total"] floatValue];
+                [self.navigationController pushViewController:confirmView animated:YES];
+            }else{
+                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:[result objectForKey:@"content"] delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+                [alert show];
+            }
             confirmView.total_count = [[result objectForKey:@"total"] floatValue];
             [self.navigationController pushViewController:confirmView animated:YES];
             [MBProgressHUD hideHUDForView:self.view animated:YES];
-        }else if([[result objectForKey:@"status"] intValue] == 2){
+        }else{
             [MBProgressHUD hideHUDForView:self.view animated:YES];
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:[result objectForKey:@"content"] delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
             [alert show];
@@ -470,7 +500,7 @@
                     cell.contentView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"collectioncell_bg"]];
                 }
                 if (![[prod objectForKey:@"img"] isEqual:[NSNull null]]) {
-                    cell.prodImage.image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:[prod objectForKey:@"img"]]]];
+                    cell.prodImage.image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",kDomain,[prod objectForKey:@"img"]]]]];
                 }
                 
             }else{
