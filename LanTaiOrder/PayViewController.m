@@ -172,7 +172,22 @@
         [self presentPopupViewController:payStyleView animationType:MJPopupViewAnimationSlideBottomBottom];
     }
 }
-
+-(void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    if ([DataService sharedService].payNumber == 1) {
+        //评价，弹出框
+        payStyleView = nil;
+        payStyleView = [[PayStyleViewController alloc] initWithNibName:@"PayStyleViewController" bundle:nil];
+        payStyleView.delegate = self;
+        NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+        [dic setObject:[orderInfo objectForKey:@"id"] forKey:@"order_id"];
+        [dic setObject:[NSNumber numberWithInt:0] forKey:@"is_please"];
+        [dic setObject:[orderInfo objectForKey:@"total"] forKey:@"price"];
+        [dic setObject:[orderInfo objectForKey:@"content"] forKey:@"content"];
+        payStyleView.order = [NSMutableDictionary dictionaryWithDictionary:dic];
+        [self presentPopupViewController:payStyleView animationType:MJPopupViewAnimationSlideBottomBottom];
+    }
+}
 - (void)closePopView:(PayStyleViewController *)payStyleViewController{
     [self dismissPopupViewControllerWithanimationType:MJPopupViewAnimationFade];
     if (payStyleViewController.isSuccess) {

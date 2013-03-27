@@ -382,10 +382,6 @@
 											<reference ref="4"/>
 											<reference ref="4"/>
 										</array>
-										<object class="NSColor" key="IBTintColor">
-											<int key="NSColorSpace">1</int>
-											<bytes key="NSRGB">MC41NzY0NzA1ODgyIDAuMDA3ODQzMTM3MjU1IDAuMDE5NjA3ODQzMTQAA</bytes>
-										</object>
 									</object>
 								</array>
 								<string key="NSFrame">{{122, 462}, {600, 80}}</string>
@@ -776,8 +772,8 @@
 		<bool key="IBDocument.PluginDeclaredDependenciesTrackSystemTargetVersion">YES</bool>
 		<int key="IBDocument.defaultPropertyAccessControl">3</int>
 		<dictionary class="NSMutableDictionary" key="IBDocument.LastKnownImageSizes">
-			<string key="lbl_bg.png">{16, 16}</string>
-			<string key="p_head_1.png">{16, 16}</string>
+			<string key="lbl_bg.png">{150, 29}</string>
+			<string key="p_head_1.png">{600, 44}</string>
 		</dictionary>
 		<string key="IBCocoaTouchPluginVersion">1930</string>
 	</data>

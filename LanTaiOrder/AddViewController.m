@@ -148,6 +148,20 @@
         [self.stepImg setImage:[UIImage imageNamed:[NSString stringWithFormat:@"step_%@",step]]];
     }
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"view_bg"]];
+    
+    //键盘
+    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(hideKeyboard:)];
+    tap.delegate = self;
+    [self.view addGestureRecognizer:tap];
+}
+
+-(void)hideKeyboard:(UITapGestureRecognizer *)recognizer{
+    [txtCarNum resignFirstResponder];
+    [txtCarYear resignFirstResponder];
+    [txtName resignFirstResponder];
+    [txtBirth resignFirstResponder];
+    [txtEmail resignFirstResponder];
+    [txtPhone resignFirstResponder];
 }
 
 - (void)didReceiveMemoryWarning
@@ -156,9 +170,59 @@
     // Dispose of any resources that can be recreated.
 }
 
-- (IBAction)clickFinished:(id)sender{
-    if ([DataService sharedService].number == 1) {
-        STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kcheckIn]];
+//完成登记
+-(void)finishInfo {
+    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kcheckIn]];
+    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+    [dic setObject:txtCarNum.text forKey:@"carNum"];
+    [dic setObject:txtName.text forKey:@"userName"];
+    [dic setObject:txtPhone.text forKey:@"phone"];
+    if (txtEmail.text.length > 0) {
+        [dic setObject:txtEmail.text forKey:@"email"];
+    }
+    if (txtBirth.text.length>0) {
+        [dic setObject:txtBirth.text forKey:@"birth"];
+    }
+    
+    [dic setObject:txtCarYear.text forKey:@"year"];
+    [dic setObject:[DataService sharedService].store_id forKey:@"store_id"];
+    NSDictionary *brand  = [brandList objectAtIndex:[brandView selectedRowInComponent:0]];
+    NSString *brandStr = [brand objectForKey:@"id"];
+    NSString *modelStr = @"";
+    if ([[brand objectForKey:@"models"] count]>0) {
+        modelStr = [[[brand objectForKey:@"models"] objectAtIndex:[modelView selectedRowInComponent:0]] objectForKey:@"id"];
+    }
+    [dic setObject:[NSString stringWithFormat:@"%@_%@",brandStr,modelStr] forKey:@"brand"];
+    [r setPostDataEncoding:NSUTF8StringEncoding];
+    [r setPOSTDictionary:dic];
+    
+    NSError *error = nil;
+    NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
+    if ([[result objectForKey:@"status"] intValue]==1) {
+        [self.navigationController popToRootViewControllerAnimated:YES];
+        [MBProgressHUD hideHUDForView:self.view animated:YES];
+    }else {
+        [MBProgressHUD hideHUDForView:self.view animated:YES];
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:[result objectForKey:@"content"] delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+        [alert show];
+    }
+
+}
+//完成下单
+-(void)finishOrder {
+    if (selectedIndexs && selectedIndexs.count > 0) {
+        STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kFinish]];
+        NSDictionary *brand  = [brandList objectAtIndex:[brandView selectedRowInComponent:0]];
+        NSString *brandStr = [brand objectForKey:@"id"];
+        NSString *modelStr = @"";
+        if ([[brand objectForKey:@"models"] count]>0) {
+            modelStr = [[[brand objectForKey:@"models"] objectAtIndex:[modelView selectedRowInComponent:0]] objectForKey:@"id"];
+        }
+        NSMutableString *prod_ids = [NSMutableString string];
+        for (NSIndexPath *idx in selectedIndexs) {
+            NSDictionary *prod = [[self.productList objectAtIndex:idx.row] objectAtIndex:idx.section];
+            [prod_ids appendFormat:@"%@_%d,",[prod objectForKey:@"id"],idx.row];
+        }
         NSMutableDictionary *dic = [NSMutableDictionary dictionary];
         [dic setObject:txtCarNum.text forKey:@"carNum"];
         [dic setObject:txtName.text forKey:@"userName"];
@@ -171,95 +235,64 @@
         }
         
         [dic setObject:txtCarYear.text forKey:@"year"];
-        [dic setObject:[DataService sharedService].store_id forKey:@"store_id"];
-        NSDictionary *brand  = [brandList objectAtIndex:[brandView selectedRowInComponent:0]];
-        NSString *brandStr = [brand objectForKey:@"id"];
-        NSString *modelStr = @"";
-        if ([[brand objectForKey:@"models"] count]>0) {
-            modelStr = [[[brand objectForKey:@"models"] objectAtIndex:[modelView selectedRowInComponent:0]] objectForKey:@"id"];
-        }
         [dic setObject:[NSString stringWithFormat:@"%@_%@",brandStr,modelStr] forKey:@"brand"];
+        [dic setObject:prod_ids forKey:@"prod_ids"];
+        [dic setObject:[DataService sharedService].store_id forKey:@"store_id"];
+        if ([customer objectForKey:@"reserv_at"]) {
+            [dic setObject:[customer objectForKey:@"reserv_at"] forKey:@"res_time"];
+        }
+        
         [r setPostDataEncoding:NSUTF8StringEncoding];
         [r setPOSTDictionary:dic];
-        
+        //        DLog(@"%@",dic);
         NSError *error = nil;
         NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
-        DLog(@"re = %@",result);
+        DLog(@"%@",result);
         if ([[result objectForKey:@"status"] intValue]==1) {
-            [self.navigationController popToRootViewControllerAnimated:YES];
-        }else {
+            ConfirmViewController *confirmView = [[ConfirmViewController alloc] initWithNibName:@"ConfirmViewController" bundle:nil];
+            confirmView.productList = [NSMutableArray array];
+            if ([result objectForKey:@"info"]) {
+                confirmView.orderInfo = [result objectForKey:@"info"];
+            }
+            if ([result objectForKey:@"products"]) {
+                [confirmView.productList addObjectsFromArray:[result objectForKey:@"products"]];
+            }
+            if ([result objectForKey:@"sales"]) {
+                [confirmView.productList addObjectsFromArray:[result objectForKey:@"sales"]];
+            }
+            if ([result objectForKey:@"svcards"]) {
+                [confirmView.productList addObjectsFromArray:[result objectForKey:@"svcards"]];
+            }
+            if ([result objectForKey:@"pcards"]) {
+                [confirmView.productList addObjectsFromArray:[result objectForKey:@"pcards"]];
+            }
+            confirmView.total_count = [[result objectForKey:@"total"] floatValue];
+            [self.navigationController pushViewController:confirmView animated:YES];
+            [MBProgressHUD hideHUDForView:self.view animated:YES];
+        }else if([[result objectForKey:@"status"] intValue] == 2){
+            [MBProgressHUD hideHUDForView:self.view animated:YES];
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:[result objectForKey:@"content"] delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
             [alert show];
         }
-        
-        
+    }else{
+        [MBProgressHUD hideHUDForView:self.view animated:YES];
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"请选择所需的产品、服务" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+        [alert show];
+    }
+}
+- (IBAction)clickFinished:(id)sender{
+    if ([DataService sharedService].number == 1) {
+        MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+        hud.dimBackground = NO;
+        [hud showWhileExecuting:@selector(finishInfo) onTarget:self withObject:nil animated:YES];
+        hud.labelText = @"正在努力加载...";
+        [self.view addSubview:hud];
     }else {
-        if (selectedIndexs && selectedIndexs.count > 0) {
-            STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kFinish]];
-            NSDictionary *brand  = [brandList objectAtIndex:[brandView selectedRowInComponent:0]];
-            NSString *brandStr = [brand objectForKey:@"id"];
-            NSString *modelStr = @"";
-            if ([[brand objectForKey:@"models"] count]>0) {
-                modelStr = [[[brand objectForKey:@"models"] objectAtIndex:[modelView selectedRowInComponent:0]] objectForKey:@"id"];
-            }
-            NSMutableString *prod_ids = [NSMutableString string];
-            for (NSIndexPath *idx in selectedIndexs) {
-                NSDictionary *prod = [[self.productList objectAtIndex:idx.row] objectAtIndex:idx.section];
-                [prod_ids appendFormat:@"%@_%d,",[prod objectForKey:@"id"],idx.row];
-            }
-            NSMutableDictionary *dic = [NSMutableDictionary dictionary];
-            [dic setObject:txtCarNum.text forKey:@"carNum"];
-            [dic setObject:txtName.text forKey:@"userName"];
-            [dic setObject:txtPhone.text forKey:@"phone"];
-            if (txtEmail.text.length > 0) {
-                [dic setObject:txtEmail.text forKey:@"email"];
-            }
-            if (txtBirth.text.length>0) {
-                [dic setObject:txtBirth.text forKey:@"birth"];
-            }
-            
-            [dic setObject:txtCarYear.text forKey:@"year"];
-            [dic setObject:[NSString stringWithFormat:@"%@_%@",brandStr,modelStr] forKey:@"brand"];
-            [dic setObject:prod_ids forKey:@"prod_ids"];
-            [dic setObject:[DataService sharedService].store_id forKey:@"store_id"];
-            if ([customer objectForKey:@"reserv_at"]) {
-                [dic setObject:[customer objectForKey:@"reserv_at"] forKey:@"res_time"];
-            }
-            
-            [r setPostDataEncoding:NSUTF8StringEncoding];
-            [r setPOSTDictionary:dic];
-            //        DLog(@"%@",dic);
-            NSError *error = nil;
-            NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
-            DLog(@"%@",result);
-            if ([[result objectForKey:@"status"] intValue]==1) {
-                ConfirmViewController *confirmView = [[ConfirmViewController alloc] initWithNibName:@"ConfirmViewController" bundle:nil];
-                confirmView.productList = [NSMutableArray array];
-                if ([result objectForKey:@"info"]) {
-                    confirmView.orderInfo = [result objectForKey:@"info"];
-                }
-                if ([result objectForKey:@"products"]) {
-                    [confirmView.productList addObjectsFromArray:[result objectForKey:@"products"]];
-                }
-                if ([result objectForKey:@"sales"]) {
-                    [confirmView.productList addObjectsFromArray:[result objectForKey:@"sales"]];
-                }
-                if ([result objectForKey:@"svcards"]) {
-                    [confirmView.productList addObjectsFromArray:[result objectForKey:@"svcards"]];
-                }
-                if ([result objectForKey:@"pcards"]) {
-                    [confirmView.productList addObjectsFromArray:[result objectForKey:@"pcards"]];
-                }
-                confirmView.total_count = [[result objectForKey:@"total"] floatValue];
-                [self.navigationController pushViewController:confirmView animated:YES];
-            }else if([[result objectForKey:@"status"] intValue] == 2){
-                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:[result objectForKey:@"content"] delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-                [alert show];
-            }
-        }else{
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"请选择所需的产品、服务" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-            [alert show];
-        }
+        MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+        hud.dimBackground = NO;
+        [hud showWhileExecuting:@selector(finishOrder) onTarget:self withObject:nil animated:YES];
+        hud.labelText = @"正在努力加载...";
+        [self.view addSubview:hud];
     }
 }
 

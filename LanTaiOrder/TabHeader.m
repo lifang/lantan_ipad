@@ -16,7 +16,7 @@
 {
     self = [super initWithFrame:frame];
     if (self) {
-        CGRect frame = CGRectMake(0, 1, 180, 43);
+        CGRect frame = CGRectMake(0, 1, 180, 42);
         lbl_1 = [[UILabel alloc] initWithFrame:frame];
         lbl_1.textAlignment = NSTextAlignmentCenter;
         lbl_1.text = @"订单号";

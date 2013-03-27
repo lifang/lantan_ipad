@@ -189,36 +189,47 @@
     }
     return prod_ids;
 }
-
+//确认核对信息
+-(void)confirm {
+    NSString *str = [self checkForm];
+    //确定生成订单后进入订单详情页面
+    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kDone]];
+    NSMutableDictionary *data = [NSMutableDictionary dictionary];
+    [data setObject:[orderInfo objectForKey:@"c_id"] forKey:@"c_id"];
+    [data setObject:[orderInfo objectForKey:@"car_num_id"] forKey:@"car_num_id"];
+    [data setObject:[orderInfo objectForKey:@"start"] forKey:@"start"];
+    [data setObject:[orderInfo objectForKey:@"end"] forKey:@"end"];
+    [data setObject:[orderInfo objectForKey:@"station_id"] forKey:@"station_id"];
+    [data setObject:[DataService sharedService].store_id forKey:@"store_id"];
+    [data setObject:[DataService sharedService].user_id forKey:@"user_id"];
+    [data setObject:[NSString stringWithFormat:@"%.2f",self.total_count] forKey:@"price"];
+    [data setObject:[str substringToIndex:str.length - 1] forKey:@"prods"];
+    [r setPOSTDictionary:data];
+    [r setPostDataEncoding:NSUTF8StringEncoding];
+    NSError *error = nil;
+    NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
+    DLog(@"%@",result);
+    if ([[result objectForKey:@"status"] intValue]==1) {
+        PayViewController *payView  = [[PayViewController alloc] initWithNibName:@"PayViewController" bundle:nil];
+        payView.orderInfo = [result objectForKey:@"order"];
+        [self.navigationController pushViewController:payView animated:YES];
+        [MBProgressHUD hideHUDForView:self.view animated:YES];
+    }else{
+        [MBProgressHUD hideHUDForView:self.view animated:YES];
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:[result objectForKey:@"content"] delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+        [alert show];
+    }
+}
 - (IBAction)clickConfirm:(id)sender{
     NSString *str = [self checkForm];
     DLog(@"%@",[DataService sharedService].user_id);
     if ([str length]>0 && [[DataService sharedService].user_id intValue] > 0) {
         //确定生成订单后进入订单详情页面
-        STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kDone]];
-        NSMutableDictionary *data = [NSMutableDictionary dictionary];
-        [data setObject:[orderInfo objectForKey:@"c_id"] forKey:@"c_id"];
-        [data setObject:[orderInfo objectForKey:@"car_num_id"] forKey:@"car_num_id"];
-        [data setObject:[orderInfo objectForKey:@"start"] forKey:@"start"];
-        [data setObject:[orderInfo objectForKey:@"end"] forKey:@"end"];
-        [data setObject:[orderInfo objectForKey:@"station_id"] forKey:@"station_id"];
-        [data setObject:[DataService sharedService].store_id forKey:@"store_id"];
-        [data setObject:[DataService sharedService].user_id forKey:@"user_id"];
-        [data setObject:[NSString stringWithFormat:@"%.2f",self.total_count] forKey:@"price"];
-        [data setObject:[str substringToIndex:str.length - 1] forKey:@"prods"];
-        [r setPOSTDictionary:data];
-        [r setPostDataEncoding:NSUTF8StringEncoding];
-        NSError *error = nil;
-        NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
-        DLog(@"%@",result);
-        if ([[result objectForKey:@"status"] intValue]==1) {
-            PayViewController *payView  = [[PayViewController alloc] initWithNibName:@"PayViewController" bundle:nil];
-            payView.orderInfo = [result objectForKey:@"order"];
-            [self.navigationController pushViewController:payView animated:YES];
-        }else{
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:[result objectForKey:@"content"] delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-            [alert show];
-        }
+        MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+        hud.dimBackground = NO;
+        [hud showWhileExecuting:@selector(confirm) onTarget:self withObject:nil animated:YES];
+        hud.labelText = @"正在努力加载...";
+        [self.view addSubview:hud];
     }else if([[DataService sharedService].user_id intValue] == 0){
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"请登录" delegate:self cancelButtonTitle:@"" otherButtonTitles:nil, nil];
         [alert show];

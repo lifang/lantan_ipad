@@ -388,8 +388,8 @@
 		<bool key="IBDocument.PluginDeclaredDependenciesTrackSystemTargetVersion">YES</bool>
 		<int key="IBDocument.defaultPropertyAccessControl">3</int>
 		<dictionary class="NSMutableDictionary" key="IBDocument.LastKnownImageSizes">
-			<string key="lantan_login.png">{16, 16}</string>
-			<string key="lantan_login_active.png">{16, 16}</string>
+			<string key="lantan_login.png">{200, 45}</string>
+			<string key="lantan_login_active.png">{200, 45}</string>
 		</dictionary>
 		<string key="IBCocoaTouchPluginVersion">1930</string>
 	</data>

@@ -263,21 +263,30 @@
 }
 
 //取消订单（未施工）
+-(void)cancleOrder {
+    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kPayOrder]];
+    [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[workingOrder objectForKey:@"id"],@"order_id",@"1",@"opt_type", nil]];
+    [r setPostDataEncoding:NSUTF8StringEncoding];
+    NSError *error = nil;
+    NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
+    if ([[result objectForKey:@"status"] intValue]==1) {
+        [MBProgressHUD hideHUDForView:self.view animated:YES];
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"订单已取消" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+        [alert show];
+        [self.navigationController popToRootViewControllerAnimated:YES];
+    }else{
+        [MBProgressHUD hideHUDForView:self.view animated:YES];
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"订单取消失败" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+        [alert show];
+    }
+}
 - (IBAction)clickCancel:(id)sender{
     if ([workingOrder objectForKey:@"id"] != NULL) {
-        STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kPayOrder]];
-        [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[workingOrder objectForKey:@"id"],@"order_id",@"1",@"opt_type", nil]];
-        [r setPostDataEncoding:NSUTF8StringEncoding];
-        NSError *error = nil;
-        NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
-        if ([[result objectForKey:@"status"] intValue]==1) {
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"订单已取消" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-            [alert show];
-            [self.navigationController popToRootViewControllerAnimated:YES];
-        }else{
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"订单取消失败" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-            [alert show];
-        }
+        MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+        hud.dimBackground = NO;
+        [hud showWhileExecuting:@selector(cancleOrder) onTarget:self withObject:nil animated:YES];
+        hud.labelText = @"正在努力加载...";
+        [self.view addSubview:hud];
     }
 }
 
@@ -322,20 +331,34 @@
 }
 
 //付款
-- (IBAction)clickPay:(id)sender{
-    if ([workingOrder objectForKey:@"id"] != NULL) {
-        STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kPayOrder]];
-        [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[workingOrder objectForKey:@"id"],@"order_id",@"0",@"opt_type", nil]];
-        [r setPostDataEncoding:NSUTF8StringEncoding];
-        NSError *error = nil;
-        NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
-        if ([[result objectForKey:@"status"] intValue]==1) {
-            PayViewController *payView  = [[PayViewController alloc] initWithNibName:@"PayViewController" bundle:nil];
-            payView.orderInfo = [result objectForKey:@"order"];
-            [self.navigationController pushViewController:payView animated:YES];
-        }
+-(void)pay {
+    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kPayOrder]];
+    [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[workingOrder objectForKey:@"id"],@"order_id",@"0",@"opt_type", nil]];
+    [r setPostDataEncoding:NSUTF8StringEncoding];
+    NSError *error = nil;
+    NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
+    if ([[result objectForKey:@"status"] intValue]==1) {
+        PayViewController *payView  = [[PayViewController alloc] initWithNibName:@"PayViewController" bundle:nil];
+        payView.orderInfo = [result objectForKey:@"order"];
+        [self.navigationController pushViewController:payView animated:YES];
+        [MBProgressHUD hideHUDForView:self.view animated:YES];
+    }else {
+        [MBProgressHUD hideHUDForView:self.view animated:YES];
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"加载失败" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+        [alert show];
     }
 }
+- (IBAction)clickPay:(id)sender{
+    if ([workingOrder objectForKey:@"id"] != NULL) {
+        MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+        hud.dimBackground = NO;
+        [hud showWhileExecuting:@selector(pay) onTarget:self withObject:nil animated:YES];
+        hud.labelText = @"正在努力加载...";
+        [self.view addSubview:hud];
+
+    }
+}
+
 
 - (IBAction)clickPic:(id)sender{
     picView = [[PicViewController alloc] initWithNibName:@"PicViewController" bundle:nil];

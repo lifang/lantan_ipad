@@ -11,7 +11,7 @@
 @implementation DataService
 
 @synthesize user_id,reserve_count,car_num,reserve_list;
-@synthesize number;
+@synthesize number,payNumber;
 
 
 - (id)init{

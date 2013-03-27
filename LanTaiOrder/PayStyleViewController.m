@@ -21,31 +21,42 @@
 @synthesize billingBtn;
 @synthesize isSuccess,codeStr;
 @synthesize payStyle,phoneView,codeView,txtCode,txtPhone;
+@synthesize payType;
 
 //支付
+-(void)payWithType {
+    STHTTPRequest *r  = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kPay]];
+    NSString *billing = @"1";
+    if (self.billingBtn.isOn) {
+        billing = @"1";
+    }else{
+        billing = @"0";
+    }
+    [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[order objectForKey:@"order_id"],@"order_id",[order objectForKey:@"is_please"],@"please",[DataService sharedService].store_id,@"store_id",billing,@"billing",[NSNumber numberWithInt:self.payType],@"pay_type",self.txtCode.text,@"code", nil]];
+    [r setPostDataEncoding:NSUTF8StringEncoding];
+    NSError *error = nil;
+    NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
+    DLog(@"%@",result);
+    if ([[result objectForKey:@"status"] intValue]==1) {
+        [MBProgressHUD hideHUDForView:self.view animated:YES];
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"交易成功！" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+        [alert show];
+        isSuccess = TRUE;
+    }else{
+        [MBProgressHUD hideHUDForView:self.view animated:YES];
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:[NSString stringWithFormat:@"交易失败,%@！",[result objectForKey:@"content"]] delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+        [alert show];
+        isSuccess = FALSE;
+    }
+}
 - (void)pay:(int)type{
+    self.payType = type;
     if (self.order) {
-        STHTTPRequest *r  = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kPay]];
-        NSString *billing = @"1";
-        if (self.billingBtn.isOn) {
-            billing = @"1";
-        }else{
-            billing = @"0";
-        }
-        [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[order objectForKey:@"order_id"],@"order_id",[order objectForKey:@"is_please"],@"please",[DataService sharedService].store_id,@"store_id",billing,@"billing",[NSNumber numberWithInt:type],@"pay_type",self.txtCode.text,@"code", nil]];
-        [r setPostDataEncoding:NSUTF8StringEncoding];
-        NSError *error = nil;
-        NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
-        DLog(@"%@",result);
-        if ([[result objectForKey:@"status"] intValue]==1) {
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"交易成功！" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-            [alert show];
-            isSuccess = TRUE;
-        }else{
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:[NSString stringWithFormat:@"交易失败,%@！",[result objectForKey:@"content"]] delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-            [alert show];
-            isSuccess = FALSE;
-        }
+        MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+        hud.dimBackground = NO;
+        [hud showWhileExecuting:@selector(payWithType) onTarget:self withObject:nil animated:YES];
+        hud.labelText = @"正在努力加载...";
+        [self.view addSubview:hud];
     }
     if (self.delegate && [self.delegate respondsToSelector:@selector(closePopView:)]) {
         [self.delegate closePopView:self];
@@ -101,30 +112,39 @@
 }
 
 //提交输入的验证码
+-(void)code {
+    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@",kSendVerifyCode]];
+    [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:self.txtPhone.text,@"mobilephone",[order objectForKey:@"price"],@"price",self.txtCode.text,@"verify_code",[order objectForKey:@"content"],@"content", nil]];
+    [r setPostDataEncoding:NSUTF8StringEncoding];
+    NSError *error = nil;
+    NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
+    DLog(@"%@",result);
+    if ([[result objectForKey:@"status"] integerValue] == 1) {
+        [self pay:2];
+        [MBProgressHUD hideHUDForView:self.view animated:YES];
+    }else{
+        [MBProgressHUD hideHUDForView:self.view animated:YES];
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:[result objectForKey:@"content"] delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+        [alert show];
+    }
+}
 - (IBAction)clickCodeBtn:(id)sender{
     if (self.txtCode.text.length == 0) {
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"请输入验证码！" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
         [alert show];
     }else{
-        STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@",kSendVerifyCode]];
-        [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:self.txtPhone.text,@"mobilephone",[order objectForKey:@"price"],@"price",self.txtCode.text,@"verify_code",[order objectForKey:@"content"],@"content", nil]];
-        [r setPostDataEncoding:NSUTF8StringEncoding];
-        NSError *error = nil;
-        NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
-        DLog(@"%@",result);
-        if ([[result objectForKey:@"status"] integerValue] == 1) {
-            [self pay:2];
-        }else{
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:[result objectForKey:@"content"] delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-            [alert show];
-        }
-        
+        MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+        hud.dimBackground = NO;
+        [hud showWhileExecuting:@selector(code) onTarget:self withObject:nil animated:YES];
+        hud.labelText = @"正在努力加载...";
+        [self.view addSubview:hud];
     }
 }
 
 //发送验证码
-- (IBAction)clickSendCode:(id)sender{
+-(void)sendCode {
     if (self.txtPhone.text.length == 0) {
+        [MBProgressHUD hideHUDForView:self.view animated:YES];
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"请输入手机号！" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
         [alert show];
     }else{
@@ -138,11 +158,20 @@
             self.codeView.hidden = NO;
             self.phoneView.hidden = YES;
             self.payStyle.hidden = YES;
+            [MBProgressHUD hideHUDForView:self.view animated:YES];
         }else{
+            [MBProgressHUD hideHUDForView:self.view animated:YES];
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"输入的号码有误！" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
             [alert show];
         }
     }
+}
+- (IBAction)clickSendCode:(id)sender{
+    MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+    hud.dimBackground = NO;
+    [hud showWhileExecuting:@selector(sendCode) onTarget:self withObject:nil animated:YES];
+    hud.labelText = @"正在努力加载...";
+    [self.view addSubview:hud];
 }
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
@@ -157,6 +186,7 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    self.payType = -1;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(payResult:) name:@"payQFPOS" object:nil];
     self.payStyle.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"alert_bg"]];
     self.phoneView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"alert_bg"]];

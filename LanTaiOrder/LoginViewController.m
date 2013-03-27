@@ -16,7 +16,7 @@
 @implementation LoginViewController
 
 @synthesize txtName,txtPwd,loginView;
-@synthesize hud;
+
 
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
@@ -105,7 +105,7 @@
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
             [alert show];
         }else{
-            self.hud = [[MBProgressHUD alloc] initWithView:self.loginView];
+            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.loginView];
             hud.dimBackground = NO;
             [hud showWhileExecuting:@selector(login) onTarget:self withObject:nil animated:YES];
             hud.labelText = @"正在努力加载...";

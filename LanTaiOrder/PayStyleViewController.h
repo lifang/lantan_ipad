@@ -20,6 +20,7 @@
 @property (nonatomic,strong) IBOutlet UITextField *txtPhone,*txtCode;
 
 @property (nonatomic,strong) NSString *codeStr;
+@property (nonatomic,assign) int payType;
 
 - (IBAction)clickSendCode:(id)sender;
 - (IBAction)clickCodeBtn:(id)sender;
