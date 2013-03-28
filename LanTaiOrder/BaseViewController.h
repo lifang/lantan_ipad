@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface BaseViewController : UIViewController<UIGestureRecognizerDelegate>
+@interface BaseViewController : UIViewController
 
 - (void)addLeftnaviItemWithImage:(NSString *)imageName;
 - (void)addRightnaviItemWithImage:(NSString *)imageName;

@@ -69,14 +69,8 @@
     frame.size.height = 48;
     self.txtCarNum.frame = frame;
     
-//    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(hideKeyboard:)];
-//    tap.delegate = self;
-//    [self.view addGestureRecognizer:tap];
-    
 }
-//-(void)hideKeyboard:(UITapGestureRecognizer *)recognizer{
-//    [txtCarNum resignFirstResponder];
-//}
+
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];

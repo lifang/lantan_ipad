@@ -34,7 +34,7 @@
 @property (nonatomic,strong) NSMutableArray *picArray;//图片的数组
 @property (nonatomic,strong) NSMutableArray *dataArray;//从plist读取数据的数组
 
-
+@property (nonatomic,strong) NSString *car_num;
 
 - (IBAction)clickNext:(id)sender;
 - (IBAction)clickFinished:(id)sender;

@@ -270,7 +270,7 @@
     NSError *error = nil;
     NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
     if ([[result objectForKey:@"status"] intValue]==1) {
-        
+        [MBProgressHUD hideHUDForView:self.view animated:YES];
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"订单已取消" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
         [alert show];
         [self.navigationController popToRootViewControllerAnimated:YES];
@@ -301,14 +301,25 @@
     [self.navigationController pushViewController:self.addOrderView animated:YES];
     [MBProgressHUD hideHUDForView:self.view animated:YES];
 }
+-(void)addView {
+    self.addOrderView = [[AddViewController alloc] initWithNibName:@"AddViewController" bundle:nil];
+//    self.addOrderView.customer = [NSMutableDictionary dictionaryWithDictionary:self.customer];
+    self.addOrderView.step = @"0";
+    self.addOrderView.car_num = self.car_num;//车牌号
+    [self.navigationController pushViewController:self.addOrderView animated:YES];
+    [MBProgressHUD hideHUDForView:self.view animated:YES];
+}
 - (IBAction)clickDone:(id)sender{
     UIButton *btn = (UIButton *)sender;
     
     if (btn.tag==101) {
-        self.addOrderView = [[AddViewController alloc] initWithNibName:@"AddViewController" bundle:nil];
-        self.addOrderView.customer = [NSMutableDictionary dictionaryWithDictionary:self.customer];
-        self.addOrderView.step = @"0";
-        [self.navigationController pushViewController:self.addOrderView animated:YES];
+        MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+        hud.dimBackground = NO;
+        [hud showWhileExecuting:@selector(addView) onTarget:self withObject:nil animated:YES];
+        hud.labelText = @"正在努力加载...";
+        [self.view addSubview:hud];
+        
+        
     }else if (btn.tag==100){
         MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
         hud.dimBackground = NO;
@@ -317,7 +328,6 @@
         [self.view addSubview:hud];
         
     }
-    
 }
 
 - (IBAction)clickOld:(id)sender{
@@ -368,11 +378,20 @@
 }
 
 //或登记信息
-- (IBAction)clickReg:(id)sender{
+-(void)reg {
     AddViewController *addOrder = [[AddViewController alloc] initWithNibName:@"AddViewController" bundle:nil];
     addOrder.step = @"1";
+    addOrder.car_num = self.car_num;//车牌号
     [DataService sharedService].number = 1;
     [self.navigationController pushViewController:addOrder animated:YES];
+    [MBProgressHUD hideHUDForView:self.view animated:YES];
+}
+- (IBAction)clickReg:(id)sender{
+    MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+    hud.dimBackground = NO;
+    [hud showWhileExecuting:@selector(reg) onTarget:self withObject:nil animated:YES];
+    hud.labelText = @"正在努力加载...";
+    [self.view addSubview:hud];
 }
 
 - (IBAction)clickWorking:(id)sender{
