@@ -270,15 +270,16 @@
     NSError *error = nil;
     NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
     if ([[result objectForKey:@"status"] intValue]==1) {
-        [MBProgressHUD hideHUDForView:self.view animated:YES];
+        
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"订单已取消" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
         [alert show];
         [self.navigationController popToRootViewControllerAnimated:YES];
     }else{
-        [MBProgressHUD hideHUDForView:self.view animated:YES];
+        
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"订单取消失败" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
         [alert show];
     }
+    [MBProgressHUD hideHUDForView:self.view animated:YES];
 }
 - (IBAction)clickCancel:(id)sender{
     if ([workingOrder objectForKey:@"id"] != NULL) {
@@ -341,12 +342,11 @@
         PayViewController *payView  = [[PayViewController alloc] initWithNibName:@"PayViewController" bundle:nil];
         payView.orderInfo = [result objectForKey:@"order"];
         [self.navigationController pushViewController:payView animated:YES];
-        [MBProgressHUD hideHUDForView:self.view animated:YES];
     }else {
-        [MBProgressHUD hideHUDForView:self.view animated:YES];
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"加载失败" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
         [alert show];
     }
+    [MBProgressHUD hideHUDForView:self.view animated:YES];
 }
 - (IBAction)clickPay:(id)sender{
     if ([workingOrder objectForKey:@"id"] != NULL) {

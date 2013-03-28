@@ -213,12 +213,11 @@
         PayViewController *payView  = [[PayViewController alloc] initWithNibName:@"PayViewController" bundle:nil];
         payView.orderInfo = [result objectForKey:@"order"];
         [self.navigationController pushViewController:payView animated:YES];
-        [MBProgressHUD hideHUDForView:self.view animated:YES];
     }else{
-        [MBProgressHUD hideHUDForView:self.view animated:YES];
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:[result objectForKey:@"content"] delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
         [alert show];
     }
+    [MBProgressHUD hideHUDForView:self.view animated:YES];
 }
 - (IBAction)clickConfirm:(id)sender{
     NSString *str = [self checkForm];

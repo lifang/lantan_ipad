@@ -186,8 +186,11 @@
         [dic setObject:[orderInfo objectForKey:@"content"] forKey:@"content"];
         payStyleView.order = [NSMutableDictionary dictionaryWithDictionary:dic];
         [self presentPopupViewController:payStyleView animationType:MJPopupViewAnimationSlideBottomBottom];
+        
+        [DataService sharedService].payNumber = 0;
     }
 }
+
 - (void)closePopView:(PayStyleViewController *)payStyleViewController{
     [self dismissPopupViewControllerWithanimationType:MJPopupViewAnimationFade];
     if (payStyleViewController.isSuccess) {

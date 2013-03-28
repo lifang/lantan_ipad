@@ -38,15 +38,17 @@
     NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
     DLog(@"%@",result);
     if ([[result objectForKey:@"status"] intValue]==1) {
-        [MBProgressHUD hideHUDForView:self.view animated:YES];
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"交易成功！" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
         [alert show];
         isSuccess = TRUE;
     }else{
-        [MBProgressHUD hideHUDForView:self.view animated:YES];
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:[NSString stringWithFormat:@"交易失败,%@！",[result objectForKey:@"content"]] delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
         [alert show];
         isSuccess = FALSE;
+    }
+    [MBProgressHUD hideHUDForView:self.view animated:YES];
+    if (self.delegate && [self.delegate respondsToSelector:@selector(closePopView:)]) {
+        [self.delegate closePopView:self];
     }
 }
 - (void)pay:(int)type{
@@ -58,9 +60,7 @@
         hud.labelText = @"正在努力加载...";
         [self.view addSubview:hud];
     }
-    if (self.delegate && [self.delegate respondsToSelector:@selector(closePopView:)]) {
-        [self.delegate closePopView:self];
-    }
+    
 }
 
 //刷卡支付，调用钱方
@@ -121,12 +121,11 @@
     DLog(@"%@",result);
     if ([[result objectForKey:@"status"] integerValue] == 1) {
         [self pay:2];
-        [MBProgressHUD hideHUDForView:self.view animated:YES];
     }else{
-        [MBProgressHUD hideHUDForView:self.view animated:YES];
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:[result objectForKey:@"content"] delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
         [alert show];
     }
+    [MBProgressHUD hideHUDForView:self.view animated:YES];
 }
 - (IBAction)clickCodeBtn:(id)sender{
     if (self.txtCode.text.length == 0) {
@@ -144,7 +143,6 @@
 //发送验证码
 -(void)sendCode {
     if (self.txtPhone.text.length == 0) {
-        [MBProgressHUD hideHUDForView:self.view animated:YES];
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"请输入手机号！" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
         [alert show];
     }else{
@@ -158,13 +156,12 @@
             self.codeView.hidden = NO;
             self.phoneView.hidden = YES;
             self.payStyle.hidden = YES;
-            [MBProgressHUD hideHUDForView:self.view animated:YES];
         }else{
-            [MBProgressHUD hideHUDForView:self.view animated:YES];
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"输入的号码有误！" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
             [alert show];
         }
     }
+    [MBProgressHUD hideHUDForView:self.view animated:YES];
 }
 - (IBAction)clickSendCode:(id)sender{
     MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];

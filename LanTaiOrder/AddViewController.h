@@ -31,6 +31,11 @@
 @property (nonatomic,strong) NSMutableDictionary *brandResult,*customer;
 @property (nonatomic,strong) NSMutableArray *brandList,*productList,*selectedIndexs;
 
+@property (nonatomic,strong) NSMutableArray *picArray;//图片的数组
+@property (nonatomic,strong) NSMutableArray *dataArray;//从plist读取数据的数组
+
+
+
 - (IBAction)clickNext:(id)sender;
 - (IBAction)clickFinished:(id)sender;
 

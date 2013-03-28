@@ -69,14 +69,14 @@
     frame.size.height = 48;
     self.txtCarNum.frame = frame;
     
-    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(hideKeyboard:)];
-    tap.delegate = self;
-    [self.view addGestureRecognizer:tap];
+//    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(hideKeyboard:)];
+//    tap.delegate = self;
+//    [self.view addGestureRecognizer:tap];
     
 }
--(void)hideKeyboard:(UITapGestureRecognizer *)recognizer{
-    [txtCarNum resignFirstResponder];
-}
+//-(void)hideKeyboard:(UITapGestureRecognizer *)recognizer{
+//    [txtCarNum resignFirstResponder];
+//}
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
@@ -187,7 +187,7 @@
 }
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
-    
+    [txtCarNum resignFirstResponder];
     self.orderView2 = [[OrderViewController alloc] initWithNibName:@"OrderViewController" bundle:nil];
     NSDictionary *order = [waitList objectAtIndex:indexPath.row];
     orderView2.car_num = [order objectForKey:@"num"];

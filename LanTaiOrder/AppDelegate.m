@@ -20,6 +20,7 @@
 //    DLog(@"%@--------%i",userInfo,[userInfo isEqualToString:@""]);
     if (userInfo != nil) {
         [DataService sharedService].store_id = [defaults objectForKey:@"storeId"];
+        [DataService sharedService].user_id = userInfo;
         MainViewController *messageView = [[MainViewController alloc] initWithNibName:@"MainViewController" bundle:nil];
         UINavigationController *navigationView = [[UINavigationController alloc] initWithRootViewController:messageView];
         //设置导航条背景

@@ -12,13 +12,15 @@
 
 @end
 
-@implementation AddViewController
+#define PICTURE @"pic"
 
+@implementation AddViewController
 @synthesize stepView_0,stepView_1,stepView_2,stepView_3,stepView_4,step,btnDone,btnNext,btnPre;
 @synthesize picView_0,picView_1,picView_2,picView_3,stepImg;
 @synthesize brandView,modelView,productsView;
 @synthesize txtBirth,txtCarNum,txtCarYear,txtEmail,txtName,txtPhone;
 @synthesize getPic,brandList,brandResult,productList,selectedIndexs,customer;
+@synthesize picArray,dataArray;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -98,6 +100,59 @@
     frame.size.height = 162.0;
     self.modelView.frame = frame;
 }
+-(NSString *)getDoucmentFilePathLittleImageWithName:(NSString *)theName {
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask, YES);
+    NSString *documentsDirectory=[paths    objectAtIndex:0];
+    NSString *savePath=[documentsDirectory stringByAppendingPathComponent:theName];
+    //创建文件管理器
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    //判断temp文件夹是否存在
+    BOOL fileExists = [fileManager fileExistsAtPath:savePath];
+    if (!fileExists) {
+        [fileManager createDirectoryAtPath:savePath
+               withIntermediateDirectories:YES
+                                attributes:nil
+                                     error:nil];
+    }
+    return savePath;
+}
+//读取plist文件
+-(void)getPci {
+    NSFileManager *fileManage = [NSFileManager defaultManager];
+    NSArray *paths=NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask,YES);
+    NSString *path=[paths    objectAtIndex:0];
+    NSString *filename=[path stringByAppendingPathComponent:@"pic.plist"];
+    if ([fileManage fileExistsAtPath:filename]) {
+        NSMutableArray *array = [[NSMutableArray alloc]initWithContentsOfFile:filename];
+        self.dataArray = array;
+        DLog(@"%@",self.dataArray);
+        [fileManage removeItemAtPath:filename error:nil];
+        
+	}else {
+        NSMutableArray *array = [[NSMutableArray alloc ]initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"pic" ofType:@"plist"]];
+        self.dataArray = array;
+    }
+    
+    if (self.dataArray.count == 0) {
+        self.dataArray = [NSMutableArray array];
+    }
+}
+
+//把图片保存至沙盒
+-(void)savePhotoDataWithfile:(NSString *)theFile andImage:(UIImage *)theImage andName:(NSString *)theName {
+    //创建文件管理器
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    //判断temp文件夹是否存在
+    BOOL fileExists = [fileManager fileExistsAtPath:theFile];
+    if (!fileExists) {
+        [fileManager createDirectoryAtPath:theFile
+               withIntermediateDirectories:YES
+                                attributes:nil
+                                     error:nil];
+    }
+    NSString *uniquePath=[theFile stringByAppendingPathComponent:theName];
+    [UIImagePNGRepresentation(theImage) writeToFile: uniquePath    atomically:YES];
+}
 
 - (void)initData{
     STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kBrandProduct]];
@@ -111,8 +166,99 @@
         self.brandList = [NSMutableArray arrayWithArray:[result objectForKey:@"brands"]];
         self.productList = [NSMutableArray arrayWithArray:[result objectForKey:@"products"]];
     }
-}
 
+    self.picArray = [NSMutableArray array];
+    [self getPci];
+    if (self.productList.count>0) {
+        NSMutableArray *tempArray = [[NSMutableArray alloc]init];//临时数组
+        for (int i=0; i<self.productList.count-1; i++) {
+            NSMutableArray *arrayPic = [self.productList objectAtIndex:i];
+            NSMutableArray *array = [[NSMutableArray alloc]init];
+            if (arrayPic.count>0) {
+                for (int j=0; j<arrayPic.count; j++) {
+                    NSDictionary *picDic = [[NSDictionary alloc]initWithDictionary:[arrayPic objectAtIndex:j]];
+                    NSString *pic = [picDic objectForKey:@"img"];
+                    
+                    UIImage *image = nil;
+                    if (![pic isEqualToString:@""]) {
+                        NSString *urlstring = [NSString stringWithFormat:@"%@%@",kDomain,pic];//图片的路径
+                        NSString *typeStr = [urlstring substringFromIndex:urlstring.length-4];//取图片的格式
+                        NSString *urlStringMd5 = [Utils MD5:urlstring];
+                        NSString *picName = [NSString stringWithFormat:@"%@%@",urlStringMd5,typeStr];//保存的图片名称
+                        NSDictionary *picDictionary = [NSDictionary dictionaryWithObjectsAndKeys:urlstring,picName, nil];//保存到plist的字典
+                        //遍历plist数组，查看本地是否有保存
+                        if (self.dataArray.count > 0) {
+                            BOOL exit = NO;
+                            int i=0;
+                            while (i<self.dataArray.count) {
+                                NSDictionary *dictionary = [self.dataArray objectAtIndex:i];
+                                if ([dictionary isEqualToDictionary:picDictionary]) {
+                                    DLog(@"在数组里");
+                                    exit = YES;
+                                    NSString *picDocument = [self getDoucmentFilePathLittleImageWithName:PICTURE];//保存图片的文件夹
+                                    NSString *picture = [picDocument stringByAppendingPathComponent:picName];//保存图片的路径
+                                    //直接从沙盒读取图片
+                                    NSData *imageData=[[NSData alloc ]initWithContentsOfFile:picture];
+                                    image = [UIImage imageWithData:imageData];
+                                    
+                                    break;
+                                }
+                                i++;
+                            }
+                            //不在plist里面
+                            if (exit == NO) {
+                                image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",kDomain,pic]]]];
+                                NSString *picDocument = [self getDoucmentFilePathLittleImageWithName:PICTURE];
+                                [self savePhotoDataWithfile:picDocument andImage:image andName:picName];//保存图片
+                                [tempArray addObject:picDictionary];
+                            }
+                        }else {//plist为空
+                            image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",kDomain,pic]]]];
+                            NSString *picDocument = [self getDoucmentFilePathLittleImageWithName:PICTURE];
+                            [self savePhotoDataWithfile:picDocument andImage:image andName:picName];//保存图片
+                            [tempArray addObject:picDictionary];
+                        }
+                        
+                        [array addObject:image];
+                    }else {
+                        image = [UIImage imageNamed:@"close_btn"];
+                        [array addObject:image];
+                    }
+                }
+            }
+            [self.picArray addObject:array];
+        }
+        if (tempArray.count>0) {
+            [self.dataArray addObjectsFromArray:tempArray];
+        }
+        DLog(@"self.data = %@",self.dataArray);
+        //保存到plist
+        NSString *filename=[self getHistoryPath];
+        NSMutableArray *arraySave =[[NSMutableArray alloc]initWithContentsOfFile:filename];
+        [arraySave addObjectsFromArray:self.dataArray];
+        [arraySave writeToFile:filename atomically:YES];
+    }
+    
+    DLog(@"picArray = %@",self.picArray);
+    
+}
+//保存到plist文件
+-(NSString*)getHistoryPath {
+    NSArray *paths=NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask,YES);
+    NSString *path=[paths    objectAtIndex:0];
+    NSString *filename=[path stringByAppendingPathComponent:@"pic.plist"];
+    if ([[NSFileManager defaultManager] fileExistsAtPath:filename])//判断文件是否已存在
+    {
+        
+    }
+    else
+    {
+        NSMutableArray *array=[NSMutableArray array];
+        [array writeToFile:filename atomically:YES];
+    }
+    return filename;
+    
+}
 - (void)initProdView{
    [self.productsView registerClass:[CollectionCell class] forCellWithReuseIdentifier:@"CollectionCell"];
     [self.productsView registerClass:[CollectionHeader class] forSupplementaryViewOfKind:@"CollectionHeader" withReuseIdentifier:@"CollectionHeader"];
@@ -123,7 +269,7 @@
 
 - (void)viewDidLoad
 {
-    DLog(@"number = %d",[DataService sharedService].number);
+    self.picArray = [NSMutableArray array];
     [self initData];
     [super viewDidLoad];
     [self initView];
@@ -149,20 +295,20 @@
     }
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"view_bg"]];
     
-    //键盘
-    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(hideKeyboard:)];
-    tap.delegate = self;
-    [self.view addGestureRecognizer:tap];
+//    //键盘
+//    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(hideKeyboard:)];
+//    tap.delegate = self;
+//    [self.view addGestureRecognizer:tap];
 }
 
--(void)hideKeyboard:(UITapGestureRecognizer *)recognizer{
-    [txtCarNum resignFirstResponder];
-    [txtCarYear resignFirstResponder];
-    [txtName resignFirstResponder];
-    [txtBirth resignFirstResponder];
-    [txtEmail resignFirstResponder];
-    [txtPhone resignFirstResponder];
-}
+//-(void)hideKeyboard:(UITapGestureRecognizer *)recognizer{
+//    [txtCarNum resignFirstResponder];
+//    [txtCarYear resignFirstResponder];
+//    [txtName resignFirstResponder];
+//    [txtBirth resignFirstResponder];
+//    [txtEmail resignFirstResponder];
+//    [txtPhone resignFirstResponder];
+//}
 
 - (void)didReceiveMemoryWarning
 {
@@ -200,12 +346,11 @@
     NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
     if ([[result objectForKey:@"status"] intValue]==1) {
         [self.navigationController popToRootViewControllerAnimated:YES];
-        [MBProgressHUD hideHUDForView:self.view animated:YES];
     }else {
-        [MBProgressHUD hideHUDForView:self.view animated:YES];
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:[result objectForKey:@"content"] delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
         [alert show];
     }
+    [MBProgressHUD hideHUDForView:self.view animated:YES];
 
 }
 //完成下单
@@ -266,49 +411,17 @@
             if ([result objectForKey:@"pcards"]) {
                 [confirmView.productList addObjectsFromArray:[result objectForKey:@"pcards"]];
             }
-            [r setPostDataEncoding:NSUTF8StringEncoding];
-            [r setPOSTDictionary:dic];
-            //        DLog(@"%@",dic);
-            NSError *error = nil;
-            NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
-            DLog(@"%@",result);
-            if ([[result objectForKey:@"status"] intValue]==1) {
-                ConfirmViewController *confirmView = [[ConfirmViewController alloc] initWithNibName:@"ConfirmViewController" bundle:nil];
-                confirmView.productList = [NSMutableArray array];
-                if ([result objectForKey:@"info"]) {
-                    confirmView.orderInfo = [result objectForKey:@"info"];
-                }
-                if ([result objectForKey:@"products"]) {
-                    [confirmView.productList addObjectsFromArray:[result objectForKey:@"products"]];
-                }
-                if ([result objectForKey:@"sales"]) {
-                    [confirmView.productList addObjectsFromArray:[result objectForKey:@"sales"]];
-                }
-                if ([result objectForKey:@"svcards"]) {
-                    [confirmView.productList addObjectsFromArray:[result objectForKey:@"svcards"]];
-                }
-                if ([result objectForKey:@"pcards"]) {
-                    [confirmView.productList addObjectsFromArray:[result objectForKey:@"pcards"]];
-                }
-                confirmView.total_count = [[result objectForKey:@"total"] floatValue];
-                [self.navigationController pushViewController:confirmView animated:YES];
-            }else{
-                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:[result objectForKey:@"content"] delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-                [alert show];
-            }
             confirmView.total_count = [[result objectForKey:@"total"] floatValue];
             [self.navigationController pushViewController:confirmView animated:YES];
-            [MBProgressHUD hideHUDForView:self.view animated:YES];
         }else{
-            [MBProgressHUD hideHUDForView:self.view animated:YES];
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:[result objectForKey:@"content"] delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
             [alert show];
         }
     }else{
-        [MBProgressHUD hideHUDForView:self.view animated:YES];
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"请选择所需的产品、服务" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
         [alert show];
     }
+    [MBProgressHUD hideHUDForView:self.view animated:YES];
 }
 - (IBAction)clickFinished:(id)sender{
     if ([DataService sharedService].number == 1) {
@@ -317,6 +430,7 @@
         [hud showWhileExecuting:@selector(finishInfo) onTarget:self withObject:nil animated:YES];
         hud.labelText = @"正在努力加载...";
         [self.view addSubview:hud];
+        [DataService sharedService].number =0;
     }else {
         MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
         hud.dimBackground = NO;
@@ -500,7 +614,8 @@
                     cell.contentView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"collectioncell_bg"]];
                 }
                 if (![[prod objectForKey:@"img"] isEqual:[NSNull null]]) {
-                    cell.prodImage.image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",kDomain,[prod objectForKey:@"img"]]]]];
+//                    cell.prodImage.image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",kDomain,[prod objectForKey:@"img"]]]]];
+                    cell.prodImage.image = [[self.picArray objectAtIndex:x]objectAtIndex:indexPath.section];
                 }
                 
             }else{

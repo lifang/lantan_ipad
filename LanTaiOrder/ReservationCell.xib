@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <archive type="com.apple.InterfaceBuilder3.CocoaTouch.iPad.XIB" version="8.00">
 	<data>
-		<int key="IBDocument.SystemTarget">1552</int>
-		<string key="IBDocument.SystemVersion">12D78</string>
-		<string key="IBDocument.InterfaceBuilderVersion">3084</string>
-		<string key="IBDocument.AppKitVersion">1187.37</string>
-		<string key="IBDocument.HIToolboxVersion">626.00</string>
+		<int key="IBDocument.SystemTarget">1536</int>
+		<string key="IBDocument.SystemVersion">12B2080</string>
+		<string key="IBDocument.InterfaceBuilderVersion">2844</string>
+		<string key="IBDocument.AppKitVersion">1187</string>
+		<string key="IBDocument.HIToolboxVersion">624.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.IBCocoaTouchPlugin</string>
-			<string key="NS.object.0">2083</string>
+			<string key="NS.object.0">1930</string>
 		</object>
 		<array key="IBDocument.IntegratedClassDependencies">
 			<string>IBProxyObject</string>
@@ -46,7 +46,6 @@
 								<int key="NSvFlags">292</int>
 								<string key="NSFrame">{{14, 31}, {138, 21}}</string>
 								<reference key="NSSuperview" ref="797973448"/>
-								<reference key="NSWindow"/>
 								<reference key="NSNextKeyView" ref="311054497"/>
 								<string key="NSReuseIdentifierKey">_NS:9</string>
 								<bool key="IBUIOpaque">NO</bool>
@@ -80,7 +79,6 @@
 								<int key="NSvFlags">292</int>
 								<string key="NSFrame">{{156, 31}, {90, 21}}</string>
 								<reference key="NSSuperview" ref="797973448"/>
-								<reference key="NSWindow"/>
 								<reference key="NSNextKeyView" ref="495744197"/>
 								<string key="NSReuseIdentifierKey">_NS:9</string>
 								<bool key="IBUIOpaque">NO</bool>
@@ -104,7 +102,6 @@
 								<int key="NSvFlags">292</int>
 								<string key="NSFrame">{{247, 31}, {90, 21}}</string>
 								<reference key="NSSuperview" ref="797973448"/>
-								<reference key="NSWindow"/>
 								<reference key="NSNextKeyView" ref="260131226"/>
 								<string key="NSReuseIdentifierKey">_NS:9</string>
 								<bool key="IBUIOpaque">NO</bool>
@@ -128,7 +125,6 @@
 								<int key="NSvFlags">292</int>
 								<string key="NSFrame">{{337, 31}, {101, 21}}</string>
 								<reference key="NSSuperview" ref="797973448"/>
-								<reference key="NSWindow"/>
 								<reference key="NSNextKeyView" ref="419944442"/>
 								<string key="NSReuseIdentifierKey">_NS:9</string>
 								<bool key="IBUIOpaque">NO</bool>
@@ -152,7 +148,6 @@
 								<int key="NSvFlags">292</int>
 								<string key="NSFrame">{{460, 31}, {140, 21}}</string>
 								<reference key="NSSuperview" ref="797973448"/>
-								<reference key="NSWindow"/>
 								<reference key="NSNextKeyView" ref="449732601"/>
 								<string key="NSReuseIdentifierKey">_NS:9</string>
 								<bool key="IBUIOpaque">NO</bool>
@@ -176,7 +171,6 @@
 								<int key="NSvFlags">292</int>
 								<string key="NSFrame">{{815, 2}, {80, 37}}</string>
 								<reference key="NSSuperview" ref="797973448"/>
-								<reference key="NSWindow"/>
 								<reference key="NSNextKeyView" ref="454147476"/>
 								<string key="NSReuseIdentifierKey">_NS:9</string>
 								<bool key="IBUIOpaque">NO</bool>
@@ -210,8 +204,6 @@
 								<int key="NSvFlags">292</int>
 								<string key="NSFrame">{{815, 43}, {80, 37}}</string>
 								<reference key="NSSuperview" ref="797973448"/>
-								<reference key="NSWindow"/>
-								<reference key="NSNextKeyView"/>
 								<string key="NSReuseIdentifierKey">_NS:9</string>
 								<bool key="IBUIOpaque">NO</bool>
 								<string key="targetRuntimeIdentifier">IBIPadFramework</string>
@@ -231,7 +223,6 @@
 								<int key="NSvFlags">292</int>
 								<string key="NSFrame">{{751, 31}, {50, 21}}</string>
 								<reference key="NSSuperview" ref="797973448"/>
-								<reference key="NSWindow"/>
 								<reference key="NSNextKeyView" ref="674669478"/>
 								<string key="NSReuseIdentifierKey">_NS:9</string>
 								<bool key="IBUIOpaque">NO</bool>
@@ -255,7 +246,6 @@
 								<int key="NSvFlags">292</int>
 								<string key="NSFrame">{{607, 31}, {136, 30}}</string>
 								<reference key="NSSuperview" ref="797973448"/>
-								<reference key="NSWindow"/>
 								<reference key="NSNextKeyView" ref="294277176"/>
 								<string key="NSReuseIdentifierKey">_NS:9</string>
 								<bool key="IBUIOpaque">NO</bool>
@@ -290,7 +280,6 @@
 						</array>
 						<string key="NSFrameSize">{900, 83}</string>
 						<reference key="NSSuperview" ref="73710872"/>
-						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="655718485"/>
 						<string key="NSReuseIdentifierKey">_NS:11</string>
 						<object class="NSColor" key="IBUIBackgroundColor">
@@ -306,7 +295,6 @@
 				</array>
 				<string key="NSFrameSize">{900, 84}</string>
 				<reference key="NSSuperview"/>
-				<reference key="NSWindow"/>
 				<reference key="NSNextKeyView" ref="797973448"/>
 				<string key="NSReuseIdentifierKey">_NS:9</string>
 				<object class="NSColor" key="IBUIBackgroundColor">
@@ -516,89 +504,15 @@
 			<nil key="sourceID"/>
 			<int key="maxID">60</int>
 		</object>
-		<object class="IBClassDescriber" key="IBDocument.Classes">
-			<array class="NSMutableArray" key="referencedPartialClassDescriptions">
-				<object class="IBPartialClassDescription">
-					<string key="className">ReservationCell</string>
-					<string key="superclassName">UITableViewCell</string>
-					<dictionary class="NSMutableDictionary" key="actions">
-						<string key="clickCancel:">id</string>
-						<string key="clickConfirm:">id</string>
-					</dictionary>
-					<dictionary class="NSMutableDictionary" key="actionInfosByName">
-						<object class="IBActionInfo" key="clickCancel:">
-							<string key="name">clickCancel:</string>
-							<string key="candidateClassName">id</string>
-						</object>
-						<object class="IBActionInfo" key="clickConfirm:">
-							<string key="name">clickConfirm:</string>
-							<string key="candidateClassName">id</string>
-						</object>
-					</dictionary>
-					<dictionary class="NSMutableDictionary" key="outlets">
-						<string key="btnCancel">UIButton</string>
-						<string key="btnConfirm">UIButton</string>
-						<string key="lblCarNum">UILabel</string>
-						<string key="lblCreatedAt">UILabel</string>
-						<string key="lblEmail">UILabel</string>
-						<string key="lblPhone">UILabel</string>
-						<string key="lblStatus">UILabel</string>
-						<string key="lblUsername">UILabel</string>
-						<string key="txtReservAt">UITextField</string>
-					</dictionary>
-					<dictionary class="NSMutableDictionary" key="toOneOutletInfosByName">
-						<object class="IBToOneOutletInfo" key="btnCancel">
-							<string key="name">btnCancel</string>
-							<string key="candidateClassName">UIButton</string>
-						</object>
-						<object class="IBToOneOutletInfo" key="btnConfirm">
-							<string key="name">btnConfirm</string>
-							<string key="candidateClassName">UIButton</string>
-						</object>
-						<object class="IBToOneOutletInfo" key="lblCarNum">
-							<string key="name">lblCarNum</string>
-							<string key="candidateClassName">UILabel</string>
-						</object>
-						<object class="IBToOneOutletInfo" key="lblCreatedAt">
-							<string key="name">lblCreatedAt</string>
-							<string key="candidateClassName">UILabel</string>
-						</object>
-						<object class="IBToOneOutletInfo" key="lblEmail">
-							<string key="name">lblEmail</string>
-							<string key="candidateClassName">UILabel</string>
-						</object>
-						<object class="IBToOneOutletInfo" key="lblPhone">
-							<string key="name">lblPhone</string>
-							<string key="candidateClassName">UILabel</string>
-						</object>
-						<object class="IBToOneOutletInfo" key="lblStatus">
-							<string key="name">lblStatus</string>
-							<string key="candidateClassName">UILabel</string>
-						</object>
-						<object class="IBToOneOutletInfo" key="lblUsername">
-							<string key="name">lblUsername</string>
-							<string key="candidateClassName">UILabel</string>
-						</object>
-						<object class="IBToOneOutletInfo" key="txtReservAt">
-							<string key="name">txtReservAt</string>
-							<string key="candidateClassName">UITextField</string>
-						</object>
-					</dictionary>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/ReservationCell.h</string>
-					</object>
-				</object>
-			</array>
-		</object>
+		<object class="IBClassDescriber" key="IBDocument.Classes"/>
 		<int key="IBDocument.localizationMode">0</int>
 		<string key="IBDocument.TargetRuntimeIdentifier">IBIPadFramework</string>
 		<bool key="IBDocument.PluginDeclaredDependenciesTrackSystemTargetVersion">YES</bool>
 		<int key="IBDocument.defaultPropertyAccessControl">3</int>
 		<object class="NSMutableDictionary" key="IBDocument.LastKnownImageSizes">
 			<string key="NS.key.0">btn_bg.png</string>
-			<string key="NS.object.0">{80, 37}</string>
+			<string key="NS.object.0">{60, 30}</string>
 		</object>
-		<string key="IBCocoaTouchPluginVersion">2083</string>
+		<string key="IBCocoaTouchPluginVersion">1930</string>
 	</data>
 </archive>

@@ -60,16 +60,19 @@
     DLog(@"%@",result);
     if ([[result objectForKey:@"status"] intValue] == 1) {
         if([[info objectForKey:@"from"] intValue]==1){
+            
+            [self.navigationController popViewControllerAnimated:YES];
+            
+        }else{
             [DataService sharedService].payNumber = 1;
             [self.navigationController popViewControllerAnimated:YES];
-            [MBProgressHUD hideHUDForView:self.view animated:YES];
-        }else{
-            [self.navigationController popViewControllerAnimated:YES];
-            [MBProgressHUD hideHUDForView:self.view animated:YES];
         }
     }
+    [MBProgressHUD hideHUDForView:self.view animated:YES];
 }
 - (IBAction)clickSubmit:(id)sender{
+    [reasonView resignFirstResponder];
+    [requestView resignFirstResponder];
     if (self.reasonView.text.length==0 || self.requestView.text.length==0) {
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"请输入投诉理由和要求" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
         [alert show];

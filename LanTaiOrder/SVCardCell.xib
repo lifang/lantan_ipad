@@ -43,8 +43,9 @@
 							<object class="IBUILabel" id="933747895">
 								<reference key="NSNextResponder" ref="224650754"/>
 								<int key="NSvFlags">292</int>
-								<string key="NSFrame">{{20, 17}, {260, 15}}</string>
+								<string key="NSFrame">{{20, 14}, {220, 21}}</string>
 								<reference key="NSSuperview" ref="224650754"/>
+								<reference key="NSWindow"/>
 								<reference key="NSNextKeyView" ref="167760862"/>
 								<string key="NSReuseIdentifierKey">_NS:9</string>
 								<bool key="IBUIOpaque">NO</bool>
@@ -77,8 +78,9 @@
 							<object class="IBUILabel" id="167760862">
 								<reference key="NSNextResponder" ref="224650754"/>
 								<int key="NSvFlags">292</int>
-								<string key="NSFrame">{{290, 14}, {70, 21}}</string>
+								<string key="NSFrame">{{254, 14}, {129, 21}}</string>
 								<reference key="NSSuperview" ref="224650754"/>
+								<reference key="NSWindow"/>
 								<reference key="NSNextKeyView" ref="926590701"/>
 								<string key="NSReuseIdentifierKey">_NS:9</string>
 								<bool key="IBUIOpaque">NO</bool>
@@ -100,6 +102,7 @@
 								<int key="NSvFlags">292</int>
 								<string key="NSFrame">{{406, 14}, {54, 21}}</string>
 								<reference key="NSSuperview" ref="224650754"/>
+								<reference key="NSWindow"/>
 								<reference key="NSNextKeyView" ref="514817445"/>
 								<string key="NSReuseIdentifierKey">_NS:9</string>
 								<bool key="IBUIOpaque">NO</bool>
@@ -121,6 +124,7 @@
 								<int key="NSvFlags">292</int>
 								<string key="NSFrame">{{492, 11}, {94, 27}}</string>
 								<reference key="NSSuperview" ref="224650754"/>
+								<reference key="NSWindow"/>
 								<string key="NSReuseIdentifierKey">_NS:9</string>
 								<bool key="IBUIOpaque">NO</bool>
 								<string key="targetRuntimeIdentifier">IBIPadFramework</string>
@@ -131,6 +135,7 @@
 						</array>
 						<string key="NSFrameSize">{600, 49}</string>
 						<reference key="NSSuperview" ref="44179721"/>
+						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="933747895"/>
 						<string key="NSReuseIdentifierKey">_NS:11</string>
 						<object class="NSColor" key="IBUIBackgroundColor">
@@ -146,6 +151,7 @@
 				</array>
 				<string key="NSFrameSize">{600, 50}</string>
 				<reference key="NSSuperview"/>
+				<reference key="NSWindow"/>
 				<reference key="NSNextKeyView" ref="224650754"/>
 				<string key="NSReuseIdentifierKey">_NS:9</string>
 				<string key="targetRuntimeIdentifier">IBIPadFramework</string>
@@ -220,10 +226,10 @@
 						<int key="objectID">3</int>
 						<reference key="object" ref="44179721"/>
 						<array class="NSMutableArray" key="children">
-							<reference ref="933747895"/>
 							<reference ref="514817445"/>
-							<reference ref="167760862"/>
 							<reference ref="926590701"/>
+							<reference ref="167760862"/>
+							<reference ref="933747895"/>
 						</array>
 						<reference key="parent" ref="0"/>
 					</object>
@@ -267,7 +273,53 @@
 			<nil key="sourceID"/>
 			<int key="maxID">16</int>
 		</object>
-		<object class="IBClassDescriber" key="IBDocument.Classes"/>
+		<object class="IBClassDescriber" key="IBDocument.Classes">
+			<array class="NSMutableArray" key="referencedPartialClassDescriptions">
+				<object class="IBPartialClassDescription">
+					<string key="className">SVCardCell</string>
+					<string key="superclassName">UITableViewCell</string>
+					<object class="NSMutableDictionary" key="actions">
+						<string key="NS.key.0">clickSwitch:</string>
+						<string key="NS.object.0">UISwitch</string>
+					</object>
+					<object class="NSMutableDictionary" key="actionInfosByName">
+						<string key="NS.key.0">clickSwitch:</string>
+						<object class="IBActionInfo" key="NS.object.0">
+							<string key="name">clickSwitch:</string>
+							<string key="candidateClassName">UISwitch</string>
+						</object>
+					</object>
+					<dictionary class="NSMutableDictionary" key="outlets">
+						<string key="lblCount">UILabel</string>
+						<string key="lblName">UILabel</string>
+						<string key="lblPrice">UILabel</string>
+						<string key="switchBtn">UISwitch</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<object class="IBToOneOutletInfo" key="lblCount">
+							<string key="name">lblCount</string>
+							<string key="candidateClassName">UILabel</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="lblName">
+							<string key="name">lblName</string>
+							<string key="candidateClassName">UILabel</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="lblPrice">
+							<string key="name">lblPrice</string>
+							<string key="candidateClassName">UILabel</string>
+						</object>
+						<object class="IBToOneOutletInfo" key="switchBtn">
+							<string key="name">switchBtn</string>
+							<string key="candidateClassName">UISwitch</string>
+						</object>
+					</dictionary>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/SVCardCell.h</string>
+					</object>
+				</object>
+			</array>
+		</object>
 		<int key="IBDocument.localizationMode">0</int>
 		<string key="IBDocument.TargetRuntimeIdentifier">IBIPadFramework</string>
 		<bool key="IBDocument.PluginDeclaredDependenciesTrackSystemTargetVersion">YES</bool>

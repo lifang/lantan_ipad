@@ -120,7 +120,7 @@
 									<object class="IBUILabel" id="453350806">
 										<reference key="NSNextResponder" ref="566921786"/>
 										<int key="NSvFlags">292</int>
-										<string key="NSFrame">{{293, 9}, {103, 21}}</string>
+										<string key="NSFrame">{{293, -1}, {103, 41}}</string>
 										<reference key="NSSuperview" ref="566921786"/>
 										<reference key="NSNextKeyView" ref="11164818"/>
 										<string key="NSReuseIdentifierKey">_NS:9</string>
@@ -133,9 +133,11 @@
 										<reference key="IBUITextColor" ref="273761315"/>
 										<nil key="IBUIHighlightedColor"/>
 										<int key="IBUIBaselineAdjustment">0</int>
+										<int key="IBUINumberOfLines">0</int>
 										<reference key="IBUIFontDescription" ref="27058356"/>
 										<reference key="IBUIFont" ref="233027644"/>
 										<bool key="IBUIAdjustsFontSizeToFit">NO</bool>
+										<double key="preferredMaxLayoutWidth">103</double>
 									</object>
 									<object class="IBUILabel" id="173808061">
 										<reference key="NSNextResponder" ref="566921786"/>
@@ -666,7 +668,6 @@
 							<reference ref="153719950"/>
 							<reference ref="1029737270"/>
 							<reference ref="481128156"/>
-							<reference ref="453350806"/>
 							<reference ref="173808061"/>
 							<reference ref="539983018"/>
 							<reference ref="11164818"/>
@@ -675,6 +676,7 @@
 							<reference ref="950057116"/>
 							<reference ref="6688328"/>
 							<reference ref="604952451"/>
+							<reference ref="453350806"/>
 						</array>
 						<reference key="parent" ref="956340925"/>
 					</object>
@@ -822,10 +824,10 @@
 		<bool key="IBDocument.PluginDeclaredDependenciesTrackSystemTargetVersion">YES</bool>
 		<int key="IBDocument.defaultPropertyAccessControl">3</int>
 		<dictionary class="NSMutableDictionary" key="IBDocument.LastKnownImageSizes">
-			<string key="btn_bg.png">{16, 16}</string>
-			<string key="btn_bg_active.png">{16, 16}</string>
-			<string key="lbl_bg.png">{16, 16}</string>
-			<string key="p_head.png">{16, 16}</string>
+			<string key="btn_bg.png">{60, 30}</string>
+			<string key="btn_bg_active.png">{60, 30}</string>
+			<string key="lbl_bg.png">{150, 29}</string>
+			<string key="p_head.png">{600, 44}</string>
 		</dictionary>
 		<string key="IBCocoaTouchPluginVersion">1930</string>
 	</data>
