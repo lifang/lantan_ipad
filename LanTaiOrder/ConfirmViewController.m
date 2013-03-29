@@ -224,11 +224,16 @@
     DLog(@"%@",[DataService sharedService].user_id);
     if ([str length]>0 && [[DataService sharedService].user_id intValue] > 0) {
         //确定生成订单后进入订单详情页面
-        MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
-        hud.dimBackground = NO;
-        [hud showWhileExecuting:@selector(confirm) onTarget:self withObject:nil animated:YES];
-        hud.labelText = @"正在努力加载...";
-        [self.view addSubview:hud];
+        if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+            [alert show];
+        }else {
+            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+            hud.dimBackground = NO;
+            [hud showWhileExecuting:@selector(confirm) onTarget:self withObject:nil animated:YES];
+            hud.labelText = @"正在努力加载...";
+            [self.view addSubview:hud];
+        }
     }else if([[DataService sharedService].user_id intValue] == 0){
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"请登录" delegate:self cancelButtonTitle:@"" otherButtonTitles:nil, nil];
         [alert show];
@@ -241,7 +246,7 @@
         [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"storeId"];
         [(AppDelegate *)[UIApplication sharedApplication].delegate showRootView];
     }else{
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"活动，打折卡，套餐卡每类最多可以选择一个" delegate:self cancelButtonTitle:@"" otherButtonTitles:nil, nil];
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"活动，打折卡，套餐卡每类最多可以选择一个" delegate:self cancelButtonTitle:@"确认" otherButtonTitles:nil, nil];
         [alert show];
     }
 }

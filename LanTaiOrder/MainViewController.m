@@ -80,26 +80,31 @@
 //刷新按钮
 - (IBAction)clickRefreshBtn:(id)sender{
     if ([DataService sharedService].store_id) {
-        MBProgressHUD *hud = [[MBProgressHUD alloc]init];
-        hud = [MBProgressHUD showHUDAddedTo:self.mainView animated:YES];
-        hud.labelText = @"正在努力加载...";
-        
-        STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kRefresh]];
-        [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id", nil]];
-        [r setPostDataEncoding:NSUTF8StringEncoding];
-        r.completionBlock = ^(NSDictionary *headers,NSString *boby){
-            NSDictionary *result = [boby objectFromJSONString];
-            DLog(@"%@",result);
-            if ([[result objectForKey:@"status"] intValue]==1) {
-               [DataService sharedService].reserve_list = [result objectForKey:@"reservation"];
-                self.lblCount.text = [NSString stringWithFormat:@"%d",[[DataService sharedService].reserve_list count]];
-                [MBProgressHUD hideHUDForView:self.mainView animated:YES];
-            }
-        };
-        r.errorBlock = ^(NSError *error){
+        if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+            [alert show];
+        }else {
+            MBProgressHUD *hud = [[MBProgressHUD alloc]init];
+            hud = [MBProgressHUD showHUDAddedTo:self.mainView animated:YES];
+            hud.labelText = @"正在努力加载...";
             
-        };
-        [r startAsynchronous];
+            STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kRefresh]];
+            [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id", nil]];
+            [r setPostDataEncoding:NSUTF8StringEncoding];
+            r.completionBlock = ^(NSDictionary *headers,NSString *boby){
+                NSDictionary *result = [boby objectFromJSONString];
+                DLog(@"%@",result);
+                if ([[result objectForKey:@"status"] intValue]==1) {
+                    [DataService sharedService].reserve_list = [result objectForKey:@"reservation"];
+                    self.lblCount.text = [NSString stringWithFormat:@"%d",[[DataService sharedService].reserve_list count]];
+                    [MBProgressHUD hideHUDForView:self.mainView animated:YES];
+                }
+            };
+            r.errorBlock = ^(NSError *error){
+                
+            };
+            [r startAsynchronous];
+        }
     }
 }
 //根据车牌号查询
@@ -115,11 +120,16 @@
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"请输入车牌号" delegate:self cancelButtonTitle:@"" otherButtonTitles:nil, nil];
         [alert show];
     }else{
-        MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.mainView];
-        hud.dimBackground = NO;
-        [hud showWhileExecuting:@selector(showSearchResult) onTarget:self withObject:nil animated:YES];
-        hud.labelText = @"正在努力加载...";
-        [self.mainView addSubview:hud];
+        if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+            [alert show];
+        }else {
+            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.mainView];
+            hud.dimBackground = NO;
+            [hud showWhileExecuting:@selector(showSearchResult) onTarget:self withObject:nil animated:YES];
+            hud.labelText = @"正在努力加载...";
+            [self.mainView addSubview:hud];
+        }
     }
 }
 
@@ -182,19 +192,22 @@
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     [txtCarNum resignFirstResponder];
-    self.orderView2 = [[OrderViewController alloc] initWithNibName:@"OrderViewController" bundle:nil];
-    NSDictionary *order = [waitList objectAtIndex:indexPath.row];
-    orderView2.car_num = [order objectForKey:@"num"];
+    if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+        [alert show];
+    }else {
+        self.orderView2 = [[OrderViewController alloc] initWithNibName:@"OrderViewController" bundle:nil];
+        NSDictionary *order = [waitList objectAtIndex:indexPath.row];
+        orderView2.car_num = [order objectForKey:@"num"];
+        
+        MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.mainView];
+        hud.dimBackground = NO;
+        [hud showWhileExecuting:@selector(showOrderView) onTarget:self withObject:nil animated:YES];
+        hud.labelText = @"正在努力加载...";
+        [self.mainView addSubview:hud];
+    }
     
-    MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.mainView];
-    hud.dimBackground = NO;
-    [hud showWhileExecuting:@selector(showOrderView) onTarget:self withObject:nil animated:YES];
-    hud.labelText = @"正在努力加载...";
-    [self.mainView addSubview:hud];
-    
-    //施工中的信息
-    
-    
+    //施工中的信息 
     
 }
 

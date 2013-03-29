@@ -54,13 +54,17 @@
 - (void)pay:(int)type{
     self.payType = type;
     if (self.order) {
-        MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
-        hud.dimBackground = NO;
-        [hud showWhileExecuting:@selector(payWithType) onTarget:self withObject:nil animated:YES];
-        hud.labelText = @"正在努力加载...";
-        [self.view addSubview:hud];
+        if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+            [alert show];
+        }else {
+            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+            hud.dimBackground = NO;
+            [hud showWhileExecuting:@selector(payWithType) onTarget:self withObject:nil animated:YES];
+            hud.labelText = @"正在努力加载...";
+            [self.view addSubview:hud];
+        }
     }
-    
 }
 
 //刷卡支付，调用钱方
@@ -132,11 +136,16 @@
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"请输入验证码！" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
         [alert show];
     }else{
-        MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
-        hud.dimBackground = NO;
-        [hud showWhileExecuting:@selector(code) onTarget:self withObject:nil animated:YES];
-        hud.labelText = @"正在努力加载...";
-        [self.view addSubview:hud];
+        if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+            [alert show];
+        }else{
+            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+            hud.dimBackground = NO;
+            [hud showWhileExecuting:@selector(code) onTarget:self withObject:nil animated:YES];
+            hud.labelText = @"正在努力加载...";
+            [self.view addSubview:hud];
+        }
     }
 }
 
@@ -164,11 +173,18 @@
     [MBProgressHUD hideHUDForView:self.view animated:YES];
 }
 - (IBAction)clickSendCode:(id)sender{
-    MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
-    hud.dimBackground = NO;
-    [hud showWhileExecuting:@selector(sendCode) onTarget:self withObject:nil animated:YES];
-    hud.labelText = @"正在努力加载...";
-    [self.view addSubview:hud];
+    [self.txtPhone resignFirstResponder];
+    [self.txtCode resignFirstResponder];
+    if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+        [alert show];
+    }else {
+        MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+        hud.dimBackground = NO;
+        [hud showWhileExecuting:@selector(sendCode) onTarget:self withObject:nil animated:YES];
+        hud.labelText = @"正在努力加载...";
+        [self.view addSubview:hud];
+    }
 }
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil

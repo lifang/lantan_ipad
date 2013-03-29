@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0E9745EE170524BC00C62363 /* InitViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E9745EC170524BC00C62363 /* InitViewController.m */; };
+		0E9745EF170524BC00C62363 /* InitViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0E9745ED170524BC00C62363 /* InitViewController.xib */; };
 		0E97F0551701458B003E4576 /* MBProgressHUD.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E97F0541701458B003E4576 /* MBProgressHUD.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		0E97F0A1170174BE003E4576 /* TabHeaderSpace.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E97F0A0170174BD003E4576 /* TabHeaderSpace.m */; };
 		0EA5FBC716FC3C3B00ADA6DD /* divider.png in Resources */ = {isa = PBXBuildFile; fileRef = 0EA5FBC616FC3C3B00ADA6DD /* divider.png */; };
@@ -45,7 +47,6 @@
 		7053132616E3228200F64A16 /* PayViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7053132416E3228200F64A16 /* PayViewController.xib */; };
 		7053132A16E324E300F64A16 /* ReservationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7053132816E324E300F64A16 /* ReservationViewController.m */; };
 		7053132B16E324E300F64A16 /* ReservationViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 7053132916E324E300F64A16 /* ReservationViewController.xib */; };
-		708D385B16FC45D0001E352D /* pic_bg.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 708D385A16FC45D0001E352D /* pic_bg.jpg */; };
 		709995FF16F7FEE50039C761 /* collectioncell_bg.png in Resources */ = {isa = PBXBuildFile; fileRef = 709995FE16F7FEE50039C761 /* collectioncell_bg.png */; };
 		7099960516F8055B0039C761 /* behind.png in Resources */ = {isa = PBXBuildFile; fileRef = 7099960016F8055B0039C761 /* behind.png */; };
 		7099960616F8055B0039C761 /* front.png in Resources */ = {isa = PBXBuildFile; fileRef = 7099960116F8055B0039C761 /* front.png */; };
@@ -113,6 +114,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0E9745EB170524BC00C62363 /* InitViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = InitViewController.h; sourceTree = "<group>"; };
+		0E9745EC170524BC00C62363 /* InitViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = InitViewController.m; sourceTree = "<group>"; };
+		0E9745ED170524BC00C62363 /* InitViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = InitViewController.xib; sourceTree = "<group>"; };
 		0E97F0531701458B003E4576 /* MBProgressHUD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MBProgressHUD.h; sourceTree = "<group>"; };
 		0E97F0541701458B003E4576 /* MBProgressHUD.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MBProgressHUD.m; sourceTree = "<group>"; };
 		0E97F09F170174BD003E4576 /* TabHeaderSpace.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TabHeaderSpace.h; sourceTree = "<group>"; };
@@ -166,7 +170,6 @@
 		7053132716E324E300F64A16 /* ReservationViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ReservationViewController.h; sourceTree = "<group>"; };
 		7053132816E324E300F64A16 /* ReservationViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ReservationViewController.m; sourceTree = "<group>"; };
 		7053132916E324E300F64A16 /* ReservationViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ReservationViewController.xib; sourceTree = "<group>"; };
-		708D385A16FC45D0001E352D /* pic_bg.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = pic_bg.jpg; sourceTree = "<group>"; };
 		709995FE16F7FEE50039C761 /* collectioncell_bg.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = collectioncell_bg.png; sourceTree = "<group>"; };
 		7099960016F8055B0039C761 /* behind.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = behind.png; sourceTree = "<group>"; };
 		7099960116F8055B0039C761 /* front.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = front.png; sourceTree = "<group>"; };
@@ -275,6 +278,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		0E9745E41705240D00C62363 /* Init */ = {
+			isa = PBXGroup;
+			children = (
+				0E9745EB170524BC00C62363 /* InitViewController.h */,
+				0E9745EC170524BC00C62363 /* InitViewController.m */,
+				0E9745ED170524BC00C62363 /* InitViewController.xib */,
+			);
+			name = Init;
+			sourceTree = "<group>";
+		};
 		0E97F05117014575003E4576 /* loadingView */ = {
 			isa = PBXGroup;
 			children = (
@@ -375,6 +388,7 @@
 			isa = PBXGroup;
 			children = (
 				70A6F0EC16E09850004869EE /* Order */,
+				0E9745E41705240D00C62363 /* Init */,
 				70D8E14116AFABE400BC8F16 /* Main */,
 				70A1CC4A16AFAA56000B4C9F /* Login */,
 				7024914C16F5B157009EC28D /* Base */,
@@ -712,6 +726,7 @@
 				0EA9881617004FE90021D80B /* pic_bg.png in Resources */,
 				0EA988191700576A0021D80B /* lantan_login.png in Resources */,
 				0EA9881A1700576A0021D80B /* lantan_login_active.png in Resources */,
+				0E9745EF170524BC00C62363 /* InitViewController.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -759,6 +774,7 @@
 				70D8CEE016F98CA20028F1F8 /* PicViewController.m in Sources */,
 				0E97F0551701458B003E4576 /* MBProgressHUD.m in Sources */,
 				0E97F0A1170174BE003E4576 /* TabHeaderSpace.m in Sources */,
+				0E9745EE170524BC00C62363 /* InitViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

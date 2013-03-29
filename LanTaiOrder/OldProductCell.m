@@ -28,7 +28,6 @@
         lblCode = [[UILabel alloc] initWithFrame:frame];
         lblCode.textAlignment = NSTextAlignmentCenter;
         [self addSubview:lblCode];
-        DLog(@"%@",lblCode);
         
         frame.origin.x += 181;
         frame.size.width = 100;

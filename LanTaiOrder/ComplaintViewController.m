@@ -77,11 +77,16 @@
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"请输入投诉理由和要求" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
         [alert show];
     }else{
-        MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
-        hud.dimBackground = NO;
-        [hud showWhileExecuting:@selector(submit) onTarget:self withObject:nil animated:YES];
-        hud.labelText = @"正在努力加载...";
-        [self.view addSubview:hud];
+        if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+            [alert show];
+        }else {
+            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+            hud.dimBackground = NO;
+            [hud showWhileExecuting:@selector(submit) onTarget:self withObject:nil animated:YES];
+            hud.labelText = @"正在努力加载...";
+            [self.view addSubview:hud];
+        }
     }
 }
 

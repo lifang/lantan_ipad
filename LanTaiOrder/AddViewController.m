@@ -303,11 +303,19 @@
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
-
+-(IBAction)btnPressed:(id)sender {
+    [self.txtName resignFirstResponder];
+    [self.txtPhone resignFirstResponder];
+    [self.txtEmail resignFirstResponder];
+    [self.txtCarYear resignFirstResponder];
+    [self.txtCarNum resignFirstResponder];
+    [self.txtBirth resignFirstResponder];
+}
 //完成登记
 -(void)finishInfo {
     STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kcheckIn]];
     NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+    DLog(@"name = %@",self.txtName.text);
     [dic setObject:txtCarNum.text forKey:@"carNum"];
     [dic setObject:txtName.text forKey:@"userName"];
     [dic setObject:txtPhone.text forKey:@"phone"];
@@ -327,11 +335,13 @@
         modelStr = [[[brand objectForKey:@"models"] objectAtIndex:[modelView selectedRowInComponent:0]] objectForKey:@"id"];
     }
     [dic setObject:[NSString stringWithFormat:@"%@_%@",brandStr,modelStr] forKey:@"brand"];
+    DLog(@"dic = %@",dic);
     [r setPostDataEncoding:NSUTF8StringEncoding];
     [r setPOSTDictionary:dic];
     
     NSError *error = nil;
     NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
+    DLog(@"%@",result);
     if ([[result objectForKey:@"status"] intValue]==1) {
         [self.navigationController popToRootViewControllerAnimated:YES];
     }else {
@@ -406,6 +416,7 @@
         }
         
     }else{
+        [MBProgressHUD hideHUDForView:self.view animated:YES];
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"请选择所需的产品、服务" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
         [alert show];
     }
@@ -413,17 +424,27 @@
 }
 - (IBAction)clickFinished:(id)sender{
     if ([DataService sharedService].number == 1) {
-        MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
-        hud.dimBackground = NO;
-        [hud showWhileExecuting:@selector(finishInfo) onTarget:self withObject:nil animated:YES];
-        hud.labelText = @"正在努力加载...";
-        [self.view addSubview:hud];
+        if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+            [alert show];
+        }else {
+            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+            hud.dimBackground = NO;
+            [hud showWhileExecuting:@selector(finishInfo) onTarget:self withObject:nil animated:YES];
+            hud.labelText = @"正在努力加载...";
+            [self.view addSubview:hud];
+        }
     }else {
-        MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
-        hud.dimBackground = NO;
-        [hud showWhileExecuting:@selector(finishOrder) onTarget:self withObject:nil animated:YES];
-        hud.labelText = @"正在努力加载...";
-        [self.view addSubview:hud];
+        if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+            [alert show];
+        }else {
+            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+            hud.dimBackground = NO;
+            [hud showWhileExecuting:@selector(finishOrder) onTarget:self withObject:nil animated:YES];
+            hud.labelText = @"正在努力加载...";
+            [self.view addSubview:hud];
+        }
     }
 }
 

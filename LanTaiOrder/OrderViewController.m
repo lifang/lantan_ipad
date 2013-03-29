@@ -283,11 +283,16 @@
 }
 - (IBAction)clickCancel:(id)sender{
     if ([workingOrder objectForKey:@"id"] != NULL) {
-        MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
-        hud.dimBackground = NO;
-        [hud showWhileExecuting:@selector(cancleOrder) onTarget:self withObject:nil animated:YES];
-        hud.labelText = @"正在努力加载...";
-        [self.view addSubview:hud];
+        if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+            [alert show];
+        }else {
+            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+            hud.dimBackground = NO;
+            [hud showWhileExecuting:@selector(cancleOrder) onTarget:self withObject:nil animated:YES];
+            hud.labelText = @"正在努力加载...";
+            [self.view addSubview:hud];
+        }
     }
 }
 
@@ -313,20 +318,27 @@
     UIButton *btn = (UIButton *)sender;
     
     if (btn.tag==101) {
-        MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
-        hud.dimBackground = NO;
-        [hud showWhileExecuting:@selector(addView) onTarget:self withObject:nil animated:YES];
-        hud.labelText = @"正在努力加载...";
-        [self.view addSubview:hud];
-        
-        
+        if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+            [alert show];
+        }else {
+            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+            hud.dimBackground = NO;
+            [hud showWhileExecuting:@selector(addView) onTarget:self withObject:nil animated:YES];
+            hud.labelText = @"正在努力加载...";
+            [self.view addSubview:hud];
+        }
     }else if (btn.tag==100){
-        MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
-        hud.dimBackground = NO;
-        [hud showWhileExecuting:@selector(showAddView) onTarget:self withObject:nil animated:YES];
-        hud.labelText = @"正在努力加载...";
-        [self.view addSubview:hud];
-        
+        if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+            [alert show];
+        }else{
+            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+            hud.dimBackground = NO;
+            [hud showWhileExecuting:@selector(showAddView) onTarget:self withObject:nil animated:YES];
+            hud.labelText = @"正在努力加载...";
+            [self.view addSubview:hud];
+        }
     }
 }
 
@@ -360,12 +372,16 @@
 }
 - (IBAction)clickPay:(id)sender{
     if ([workingOrder objectForKey:@"id"] != NULL) {
-        MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
-        hud.dimBackground = NO;
-        [hud showWhileExecuting:@selector(pay) onTarget:self withObject:nil animated:YES];
-        hud.labelText = @"正在努力加载...";
-        [self.view addSubview:hud];
-
+        if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+            [alert show];
+        }else {
+            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+            hud.dimBackground = NO;
+            [hud showWhileExecuting:@selector(pay) onTarget:self withObject:nil animated:YES];
+            hud.labelText = @"正在努力加载...";
+            [self.view addSubview:hud];
+        }
     }
 }
 
@@ -387,11 +403,16 @@
     [MBProgressHUD hideHUDForView:self.view animated:YES];
 }
 - (IBAction)clickReg:(id)sender{
-    MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
-    hud.dimBackground = NO;
-    [hud showWhileExecuting:@selector(reg) onTarget:self withObject:nil animated:YES];
-    hud.labelText = @"正在努力加载...";
-    [self.view addSubview:hud];
+    if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+        [alert show];
+    }else {
+        MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+        hud.dimBackground = NO;
+        [hud showWhileExecuting:@selector(reg) onTarget:self withObject:nil animated:YES];
+        hud.labelText = @"正在努力加载...";
+        [self.view addSubview:hud];
+    }
 }
 
 - (IBAction)clickWorking:(id)sender{

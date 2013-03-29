@@ -9,5 +9,5 @@
 #import <UIKit/UIKit.h>
 
 @interface TabHeaderSpace : UIView
-@property (nonatomic,strong) UILabel *lbl_1,*lbl_2,*lbl_3,*lbl_4,*lbl_5,*lbl_6,*lbl_7;
+@property (nonatomic,strong) UILabel *lbl_1;
 @end

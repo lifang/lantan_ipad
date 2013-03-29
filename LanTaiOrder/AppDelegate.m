@@ -11,13 +11,18 @@
 #import "MainViewController.h"
 
 @implementation AppDelegate
+@synthesize lantan_initView;
 @synthesize versionUrlStr,definitionData;
 
++ (AppDelegate *)shareInstance {
+    return (AppDelegate *)([UIApplication sharedApplication].delegate);
+}
 
 - (void)showRootView{
+    [self.lantan_initView.view removeFromSuperview];//initView消失
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     NSString *userInfo = [defaults objectForKey:@"userId"];
-//    DLog(@"%@--------%i",userInfo,[userInfo isEqualToString:@""]);
+    DLog(@"%@--------%i",userInfo,[userInfo isEqualToString:@""]);
     if (userInfo != nil) {
         [DataService sharedService].store_id = [defaults objectForKey:@"storeId"];
         [DataService sharedService].user_id = userInfo;
@@ -39,8 +44,9 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-    
-    [self showRootView];
+    self.lantan_initView = [[InitViewController alloc]initWithNibName:@"InitViewController" bundle:nil];
+    self.window.rootViewController = self.lantan_initView;
+//    [self showRootView];
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
     
