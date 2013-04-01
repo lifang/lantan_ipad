@@ -46,7 +46,7 @@
         [alert show];
         isSuccess = FALSE;
     }
-    [MBProgressHUD hideHUDForView:self.view animated:YES];
+    [MBProgressHUD hideHUDForView:self.payStyle animated:YES];
     if (self.delegate && [self.delegate respondsToSelector:@selector(closePopView:)]) {
         [self.delegate closePopView:self];
     }
@@ -58,11 +58,11 @@
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
             [alert show];
         }else {
-            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.payStyle];
             hud.dimBackground = NO;
             [hud showWhileExecuting:@selector(payWithType) onTarget:self withObject:nil animated:YES];
             hud.labelText = @"正在努力加载...";
-            [self.view addSubview:hud];
+            [self.payStyle addSubview:hud];
         }
     }
 }
@@ -129,7 +129,7 @@
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:[result objectForKey:@"content"] delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
         [alert show];
     }
-    [MBProgressHUD hideHUDForView:self.view animated:YES];
+    [MBProgressHUD hideHUDForView:self.codeView animated:YES];
 }
 - (IBAction)clickCodeBtn:(id)sender{
     if (self.txtCode.text.length == 0) {
@@ -140,11 +140,11 @@
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
             [alert show];
         }else{
-            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.codeView];
             hud.dimBackground = NO;
             [hud showWhileExecuting:@selector(code) onTarget:self withObject:nil animated:YES];
             hud.labelText = @"正在努力加载...";
-            [self.view addSubview:hud];
+            [self.codeView addSubview:hud];
         }
     }
 }
@@ -166,11 +166,11 @@
             self.phoneView.hidden = YES;
             self.payStyle.hidden = YES;
         }else{
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"输入的号码有误！" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"当前号码未购买储值卡或余额不足！" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
             [alert show];
         }
     }
-    [MBProgressHUD hideHUDForView:self.view animated:YES];
+    [MBProgressHUD hideHUDForView:self.phoneView animated:YES];
 }
 - (IBAction)clickSendCode:(id)sender{
     [self.txtPhone resignFirstResponder];
@@ -179,11 +179,11 @@
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
         [alert show];
     }else {
-        MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+        MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.phoneView];
         hud.dimBackground = NO;
         [hud showWhileExecuting:@selector(sendCode) onTarget:self withObject:nil animated:YES];
         hud.labelText = @"正在努力加载...";
-        [self.view addSubview:hud];
+        [self.phoneView addSubview:hud];
     }
 }
 

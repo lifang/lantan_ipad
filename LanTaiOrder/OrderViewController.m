@@ -270,16 +270,14 @@
     NSError *error = nil;
     NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
     if ([[result objectForKey:@"status"] intValue]==1) {
-        [MBProgressHUD hideHUDForView:self.view animated:YES];
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"订单已取消" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
         [alert show];
         [self.navigationController popToRootViewControllerAnimated:YES];
     }else{
-        
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"订单取消失败" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
         [alert show];
     }
-    [MBProgressHUD hideHUDForView:self.view animated:YES];
+    [MBProgressHUD hideHUDForView:self.orderView animated:YES];
 }
 - (IBAction)clickCancel:(id)sender{
     if ([workingOrder objectForKey:@"id"] != NULL) {
@@ -287,11 +285,11 @@
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
             [alert show];
         }else {
-            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.orderView];
             hud.dimBackground = NO;
             [hud showWhileExecuting:@selector(cancleOrder) onTarget:self withObject:nil animated:YES];
             hud.labelText = @"正在努力加载...";
-            [self.view addSubview:hud];
+            [self.orderView addSubview:hud];
         }
     }
 }
@@ -368,7 +366,7 @@
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"加载失败" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
         [alert show];
     }
-    [MBProgressHUD hideHUDForView:self.view animated:YES];
+    [MBProgressHUD hideHUDForView:self.workingView animated:YES];
 }
 - (IBAction)clickPay:(id)sender{
     if ([workingOrder objectForKey:@"id"] != NULL) {
@@ -376,11 +374,11 @@
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
             [alert show];
         }else {
-            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.workingView];
             hud.dimBackground = NO;
             [hud showWhileExecuting:@selector(pay) onTarget:self withObject:nil animated:YES];
             hud.labelText = @"正在努力加载...";
-            [self.view addSubview:hud];
+            [self.workingView addSubview:hud];
         }
     }
 }

@@ -217,7 +217,7 @@
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:[result objectForKey:@"content"] delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
         [alert show];
     }
-    [MBProgressHUD hideHUDForView:self.view animated:YES];
+    [MBProgressHUD hideHUDForView:self.confirmBgView animated:YES];
 }
 - (IBAction)clickConfirm:(id)sender{
     NSString *str = [self checkForm];
@@ -228,11 +228,11 @@
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
             [alert show];
         }else {
-            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.confirmBgView];
             hud.dimBackground = NO;
             [hud showWhileExecuting:@selector(confirm) onTarget:self withObject:nil animated:YES];
             hud.labelText = @"正在努力加载...";
-            [self.view addSubview:hud];
+            [self.confirmBgView addSubview:hud];
         }
     }else if([[DataService sharedService].user_id intValue] == 0){
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"请登录" delegate:self cancelButtonTitle:@"" otherButtonTitles:nil, nil];

@@ -19,6 +19,7 @@
 #import "DataService.h"
 #import "BaseViewController.h"
 #import "MBProgressHUD.h"
+#import "SVPullToRefresh.h"
 #endif
 
 #ifdef DEBUG

@@ -21,6 +21,7 @@
 @synthesize waitList;
 @synthesize orderView2;
 
+
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
@@ -43,6 +44,11 @@
     [(AppDelegate *)[UIApplication sharedApplication].delegate showRootView];
 }
 
+-(void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [Utils fetchWorkingList];
+    [self.orderTable reloadData];
+}
 - (void)viewDidLoad
 {
 //    self.navigationController.navigationBar.hidden = YES;
@@ -51,6 +57,7 @@
     //获取正在进行中的订单和预约信息
     [Utils fetchWorkingList];
     waitList = [DataService sharedService].workingOrders;
+    DLog(@"%@",waitList);
     if ([DataService sharedService].reserve_count && [[DataService sharedService].reserve_count intValue] > 0) {
         self.lblCount.text = [DataService sharedService].reserve_count;
     }else{
@@ -69,12 +76,12 @@
     frame.size.height = 48;
     self.txtCarNum.frame = frame;
     
-}
-
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+    [self.orderTable addPullToRefreshWithActionHandler:^{
+        [Utils fetchWorkingList];
+        [self.orderTable reloadData];
+        [self.orderTable.pullToRefreshView performSelector:@selector(stopAnimating) withObject:nil afterDelay:2];
+    }];
+    
 }
 
 //刷新按钮
@@ -101,7 +108,7 @@
                 }
             };
             r.errorBlock = ^(NSError *error){
-                
+                DLog(@"%@",error);
             };
             [r startAsynchronous];
         }

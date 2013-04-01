@@ -319,13 +319,8 @@
     [dic setObject:txtCarNum.text forKey:@"carNum"];
     [dic setObject:txtName.text forKey:@"userName"];
     [dic setObject:txtPhone.text forKey:@"phone"];
-    if (txtEmail.text.length > 0) {
-        [dic setObject:txtEmail.text forKey:@"email"];
-    }
-    if (txtBirth.text.length>0) {
-        [dic setObject:txtBirth.text forKey:@"birth"];
-    }
-    
+    [dic setObject:txtEmail.text forKey:@"email"];
+    [dic setObject:txtBirth.text forKey:@"birth"];
     [dic setObject:txtCarYear.text forKey:@"year"];
     [dic setObject:[DataService sharedService].store_id forKey:@"store_id"];
     NSDictionary *brand  = [brandList objectAtIndex:[brandView selectedRowInComponent:0]];
@@ -348,7 +343,7 @@
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:[result objectForKey:@"content"] delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
         [alert show];
     }
-    [MBProgressHUD hideHUDForView:self.view animated:YES];
+    [MBProgressHUD hideHUDForView:self.stepView_3 animated:YES];
 
 }
 //完成下单
@@ -370,13 +365,8 @@
         [dic setObject:txtCarNum.text forKey:@"carNum"];
         [dic setObject:txtName.text forKey:@"userName"];
         [dic setObject:txtPhone.text forKey:@"phone"];
-        if (txtEmail.text.length > 0) {
-            [dic setObject:txtEmail.text forKey:@"email"];
-        }
-        if (txtBirth.text.length>0) {
-            [dic setObject:txtBirth.text forKey:@"birth"];
-        }
-        
+        [dic setObject:txtEmail.text forKey:@"email"];
+        [dic setObject:txtBirth.text forKey:@"birth"];
         [dic setObject:txtCarYear.text forKey:@"year"];
         [dic setObject:[NSString stringWithFormat:@"%@_%@",brandStr,modelStr] forKey:@"brand"];
         [dic setObject:prod_ids forKey:@"prod_ids"];
@@ -389,8 +379,10 @@
         [r setPOSTDictionary:dic];
         NSError *error = nil;
         NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
+        
+        DLog(@"result = %@",result);
         if ([[result objectForKey:@"status"] intValue]==1) {
-            [MBProgressHUD hideHUDForView:self.view animated:YES];
+//            [M3BProgressHUD hideHUDForView:self.view animated:YES];
             ConfirmViewController *confirmView = [[ConfirmViewController alloc] initWithNibName:@"ConfirmViewController" bundle:nil];
             confirmView.productList = [NSMutableArray array];
             if ([result objectForKey:@"info"]) {
@@ -416,11 +408,11 @@
         }
         
     }else{
-        [MBProgressHUD hideHUDForView:self.view animated:YES];
+        
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"请选择所需的产品、服务" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
         [alert show];
     }
-    
+    [MBProgressHUD hideHUDForView:self.stepView_4 animated:YES];
 }
 - (IBAction)clickFinished:(id)sender{
     if ([DataService sharedService].number == 1) {
@@ -428,22 +420,73 @@
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
             [alert show];
         }else {
-            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
-            hud.dimBackground = NO;
-            [hud showWhileExecuting:@selector(finishInfo) onTarget:self withObject:nil animated:YES];
-            hud.labelText = @"正在努力加载...";
-            [self.view addSubview:hud];
+           
+            NSString *str = @"";
+            if(txtName.text.length==0){
+                str = @"请输入您的名称";
+            }else {
+                //判断联系电话
+                if(txtPhone.text.length == 0){
+                    str = @"请输入联系电话";
+                }else {
+                    NSString *regexCall = @"((\\d{11})|^((\\d{7,8})|(\\d{4}|\\d{3})-(\\d{7,8})|(\\d{4}|\\d{3})-(\\d{7,8})-(\\d{4}|\\d{3}|\\d{2}|\\d{1})|(\\d{7,8})-(\\d{4}|\\d{3}|\\d{2}|\\d{1}))|(((\\+86)|(86))?+\\d{11})$)";
+                    NSPredicate *predicateCall = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regexCall];
+                    if ([predicateCall evaluateWithObject:txtPhone.text]) {
+                        
+                    }else {
+                        str = @"请输入准确的联系电话";
+                    }
+                }
+                //判断生日
+                if (txtBirth.text.length == 0) {
+                    str = @"请输入出生年月日";
+                }else {
+                    
+                    NSString *regexCall =@"((19[0-9]{2})|(2[0-9]{3})）-((1[0-2])|(0[1-9]))-((0[1-9])|([1-2][0-9])|3[0-1])";
+                    NSPredicate *predicateCall = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regexCall];
+                    if ([predicateCall evaluateWithObject:txtBirth.text]) {
+                        //获取年份
+                        NSDate *now = [NSDate date];
+                        NSCalendar *calendar = [NSCalendar currentCalendar];
+                        NSUInteger unitFlags = NSYearCalendarUnit;
+                        NSDateComponents *dateComponent = [calendar components:unitFlags fromDate:now];
+                        int year = [dateComponent year];
+                        
+                        NSString *yearStr = [txtBirth.text substringToIndex:4];
+                        int brith_year = [yearStr intValue];
+                        if (brith_year >= year) {
+                            str = @"请输入准确的出生年月日";
+                        }
+                    }else {
+                        str = @"出生年月日的格式为:xxxx-xx-xx";
+                    }
+                }
+                //判断邮箱
+                if (self.txtEmail.text.length == 0) {
+                    str = @"请输入QQ/微信/邮箱地址";
+                }
+            }
+            if (self.txtName.text.length==0 || self.txtPhone.text.length==0 || self.txtBirth.text.length==0 || self.txtEmail.text.length ==0 || str.length != 0) {
+                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:str delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
+                [alert show];
+            }else {
+                MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.stepView_3];
+                hud.dimBackground = NO;
+                [hud showWhileExecuting:@selector(finishInfo) onTarget:self withObject:nil animated:YES];
+                hud.labelText = @"正在努力加载...";
+                [self.stepView_3 addSubview:hud];
+            }
         }
     }else {
         if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
             [alert show];
         }else {
-            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.stepView_4];
             hud.dimBackground = NO;
             [hud showWhileExecuting:@selector(finishOrder) onTarget:self withObject:nil animated:YES];
             hud.labelText = @"正在努力加载...";
-            [self.view addSubview:hud];
+            [self.stepView_4 addSubview:hud];
         }
     }
 }
@@ -525,7 +568,10 @@
                         str = @"请输入准确的出生年月日";
                     }
                 }
-                
+                //判断邮箱
+                if (self.txtEmail.text.length == 0) {
+                    str = @"请输入邮箱地址";
+                }
             }
         }
         if (str.length==0) {

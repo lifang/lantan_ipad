@@ -19,6 +19,7 @@
 @property (nonatomic,strong) IBOutlet UIButton *statusImg;
 @property (nonatomic,strong) IBOutlet UIView *mainView;
 
+
 - (IBAction)clickSearchBtn:(id)sender;
 - (IBAction)clickShowBtn:(id)sender;
 - (IBAction)clickRefreshBtn:(id)sender;
