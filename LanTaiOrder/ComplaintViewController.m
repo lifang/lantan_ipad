@@ -90,4 +90,10 @@
     }
 }
 
+-(IBAction)clickCancle:(id)sender {
+    [reasonView resignFirstResponder];
+    [requestView resignFirstResponder];
+    [DataService sharedService].payNumber = 0;
+    [self.navigationController popViewControllerAnimated:YES];
+}
 @end

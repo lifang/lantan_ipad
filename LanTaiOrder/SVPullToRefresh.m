@@ -61,7 +61,7 @@ typedef NSUInteger SVPullToRefreshState;
     titleLabel.backgroundColor = [UIColor clearColor];
     [self addSubview:titleLabel];
     
-    self.lastUpdatedLabel = [[[UILabel alloc] initWithFrame:CGRectMake(ceil(self.superview.bounds.size.width*0.21+10), 40, 180, 20)]autorelease];
+    self.lastUpdatedLabel = [[[UILabel alloc] initWithFrame:CGRectMake(ceil(self.superview.bounds.size.width*0.21-2), 40, 180, 20)]autorelease];
     lastUpdatedLabel.adjustsFontSizeToFitWidth = YES;
     lastUpdatedLabel.text = NSLocalizedString(@"上次更新时间：", );
     lastUpdatedLabel.font = [UIFont boldSystemFontOfSize:12];

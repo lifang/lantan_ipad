@@ -44,11 +44,11 @@
     [(AppDelegate *)[UIApplication sharedApplication].delegate showRootView];
 }
 
--(void)viewWillAppear:(BOOL)animated {
-    [super viewWillAppear:animated];
-    [Utils fetchWorkingList];
-    [self.orderTable reloadData];
-}
+//-(void)viewWillAppear:(BOOL)animated {
+//    [super viewWillAppear:animated];
+//    [Utils fetchWorkingList];
+//    [self.orderTable reloadData];
+//}
 - (void)viewDidLoad
 {
 //    self.navigationController.navigationBar.hidden = YES;
@@ -78,6 +78,7 @@
     
     [self.orderTable addPullToRefreshWithActionHandler:^{
         [Utils fetchWorkingList];
+        self.waitList = [DataService sharedService].workingOrders;
         [self.orderTable reloadData];
         [self.orderTable.pullToRefreshView performSelector:@selector(stopAnimating) withObject:nil afterDelay:2];
     }];

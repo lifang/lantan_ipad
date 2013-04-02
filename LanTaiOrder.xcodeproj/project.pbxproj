@@ -11,6 +11,7 @@
 		0E9745EE170524BC00C62363 /* InitViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E9745EC170524BC00C62363 /* InitViewController.m */; };
 		0E9745EF170524BC00C62363 /* InitViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0E9745ED170524BC00C62363 /* InitViewController.xib */; };
 		0EA5FBC716FC3C3B00ADA6DD /* divider.png in Resources */ = {isa = PBXBuildFile; fileRef = 0EA5FBC616FC3C3B00ADA6DD /* divider.png */; };
+		0EA75139170A6A9800B3CAFC /* order.png in Resources */ = {isa = PBXBuildFile; fileRef = 0EA75138170A6A9800B3CAFC /* order.png */; };
 		0EA987EC17002F580021D80B /* login.png in Resources */ = {isa = PBXBuildFile; fileRef = 0EA987E717002F560021D80B /* login.png */; };
 		0EA987ED17002F580021D80B /* search_bg.png in Resources */ = {isa = PBXBuildFile; fileRef = 0EA987E817002F560021D80B /* search_bg.png */; };
 		0EA987EE17002F580021D80B /* open_bg.png in Resources */ = {isa = PBXBuildFile; fileRef = 0EA987E917002F570021D80B /* open_bg.png */; };
@@ -122,6 +123,7 @@
 		0E9745EC170524BC00C62363 /* InitViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = InitViewController.m; sourceTree = "<group>"; };
 		0E9745ED170524BC00C62363 /* InitViewController.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = InitViewController.xib; sourceTree = "<group>"; };
 		0EA5FBC616FC3C3B00ADA6DD /* divider.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = divider.png; sourceTree = "<group>"; };
+		0EA75138170A6A9800B3CAFC /* order.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = order.png; sourceTree = "<group>"; };
 		0EA987E717002F560021D80B /* login.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = login.png; sourceTree = "<group>"; };
 		0EA987E817002F560021D80B /* search_bg.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = search_bg.png; sourceTree = "<group>"; };
 		0EA987E917002F570021D80B /* open_bg.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = open_bg.png; sourceTree = "<group>"; };
@@ -548,6 +550,7 @@
 		70A6F0E916E09671004869EE /* images */ = {
 			isa = PBXGroup;
 			children = (
+				0EA75138170A6A9800B3CAFC /* order.png */,
 				0EA987F91700363A0021D80B /* view_bg.png */,
 				0EA987FA1700363B0021D80B /* order_bg.png */,
 				0EA987F1170030EA0021D80B /* open_btn.png */,
@@ -748,6 +751,7 @@
 				0EAE80411709650000A5E4C4 /* CollectionHeader.xib in Resources */,
 				0EAE80451709651000A5E4C4 /* ReservationCell.xib in Resources */,
 				0EAE80771709669600A5E4C4 /* SVPullToRefresh.bundle in Resources */,
+				0EA75139170A6A9800B3CAFC /* order.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -158,9 +158,17 @@
 }
 
 - (IBAction)clickCancel:(id)sender{
-    [self.navigationController popToRootViewControllerAnimated:YES];
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"确定取消订单？" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
+    [alert show];
+    
 }
-
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
+    if (buttonIndex == 0) {
+        [alertView dismissWithClickedButtonIndex:0 animated:YES];
+    }else {
+        [self.navigationController popToRootViewControllerAnimated:YES];
+    }
+}
 - (NSString *)checkForm{
     NSMutableString *prod_ids = [NSMutableString string];
     int x=0,y=0,z=0;

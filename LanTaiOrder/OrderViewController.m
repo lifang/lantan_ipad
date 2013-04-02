@@ -150,6 +150,9 @@
     imageView.image = image;
     [self.btnCheckIn addSubview:imageView];
     
+    
+    self.noWorkingView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"order"]];
+    self.workingView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"order"]];
 }
 
 - (void)didReceiveMemoryWarning
@@ -277,7 +280,7 @@
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"订单取消失败" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
         [alert show];
     }
-    [MBProgressHUD hideHUDForView:self.orderView animated:YES];
+    [MBProgressHUD hideHUDForView:self.workingView animated:YES];
 }
 - (IBAction)clickCancel:(id)sender{
     if ([workingOrder objectForKey:@"id"] != NULL) {
@@ -285,11 +288,11 @@
             UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
             [alert show];
         }else {
-            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.orderView];
+            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.workingView];
             hud.dimBackground = NO;
             [hud showWhileExecuting:@selector(cancleOrder) onTarget:self withObject:nil animated:YES];
             hud.labelText = @"正在努力加载...";
-            [self.orderView addSubview:hud];
+            [self.workingView addSubview:hud];
         }
     }
 }

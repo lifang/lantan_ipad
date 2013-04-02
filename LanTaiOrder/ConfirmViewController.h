@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface ConfirmViewController : BaseViewController<UITableViewDataSource,UITableViewDelegate>
+@interface ConfirmViewController : BaseViewController<UITableViewDataSource,UITableViewDelegate,UIAlertViewDelegate>
 
 @property (nonatomic,strong) IBOutlet UILabel *lblCarNum,*lblBrand,*lblUsername,*lblPhone,*lblStart,*lblEnd,*lblTotal;
 @property (nonatomic,strong) IBOutlet UITableView *productTable;
