@@ -12,7 +12,8 @@
 
 @synthesize user_id,reserve_count,car_num,reserve_list;
 @synthesize number,payNumber;
-
+@synthesize doneArray;
+@synthesize tagOfBtn;
 
 - (id)init{
     if (self == [super init]) {
@@ -22,6 +23,8 @@
         self.workingOrders = [NSMutableArray array];
         self.car_num = [NSString string];
         self.reserve_list = [NSMutableArray array];
+        self.doneArray = [NSMutableArray array];
+        self.tagOfBtn = 0;
     }
     return self;
 }

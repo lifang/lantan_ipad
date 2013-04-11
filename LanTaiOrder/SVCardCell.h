@@ -10,11 +10,11 @@
 
 @interface SVCardCell : UITableViewCell{
    IBOutlet UILabel *lblName,*lblPrice,*lblCount;
-   IBOutlet UISwitch *switchBtn;
+   IBOutlet UIButton *switchBtn;
 }
 
 @property (nonatomic,strong) IBOutlet UILabel *lblName,*lblPrice,*lblCount;
-@property (nonatomic,strong) IBOutlet UISwitch *switchBtn;
+@property (nonatomic,strong) IBOutlet UIButton *switchBtn;
 @property (nonatomic,strong) NSMutableDictionary *prod;
 @property (nonatomic,strong) NSIndexPath *index;
 

@@ -13,6 +13,7 @@
 @end
 
 #define PICTURE @"pic"
+#define kPickerAnimationDuration 0.40
 
 @implementation AddViewController
 @synthesize stepView_0,stepView_1,stepView_2,stepView_3,stepView_4,step,btnDone,btnNext,btnPre;
@@ -21,7 +22,9 @@
 @synthesize txtBirth,txtCarNum,txtCarYear,txtEmail,txtName,txtPhone;
 @synthesize getPic,brandList,brandResult,productList,selectedIndexs,customer;
 @synthesize picArray,dataArray,car_num;
-
+@synthesize pickerView,pickView,dateFormatter;
+@synthesize pickerBtn,refreshBtn;
+static bool refresh = NO;
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
@@ -35,6 +38,7 @@
     self.btnNext.hidden = NO;
     self.btnDone.hidden = YES;
     self.btnPre.hidden = NO;
+    self.refreshBtn.hidden = YES;
     if ([step intValue]==0) {
         self.btnPre.hidden = YES;
         stepView_0.hidden = NO;
@@ -71,6 +75,7 @@
             stepView_4.hidden = YES;
         }
     }else if ([step intValue]==4) {
+        self.refreshBtn.hidden = NO;
         self.btnNext.hidden = YES;
         self.btnDone.hidden = NO;
         stepView_0.hidden = YES;
@@ -152,7 +157,39 @@
     NSString *uniquePath=[theFile stringByAppendingPathComponent:theName];
     [UIImagePNGRepresentation(theImage) writeToFile: uniquePath    atomically:YES];
 }
+//删除原图文件夹
+-(void)deleteImageWithName:(NSString *)name {
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask, YES);
+    NSString *documentsDirectory=[paths objectAtIndex:0];
+    NSString *savePath=[documentsDirectory stringByAppendingPathComponent:name];
+    //创建文件管理器
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    //判断temp文件夹是否存在
+    BOOL fileExists = [fileManager fileExistsAtPath:savePath];
+    if (fileExists) {
+        [fileManager removeItemAtPath:savePath error:nil];
+    }
+}
+//刷新
+-(IBAction)refreshBtnPressed:(id)sender {
+    refresh = YES;
+    //删除plist
+    NSFileManager *fileManage = [NSFileManager defaultManager];
+    NSArray *paths=NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask,YES);
+    NSString *path=[paths    objectAtIndex:0];
+    NSString *filename=[path stringByAppendingPathComponent:@"pic.plist"];
+    if ([fileManage fileExistsAtPath:filename]) {
+        [fileManage removeItemAtPath:filename error:nil];
+    }
+    //删除图片文件夹
+    [self deleteImageWithName:PICTURE];
 
+    MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+    hud.dimBackground = NO;
+    [hud showWhileExecuting:@selector(initData) onTarget:self withObject:nil animated:YES];
+    hud.labelText = @"正在努力加载...";
+    [self.view addSubview:hud];
+}
 - (void)initData{
     STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kBrandProduct]];
     [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id", nil]];
@@ -164,6 +201,8 @@
         self.brandList = [NSMutableArray arrayWithArray:[result objectForKey:@"brands"]];
         self.productList = [NSMutableArray arrayWithArray:[result objectForKey:@"products"]];
     }
+    DLog(@"%@",productList);
+    
     if ([DataService sharedService].number == 0) {
         self.picArray = [NSMutableArray array];
         [self getPci];
@@ -175,52 +214,58 @@
                 if (arrayPic.count>0) {
                     for (int j=0; j<arrayPic.count; j++) {
                         NSDictionary *picDic = [[NSDictionary alloc]initWithDictionary:[arrayPic objectAtIndex:j]];
-                        NSString *pic = [picDic objectForKey:@"img"];
+                        NSString *pic = [NSString stringWithFormat:@"%@",[picDic objectForKey:@"img"]];
                         
                         UIImage *image = nil;
-                        if (![pic isEqualToString:@""]) {
-                            NSString *urlstring = [NSString stringWithFormat:@"%@%@",kDomain,pic];//图片的路径
-                            NSString *typeStr = [urlstring substringFromIndex:urlstring.length-4];//取图片的格式
-                            NSString *urlStringMd5 = [Utils MD5:urlstring];
-                            NSString *picName = [NSString stringWithFormat:@"%@%@",urlStringMd5,typeStr];//保存的图片名称
-                            NSDictionary *picDictionary = [NSDictionary dictionaryWithObjectsAndKeys:urlstring,picName, nil];//保存到plist的字典
-                            //遍历plist数组，查看本地是否有保存
-                            if (self.dataArray.count > 0) {
-                                BOOL exit = NO;
-                                int i=0;
-                                while (i<self.dataArray.count) {
-                                    NSDictionary *dictionary = [self.dataArray objectAtIndex:i];
-                                    if ([dictionary isEqualToDictionary:picDictionary]) {
-                                        exit = YES;
-                                        NSString *picDocument = [self getDoucmentFilePathLittleImageWithName:PICTURE];//保存图片的文件夹
-                                        NSString *picture = [picDocument stringByAppendingPathComponent:picName];//保存图片的路径
-                                        //直接从沙盒读取图片
-                                        NSData *imageData=[[NSData alloc ]initWithContentsOfFile:picture];
-                                        image = [UIImage imageWithData:imageData];
-                                        
-                                        break;
+                       
+                            if ((![pic isEqualToString:@""]) || (![pic isKindOfClass:[NSNull class]])) {
+                                NSString *urlstring = [NSString stringWithFormat:@"%@%@",kDomain,pic];//图片的路径
+                                NSString *typeStr = [urlstring substringFromIndex:urlstring.length-4];//取图片的格式
+                                NSString *urlStringMd5 = [Utils MD5:urlstring];
+                                NSString *picName = [NSString stringWithFormat:@"%@%@",urlStringMd5,typeStr];//保存的图片名称
+                                NSDictionary *picDictionary = [NSDictionary dictionaryWithObjectsAndKeys:urlstring,picName, nil];//保存到plist的字典
+                                //遍历plist数组，查看本地是否有保存
+                                if (self.dataArray.count > 0) {
+                                    BOOL exit = NO;
+                                    int i=0;
+                                    while (i<self.dataArray.count) {
+                                        NSDictionary *dictionary = [self.dataArray objectAtIndex:i];
+                                        if ([dictionary isEqualToDictionary:picDictionary]) {
+                                            exit = YES;
+                                            NSString *picDocument = [self getDoucmentFilePathLittleImageWithName:PICTURE];//保存图片的文件夹
+                                            NSString *picture = [picDocument stringByAppendingPathComponent:picName];//保存图片的路径
+                                            //直接从沙盒读取图片
+                                            NSData *imageData=[[NSData alloc ]initWithContentsOfFile:picture];
+                                            image = [UIImage imageWithData:imageData];
+                                            
+                                            break;
+                                        }
+                                        i++;
                                     }
-                                    i++;
-                                }
-                                //不在plist里面
-                                if (exit == NO) {
+                                    //不在plist里面
+                                    if (exit == NO) {
+                                        image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",kDomain,pic]]]];
+                                        NSString *picDocument = [self getDoucmentFilePathLittleImageWithName:PICTURE];
+                                        [self savePhotoDataWithfile:picDocument andImage:image andName:picName];//保存图片
+                                        [tempArray addObject:picDictionary];
+                                    }
+                                }else {//plist为空
                                     image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",kDomain,pic]]]];
                                     NSString *picDocument = [self getDoucmentFilePathLittleImageWithName:PICTURE];
                                     [self savePhotoDataWithfile:picDocument andImage:image andName:picName];//保存图片
                                     [tempArray addObject:picDictionary];
                                 }
-                            }else {//plist为空
-                                image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",kDomain,pic]]]];
-                                NSString *picDocument = [self getDoucmentFilePathLittleImageWithName:PICTURE];
-                                [self savePhotoDataWithfile:picDocument andImage:image andName:picName];//保存图片
-                                [tempArray addObject:picDictionary];
+                                if (image == nil) {
+                                    image = [UIImage imageNamed:@"close_btn"];
+                                    [array addObject:image];
+                                }else {
+                                    [array addObject:image];
+                                }
+                                
+                            }else {
+                                image = [UIImage imageNamed:@"close_btn"];
+                                [array addObject:image];
                             }
-                            
-                            [array addObject:image];
-                        }else {
-                            image = [UIImage imageNamed:@"close_btn"];
-                            [array addObject:image];
-                        }
                     }
                 }
                 [self.picArray addObject:array];
@@ -235,7 +280,11 @@
             [arraySave writeToFile:filename atomically:YES];
         }
     }
-    
+    if (refresh == YES) {
+        [MBProgressHUD hideHUDForView:self.view animated:YES];
+        [self.productsView reloadData];
+        refresh = NO;
+    }
 }
 //保存到plist文件
 -(NSString*)getHistoryPath {
@@ -266,6 +315,12 @@
 {
     self.picArray = [NSMutableArray array];
     
+    //日期得pickerView
+    self.dateFormatter = [[NSDateFormatter alloc] init];
+    [self.dateFormatter setDateStyle:NSDateFormatterMediumStyle];
+    [self.dateFormatter setTimeStyle:NSDateFormatterNoStyle];
+    
+    
     [self initData];
     [super viewDidLoad];
     [self initView];
@@ -276,7 +331,6 @@
     if (![self.navigationItem rightBarButtonItem]) {
         [self addRightnaviItemWithImage:@"back"];
     }
-    DLog(@"%@",self.car_num);
     //登记车牌号
     if (self.car_num) {
         self.txtCarNum.text = self.car_num;
@@ -310,6 +364,83 @@
     [self.txtCarYear resignFirstResponder];
     [self.txtCarNum resignFirstResponder];
     [self.txtBirth resignFirstResponder];
+    
+    CGRect pickerFrame = self.pickView.frame;
+    pickerFrame.origin.y = self.view.frame.size.height;
+    [UIView beginAnimations:nil context:NULL];
+    [UIView setAnimationDuration:kPickerAnimationDuration];
+    [UIView setAnimationDelegate:self];
+    [UIView setAnimationDidStopSelector:@selector(slideDownDidStop)];
+    self.pickView.frame = pickerFrame;
+    [UIView commitAnimations];
+    [DataService sharedService].tagOfBtn = 0;
+}
+
+-(IBAction)pickerViewDown:(id)sender {
+    CGRect pickerFrame = self.pickView.frame;
+    pickerFrame.origin.y = self.view.frame.size.height;
+    [UIView beginAnimations:nil context:NULL];
+    [UIView setAnimationDuration:kPickerAnimationDuration];
+    [UIView setAnimationDelegate:self];
+    [UIView setAnimationDidStopSelector:@selector(slideDownDidStop)];
+    self.pickView.frame = pickerFrame;
+    [UIView commitAnimations];
+    [DataService sharedService].tagOfBtn = 0;
+}
+-(IBAction)showPicker:(id)sender {
+    [self.txtName resignFirstResponder];
+    [self.txtPhone resignFirstResponder];
+    [self.txtEmail resignFirstResponder];
+    [self.txtCarYear resignFirstResponder];
+    [self.txtCarNum resignFirstResponder];
+    [self.txtBirth resignFirstResponder];
+    
+    //初识状态
+    if (![self.txtBirth.text isEqualToString:@""]) {
+        self.pickerView.date = [self.dateFormatter dateFromString:self.txtBirth.text];
+    }else {
+        self.pickerView.date = [NSDate date];
+    }
+    if ([DataService sharedService].tagOfBtn == 0)
+    {
+        CGRect startFrame = self.pickView.frame;
+        CGRect endFrame = self.pickView.frame;
+        startFrame.origin.y = self.view.frame.size.height;
+        endFrame.origin.y = startFrame.origin.y - endFrame.size.height;
+        self.pickView.frame = startFrame;
+        [self.view addSubview:self.pickView];
+        [UIView beginAnimations:nil context:NULL];
+        [UIView setAnimationDuration:kPickerAnimationDuration];
+        self.pickView.frame = endFrame;
+        [UIView commitAnimations];
+        
+        [DataService sharedService].tagOfBtn = 1;
+    }
+}
+- (void)textFieldDidBeginEditing:(UITextField *)textField {
+    if ([textField isEqual:self.txtBirth]) {
+    }else {
+        CGRect pickerFrame = self.pickView.frame;
+        pickerFrame.origin.y = self.view.frame.size.height;
+        
+        [UIView beginAnimations:nil context:NULL];
+        [UIView setAnimationDuration:kPickerAnimationDuration];
+        [UIView setAnimationDelegate:self];
+        [UIView setAnimationDidStopSelector:@selector(slideDownDidStop)];
+        self.pickView.frame = pickerFrame;
+        [UIView commitAnimations];
+        
+        [DataService sharedService].tagOfBtn = 0;
+    }
+}
+- (IBAction)dateAction:(id)sender
+{
+    NSLog(@"date = %@",self.pickerView.date);
+	self.txtBirth.text = [self.dateFormatter stringFromDate:self.pickerView.date];
+}
+- (void)slideDownDidStop
+{
+	[self.pickView removeFromSuperview];
 }
 //完成登记
 -(void)finishInfo {
@@ -340,10 +471,16 @@
     if ([[result objectForKey:@"status"] intValue]==1) {
         [self.navigationController popToRootViewControllerAnimated:YES];
     }else {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:[result objectForKey:@"content"] delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-        [alert show];
+        [AHAlertView applyCustomAlertAppearance];
+        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:[result objectForKey:@"content"]];
+        __block AHAlertView *alert = alertt;
+        [alertt setCancelButtonTitle:@"确定" block:^{
+            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+            alert = nil;
+        }];
+        [alertt show];
     }
-    [MBProgressHUD hideHUDForView:self.stepView_3 animated:YES];
+    [MBProgressHUD hideHUDForView:self.view animated:YES];
 
 }
 //完成下单
@@ -382,7 +519,6 @@
         
         DLog(@"result = %@",result);
         if ([[result objectForKey:@"status"] intValue]==1) {
-//            [M3BProgressHUD hideHUDForView:self.view animated:YES];
             ConfirmViewController *confirmView = [[ConfirmViewController alloc] initWithNibName:@"ConfirmViewController" bundle:nil];
             confirmView.productList = [NSMutableArray array];
             if ([result objectForKey:@"info"]) {
@@ -403,22 +539,39 @@
             confirmView.total_count = [[result objectForKey:@"total"] floatValue];
             [self.navigationController pushViewController:confirmView animated:YES];
         }else{
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:[result objectForKey:@"content"] delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-            [alert show];
+            [AHAlertView applyCustomAlertAppearance];
+            AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:[result objectForKey:@"content"]];
+            __block AHAlertView *alert = alertt;
+            [alertt setCancelButtonTitle:@"确定" block:^{
+                alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+                alert = nil;
+            }];
+            [alertt show];
         }
         
     }else{
-        
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"请选择所需的产品、服务" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-        [alert show];
+        [AHAlertView applyCustomAlertAppearance];
+        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"请选择所需的产品、服务"];
+        __block AHAlertView *alert = alertt;
+        [alertt setCancelButtonTitle:@"确定" block:^{
+            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+            alert = nil;
+        }];
+        [alertt show];
     }
-    [MBProgressHUD hideHUDForView:self.stepView_4 animated:YES];
+    [MBProgressHUD hideHUDForView:self.view animated:YES];
 }
 - (IBAction)clickFinished:(id)sender{
     if ([DataService sharedService].number == 1) {
         if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-            [alert show];
+            [AHAlertView applyCustomAlertAppearance];
+            AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:kNoReachable];
+            __block AHAlertView *alert = alertt;
+            [alertt setCancelButtonTitle:@"确定" block:^{
+                alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+                alert = nil;
+            }];
+            [alertt show];
         }else {
            
             NSString *str = @"";
@@ -442,23 +595,30 @@
                     str = @"请输入出生年月日";
                 }else {
                     
-                    NSString *regexCall =@"((19[0-9]{2})|(2[0-9]{3})）-((1[0-2])|(0[1-9]))-((0[1-9])|([1-2][0-9])|3[0-1])";
+                    NSString *regexCall =@"((19[0-9]{2})|(2[0-9]{3})）-((1[0-2])|([1-9]))-(([1-9])|([1-2][0-9])|3[0-1])";
                     NSPredicate *predicateCall = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regexCall];
                     if ([predicateCall evaluateWithObject:txtBirth.text]) {
                         //获取年份
                         NSDate *now = [NSDate date];
                         NSCalendar *calendar = [NSCalendar currentCalendar];
-                        NSUInteger unitFlags = NSYearCalendarUnit;
+                        NSUInteger unitFlags = NSYearCalendarUnit  | NSMonthCalendarUnit | NSDayCalendarUnit;
                         NSDateComponents *dateComponent = [calendar components:unitFlags fromDate:now];
                         int year = [dateComponent year];
+                        int month = [dateComponent month];
+                        int day = [dateComponent day];
                         
-                        NSString *yearStr = [txtBirth.text substringToIndex:4];
-                        int brith_year = [yearStr intValue];
-                        if (brith_year >= year) {
-                            str = @"请输入准确的出生年月日";
+                        NSArray *arr = [txtBirth.text componentsSeparatedByString:@"-"];
+                        int brith_year = [[arr objectAtIndex:0] intValue];
+                        int birth_month = [[arr objectAtIndex:1]intValue];
+                        int birth_day = [[arr objectAtIndex:2]intValue];
+                        
+                        if (brith_year > year) {
+                            str = @"请输入准确的出生年份";
+                        }else if ((brith_year==year) && (birth_month > month)) {
+                            str = @"请输入准确的出生月份";
+                        }else if ((brith_year==year) && (birth_month == month) && (birth_day >= day)) {
+                            str = @"请输入准确的出生日子";
                         }
-                    }else {
-                        str = @"出生年月日的格式为:xxxx-xx-xx";
                     }
                 }
                 //判断邮箱
@@ -466,27 +626,39 @@
                     str = @"请输入QQ/微信/邮箱地址";
                 }
             }
-            if (self.txtName.text.length==0 || self.txtPhone.text.length==0 || self.txtBirth.text.length==0 || self.txtEmail.text.length ==0 || str.length != 0) {
-                UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:str delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-                [alert show];
+            if (self.txtName.text.length==0 || self.txtPhone.text.length==0 || self.txtBirth.text.length==0 || self.txtEmail.text.length ==0 || ![str isEqualToString:@""]) {
+                [AHAlertView applyCustomAlertAppearance];
+                AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:str];
+                __block AHAlertView *alert = alertt;
+                [alertt setCancelButtonTitle:@"确定" block:^{
+                    alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+                    alert = nil;
+                }];
+                [alertt show];
             }else {
-                MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.stepView_3];
+                MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
                 hud.dimBackground = NO;
                 [hud showWhileExecuting:@selector(finishInfo) onTarget:self withObject:nil animated:YES];
                 hud.labelText = @"正在努力加载...";
-                [self.stepView_3 addSubview:hud];
+                [self.view addSubview:hud];
             }
         }
     }else {
         if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-            [alert show];
+            [AHAlertView applyCustomAlertAppearance];
+            AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:kNoReachable];
+            __block AHAlertView *alert = alertt;
+            [alertt setCancelButtonTitle:@"确定" block:^{
+                alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+                alert = nil;
+            }];
+            [alertt show];
         }else {
-            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.stepView_4];
+            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
             hud.dimBackground = NO;
             [hud showWhileExecuting:@selector(finishOrder) onTarget:self withObject:nil animated:YES];
             hud.labelText = @"正在努力加载...";
-            [self.stepView_4 addSubview:hud];
+            [self.view addSubview:hud];
         }
     }
 }
@@ -548,24 +720,30 @@
                 if (txtBirth.text.length == 0) {
                     str = @"请输入出生年月日";
                 }else {
-
-                    NSString *regexCall =@"((19[0-9]{2})|(2[0-9]{3})）-((1[0-2])|(0[1-9]))-((0[1-9])|([1-2][0-9])|3[0-1])";
+                    NSString *regexCall =@"((19[0-9]{2})|(2[0-9]{3})）-((1[0-2])|([1-9]))-(([1-9])|([1-2][0-9])|3[0-1])";
                     NSPredicate *predicateCall = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regexCall];
                     if ([predicateCall evaluateWithObject:txtBirth.text]) {
                         //获取年份
                         NSDate *now = [NSDate date];
                         NSCalendar *calendar = [NSCalendar currentCalendar];
-                        NSUInteger unitFlags = NSYearCalendarUnit;
+                        NSUInteger unitFlags = NSYearCalendarUnit | NSMonthCalendarUnit | NSDayCalendarUnit;
                         NSDateComponents *dateComponent = [calendar components:unitFlags fromDate:now];
                         int year = [dateComponent year];
+                        int month = [dateComponent month];
+                        int day = [dateComponent day];
                         
-                        NSString *yearStr = [txtBirth.text substringToIndex:4];
-                        int brith_year = [yearStr intValue];
-                        if (brith_year >= year) {
-                            str = @"请输入准确的出生年月日";
+                        NSArray *arr = [txtBirth.text componentsSeparatedByString:@"-"];
+                        int brith_year = [[arr objectAtIndex:0] intValue];
+                        int birth_month = [[arr objectAtIndex:1]intValue];
+                        int birth_day = [[arr objectAtIndex:2]intValue];
+                        
+                        if (brith_year > year) {
+                            str = @"请输入准确的出生年份";
+                        }else if ((brith_year==year) && (birth_month > month)) {
+                            str = @"请输入准确的出生月份";
+                        }else if ((brith_year==year) && (birth_month == month) && (birth_day >= day)) {
+                            str = @"请输入准确的出生日子";
                         }
-                    }else {
-                        str = @"请输入准确的出生年月日";
                     }
                 }
                 //判断邮箱
@@ -577,8 +755,14 @@
         if (str.length==0) {
            x += 1; 
         }else{
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:str delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-            [alert show];
+            [AHAlertView applyCustomAlertAppearance];
+            AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:str];
+            __block AHAlertView *alert = alertt;
+            [alertt setCancelButtonTitle:@"确定" block:^{
+                alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+                alert = nil;
+            }];
+            [alertt show];
         }
         
     }
@@ -607,18 +791,18 @@
 }
 
 // returns the # of rows in each component..
-- (NSInteger)pickerView:(UIPickerView *)pickerView numberOfRowsInComponent:(NSInteger)component{
+- (NSInteger)pickerView:(UIPickerView *)pickerVieww numberOfRowsInComponent:(NSInteger)component{
     
-    if ([pickerView isEqual:modelView]) {
+    if ([pickerVieww isEqual:modelView]) {
         NSDictionary *brand  = [brandList objectAtIndex:[brandView selectedRowInComponent:0]];
         return [[brand objectForKey:@"models"] count];
     }
     return self.brandList.count;
 }
 
-- (NSString *)pickerView:(UIPickerView *)pickerView titleForRow:(NSInteger)row forComponent:(NSInteger)component{
+- (NSString *)pickerView:(UIPickerView *)pickerVieww titleForRow:(NSInteger)row forComponent:(NSInteger)component{
     
-    if ([pickerView isEqual:modelView]) {
+    if ([pickerVieww isEqual:modelView]) {
         NSDictionary *brand  = [brandList objectAtIndex:[brandView selectedRowInComponent:0]];
         if ([[brand objectForKey:@"models"] count]>0) {
             return [[[brand objectForKey:@"models"] objectAtIndex:row] objectForKey:@"name"];
@@ -632,8 +816,8 @@
     }
 }
 
-- (void)pickerView:(UIPickerView *)pickerView didSelectRow:(NSInteger)row inComponent:(NSInteger)component{
-    if ([pickerView isEqual:brandView]) {
+- (void)pickerView:(UIPickerView *)pickerVieww didSelectRow:(NSInteger)row inComponent:(NSInteger)component{
+    if ([pickerVieww isEqual:brandView]) {
         [modelView reloadAllComponents];
     }
 }
@@ -649,7 +833,6 @@
 //产品，服务的单元格
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath{
     static NSString *CellIdentifier = @"CollectionCell";
-//    NSString *CellIdentifier = [NSString stringWithFormat:@"CollectionCell%d", [indexPath row]];
     CollectionCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:CellIdentifier forIndexPath:indexPath];
     cell.prodName.hidden = YES;
     cell.prodImage.hidden = YES;
@@ -667,11 +850,11 @@
                 }else{
                     cell.contentView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"collectioncell_bg"]];
                 }
-                if (![[prod objectForKey:@"img"] isEqual:[NSNull null]]) {
+//                if (![[prod objectForKey:@"img"] isEqual:[NSNull null]]) {
                     if ([DataService sharedService].number == 0){
                         cell.prodImage.image = [[self.picArray objectAtIndex:x]objectAtIndex:indexPath.section];
                     }
-                }
+//                }
                 
             }else{
                 cell.prodName.hidden = YES;
@@ -714,9 +897,43 @@
                 [selectedIndexs removeObject:indexPath];
             }
         }else{
-           cell.backgroundColor = [UIColor redColor];
-            if (![self isSelected:indexPath]) {
-                [selectedIndexs addObject:indexPath];
+            if (indexPath.row == 3) {
+                if (self.selectedIndexs.count>0) {
+                    int i=0;
+                    BOOL exit = NO;
+                    while (i<selectedIndexs.count) {
+                        NSIndexPath *index = [selectedIndexs objectAtIndex:i];
+                        if (index.row == indexPath.row) {
+                            exit = YES;
+                            [AHAlertView applyCustomAlertAppearance];
+                            AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"活动，打折卡，套餐卡每类最多可以选择一个"];
+                            __block AHAlertView *alert = alertt;
+                            [alertt setCancelButtonTitle:@"确定" block:^{
+                                alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+                                alert = nil;
+                            }];
+                            [alertt show];
+                            break;
+                        }
+                        i++;
+                    }
+                    if (exit == NO) {
+                        cell.backgroundColor = [UIColor redColor];
+                        if (![self isSelected:indexPath]) {
+                            [selectedIndexs addObject:indexPath];
+                        }
+                    }
+                }else {
+                    cell.backgroundColor = [UIColor redColor];
+                    if (![self isSelected:indexPath]) {
+                        [selectedIndexs addObject:indexPath];
+                    }
+                }
+            }else {
+                cell.backgroundColor = [UIColor redColor];
+                if (![self isSelected:indexPath]) {
+                    [selectedIndexs addObject:indexPath];
+                }
             }
         }
     }

@@ -16,7 +16,7 @@
 {
     self = [super initWithFrame:frame];
     if (self) {
-        CGRect frame = CGRectMake(0, 1, 180, 42);
+        CGRect frame = CGRectMake(1, 1, 180, 42);
         lbl_1 = [[UILabel alloc] initWithFrame:frame];
         lbl_1.textAlignment = NSTextAlignmentCenter;
         lbl_1.text = @"订单号";
@@ -56,6 +56,7 @@
         lbl_6.textColor = [UIColor colorWithRed:0.5765 green:0.0078 blue:0.0196 alpha:1.0];//颜色
         [self addSubview:lbl_6];
         frame.origin.x += 101;
+        frame.size.width = 96;
         lbl_7 = [[UILabel alloc] initWithFrame:frame];
         [self addSubview:lbl_7];
         self.backgroundColor = [UIColor lightGrayColor];

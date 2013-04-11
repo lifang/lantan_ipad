@@ -9,6 +9,7 @@
 #import "PayStyleViewController.h"
 #import <CommonCrypto/CommonCrypto.h>
 #import "UIViewController+MJPopupViewController.h"
+#import <QuartzCore/QuartzCore.h>
 
 @interface PayStyleViewController ()
 
@@ -37,16 +38,29 @@
     NSError *error = nil;
     NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
     DLog(@"%@",result);
+    
     if ([[result objectForKey:@"status"] intValue]==1) {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"交易成功！" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-        [alert show];
+        [AHAlertView applyCustomAlertAppearance];
+        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"交易成功！"];
+        __block AHAlertView *alert = alertt;
+        [alertt setCancelButtonTitle:@"确定" block:^{
+            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+            alert = nil;
+        }];
+        [alertt show];
         isSuccess = TRUE;
     }else{
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:[NSString stringWithFormat:@"交易失败,%@！",[result objectForKey:@"content"]] delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-        [alert show];
+        [AHAlertView applyCustomAlertAppearance];
+        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:[NSString stringWithFormat:@"交易失败,%@！",[result objectForKey:@"content"]]];
+        __block AHAlertView *alert = alertt;
+        [alertt setCancelButtonTitle:@"确定" block:^{
+            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+            alert = nil;
+        }];
+        [alertt show];
         isSuccess = FALSE;
     }
-    [MBProgressHUD hideHUDForView:self.payStyle animated:YES];
+    [MBProgressHUD hideHUDForView:self.view animated:YES];
     if (self.delegate && [self.delegate respondsToSelector:@selector(closePopView:)]) {
         [self.delegate closePopView:self];
     }
@@ -55,14 +69,20 @@
     self.payType = type;
     if (self.order) {
         if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-            [alert show];
+            [AHAlertView applyCustomAlertAppearance];
+            AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:kNoReachable];
+            __block AHAlertView *alert = alertt;
+            [alertt setCancelButtonTitle:@"确定" block:^{
+                alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+                alert = nil;
+            }];
+            [alertt show];
         }else {
-            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.payStyle];
+            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
             hud.dimBackground = NO;
             [hud showWhileExecuting:@selector(payWithType) onTarget:self withObject:nil animated:YES];
             hud.labelText = @"正在努力加载...";
-            [self.payStyle addSubview:hud];
+            [self.view addSubview:hud];
         }
     }
 }
@@ -84,8 +104,14 @@
         [applicaion openURL:url];
         return YES;
     }else{
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"你还没安装QFPOS安全支付插件，建议你先安装再发起交易！" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-        [alert show];
+        [AHAlertView applyCustomAlertAppearance];
+        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"你还没安装QFPOS安全支付插件，建议你先安装再发起交易！"];
+        __block AHAlertView *alert = alertt;
+        [alertt setCancelButtonTitle:@"确定" block:^{
+            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+            alert = nil;
+        }];
+        [alertt show];
         return NO;
     }
 }
@@ -109,9 +135,14 @@
     if ([result isEqualToString:@"success"]) {
         [self pay:1];
     }else if ([result isEqualToString:@"fail"]){
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"交易失败！" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-        [alert show];
-        
+        [AHAlertView applyCustomAlertAppearance];
+        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"交易失败！"];
+        __block AHAlertView *alert = alertt;
+        [alertt setCancelButtonTitle:@"确定" block:^{
+            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+            alert = nil;
+        }];
+        [alertt show];
     }
 }
 
@@ -126,25 +157,44 @@
     if ([[result objectForKey:@"status"] integerValue] == 1) {
         [self pay:2];
     }else{
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:[result objectForKey:@"content"] delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-        [alert show];
+        [AHAlertView applyCustomAlertAppearance];
+        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:[result objectForKey:@"content"]];
+        __block AHAlertView *alert = alertt;
+        [alertt setCancelButtonTitle:@"确定" block:^{
+            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+            alert = nil;
+        }];
+        [alertt show];
     }
-    [MBProgressHUD hideHUDForView:self.codeView animated:YES];
+    [MBProgressHUD hideHUDForView:self.view animated:YES];
 }
 - (IBAction)clickCodeBtn:(id)sender{
+    [self.txtCode resignFirstResponder];
     if (self.txtCode.text.length == 0) {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"请输入验证码！" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-        [alert show];
+        [AHAlertView applyCustomAlertAppearance];
+        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"请输入验证码！"];
+        __block AHAlertView *alert = alertt;
+        [alertt setCancelButtonTitle:@"确定" block:^{
+            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+            alert = nil;
+        }];
+        [alertt show];
     }else{
         if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-            [alert show];
+            [AHAlertView applyCustomAlertAppearance];
+            AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:kNoReachable];
+            __block AHAlertView *alert = alertt;
+            [alertt setCancelButtonTitle:@"确定" block:^{
+                alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+                alert = nil;
+            }];
+            [alertt show];
         }else{
-            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.codeView];
+            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
             hud.dimBackground = NO;
             [hud showWhileExecuting:@selector(code) onTarget:self withObject:nil animated:YES];
             hud.labelText = @"正在努力加载...";
-            [self.codeView addSubview:hud];
+            [self.view addSubview:hud];
         }
     }
 }
@@ -152,8 +202,14 @@
 //发送验证码
 -(void)sendCode {
     if (self.txtPhone.text.length == 0) {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"请输入手机号！" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-        [alert show];
+        [AHAlertView applyCustomAlertAppearance];
+        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"请输入手机号！"];
+        __block AHAlertView *alert = alertt;
+        [alertt setCancelButtonTitle:@"确定" block:^{
+            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+            alert = nil;
+        }];
+        [alertt show];
     }else{
         STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@",kSendMeg]];
         [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:self.txtPhone.text,@"mobilephone",[order objectForKey:@"price"],@"price", nil]];
@@ -166,24 +222,36 @@
             self.phoneView.hidden = YES;
             self.payStyle.hidden = YES;
         }else{
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"当前号码未购买储值卡或余额不足！" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-            [alert show];
+            [AHAlertView applyCustomAlertAppearance];
+            AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"当前号码未购买储值卡或余额不足！"];
+            __block AHAlertView *alert = alertt;
+            [alertt setCancelButtonTitle:@"确定" block:^{
+                alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+                alert = nil;
+            }];
+            [alertt show];
         }
     }
-    [MBProgressHUD hideHUDForView:self.phoneView animated:YES];
+    [MBProgressHUD hideHUDForView:self.view animated:YES];
 }
 - (IBAction)clickSendCode:(id)sender{
     [self.txtPhone resignFirstResponder];
     [self.txtCode resignFirstResponder];
     if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-        [alert show];
+        [AHAlertView applyCustomAlertAppearance];
+        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:kNoReachable];
+        __block AHAlertView *alert = alertt;
+        [alertt setCancelButtonTitle:@"确定" block:^{
+            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+            alert = nil;
+        }];
+        [alertt show];
     }else {
-        MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.phoneView];
+        MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
         hud.dimBackground = NO;
         [hud showWhileExecuting:@selector(sendCode) onTarget:self withObject:nil animated:YES];
         hud.labelText = @"正在努力加载...";
-        [self.phoneView addSubview:hud];
+        [self.view addSubview:hud];
     }
 }
 
@@ -205,12 +273,6 @@
     self.phoneView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"alert_bg"]];
     self.codeView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"alert_bg"]];
     
-}
-
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
 
 @end

@@ -23,7 +23,6 @@
 @synthesize productTable,productList,orderInfo,total_count;
 @synthesize segBtn,pleaseView,orderBgView;
 
-
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
@@ -57,6 +56,7 @@
             [productList addObject:[orderInfo objectForKey:@"c_pcard_relation"]];
         }
     }
+    DLog(@"%@",productList);
     [super viewDidLoad];
     if (![self.navigationItem rightBarButtonItem]) {
         [self addRightnaviItemWithImage:@"back"];
@@ -155,7 +155,11 @@
                [prods appendFormat:@"%@,",[prod objectForKey:@"name"]]; 
             }
         }
-        [dic setObject:[prods substringToIndex:prods.length - 1] forKey:@"prods"];
+        DLog(@"%@",prods);
+        if (prods.length>0) {
+            [dic setObject:[prods substringToIndex:prods.length - 1] forKey:@"prods"];
+        }
+        
         complaint.info = [NSMutableDictionary dictionaryWithDictionary:dic];
         [self.navigationController pushViewController:complaint animated:YES];
     }else{
@@ -193,6 +197,7 @@
 
 - (void)closePopView:(PayStyleViewController *)payStyleViewController{
     [self dismissPopupViewControllerWithanimationType:MJPopupViewAnimationFade];
+    
     if (payStyleViewController.isSuccess) {
         [self.navigationController popToRootViewControllerAnimated:YES];
     }

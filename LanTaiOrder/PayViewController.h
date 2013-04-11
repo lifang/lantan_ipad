@@ -24,6 +24,7 @@
 @property (nonatomic,strong) IBOutlet UIView *pleaseView,*orderBgView;
 @property (nonatomic,strong) IBOutlet UISegmentedControl *segBtn;
 
+
 - (IBAction)clickSegBtn:(UISegmentedControl *)sender;
 
 @end

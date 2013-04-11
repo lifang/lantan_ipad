@@ -15,7 +15,7 @@
 @property (nonatomic, retain) UIColor *textColor;
 @property (nonatomic, readwrite) UIActivityIndicatorViewStyle activityIndicatorViewStyle;
 
-- (void)stopAnimating;
+- (void)stopAnimatingg;
 
 @end
 

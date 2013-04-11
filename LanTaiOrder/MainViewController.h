@@ -18,7 +18,7 @@
 @property (nonatomic,strong) IBOutlet UILabel *lblCount;
 @property (nonatomic,strong) IBOutlet UIButton *statusImg;
 @property (nonatomic,strong) IBOutlet UIView *mainView;
-
+@property (nonatomic,strong) IBOutlet UIView *hideView;
 
 - (IBAction)clickSearchBtn:(id)sender;
 - (IBAction)clickShowBtn:(id)sender;

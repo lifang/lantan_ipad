@@ -20,25 +20,36 @@
 
 - (void)showRootView{
     [self.lantan_initView.view removeFromSuperview];//initView消失
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    NSString *userInfo = [defaults objectForKey:@"userId"];
-    DLog(@"%@--------%i",userInfo,[userInfo isEqualToString:@""]);
-    if (userInfo != nil) {
-        [DataService sharedService].store_id = [defaults objectForKey:@"storeId"];
-        [DataService sharedService].user_id = userInfo;
-        MainViewController *messageView = [[MainViewController alloc] initWithNibName:@"MainViewController" bundle:nil];
-        UINavigationController *navigationView = [[UINavigationController alloc] initWithRootViewController:messageView];
-        //设置导航条背景
-        if ([navigationView.navigationBar respondsToSelector:@selector(setBackgroundImage:forBarMetrics:)]) {
-            [navigationView.navigationBar setBackgroundImage:[UIImage imageNamed:@"nav_bg"] forBarMetrics:UIBarMetricsDefault];
+    if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
+        [AHAlertView applyCustomAlertAppearance];
+        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:kNoReachable];
+        __block AHAlertView *alert = alertt;
+        [alertt setCancelButtonTitle:@"确定" block:^{
+            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+            alert = nil;
+        }];
+        [alertt show];
+    }else {
+        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        NSString *userInfo = [defaults objectForKey:@"userId"];
+        DLog(@"%@--------%i",userInfo,[userInfo isEqualToString:@""]);
+        if (userInfo != nil) {
+            [DataService sharedService].store_id = [defaults objectForKey:@"storeId"];
+            [DataService sharedService].user_id = userInfo;
+            MainViewController *messageView = [[MainViewController alloc] initWithNibName:@"MainViewController" bundle:nil];
+            UINavigationController *navigationView = [[UINavigationController alloc] initWithRootViewController:messageView];
+            //设置导航条背景
+            if ([navigationView.navigationBar respondsToSelector:@selector(setBackgroundImage:forBarMetrics:)]) {
+                [navigationView.navigationBar setBackgroundImage:[UIImage imageNamed:@"nav_bg"] forBarMetrics:UIBarMetricsDefault];
+            }
+            self.window.rootViewController = navigationView;
+        }else{
+            LoginViewController *loginView = [[LoginViewController alloc] initWithNibName:@"LoginViewController" bundle:nil];
+            UINavigationController *navigationView = [[UINavigationController alloc] initWithRootViewController:loginView];
+            self.window.rootViewController = navigationView;
         }
-        self.window.rootViewController = navigationView;
-    }else{
-        LoginViewController *loginView = [[LoginViewController alloc] initWithNibName:@"LoginViewController" bundle:nil];
-        UINavigationController *navigationView = [[UINavigationController alloc] initWithRootViewController:loginView];
-        self.window.rootViewController = navigationView;
+
     }
-    
 }
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
@@ -83,20 +94,24 @@
         if (clientVer>=serverVer) {
             
         }else {
+            [AHAlertView applyCustomAlertAppearance];
             NSString *message = [NSString stringWithFormat:@"软件有最新版本%@，您是否升级？",latestVersion];
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:message delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
-            [alert show];
+            AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:nil message:message];
+            __block AHAlertView *alert = alertt;
+            [alertt setCancelButtonTitle:@"取消" block:^{
+                alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+                alert = nil;
+            }];
+            [alertt addButtonWithTitle:@"确定" block:^{
+                alert.dismissalStyle = AHAlertViewDismissalStyleZoomDown;
+                alert = nil;
+                [[UIApplication sharedApplication] openURL:[NSURL URLWithString:self.versionUrlStr]];
+            }];
+            [alertt show];
         }
     }
 }
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
-    if (buttonIndex == 0) {
-        [alertView dismissWithClickedButtonIndex:0 animated:YES];
-    }else {
-        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:self.versionUrlStr]];
-        [alertView dismissWithClickedButtonIndex:1 animated:YES];
-    }
-}
+
 - (void)applicationWillResignActive:(UIApplication *)application
 {
     // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.

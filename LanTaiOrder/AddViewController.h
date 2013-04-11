@@ -14,7 +14,7 @@
 #import "CollectionViewLayout.h"
 #import "ConfirmViewController.h"
 
-@interface AddViewController : BaseViewController<GetPictureFromDeviceDelegate,PictureCellDelegate,UIPickerViewDataSource,UIPickerViewDelegate,UICollectionViewDataSource,UICollectionViewDelegate,UICollectionViewDelegateFlowLayout>{
+@interface AddViewController : BaseViewController<GetPictureFromDeviceDelegate,PictureCellDelegate,UIPickerViewDataSource,UIPickerViewDelegate,UICollectionViewDataSource,UICollectionViewDelegate,UICollectionViewDelegateFlowLayout,UITextFieldDelegate>{
     PictureCell *picView_0,*picView_1,*picView_2,*picView_3;
     GetPictureFromDevice *getPic;
 }
@@ -35,7 +35,12 @@
 @property (nonatomic,strong) NSMutableArray *dataArray;//从plist读取数据的数组
 
 @property (nonatomic,strong) NSString *car_num;
+@property (nonatomic,strong) IBOutlet UIButton *refreshBtn;
 
+@property (nonatomic, strong) IBOutlet UIDatePicker *pickerView;
+@property (nonatomic, strong) NSDateFormatter *dateFormatter;
+@property (nonatomic, strong) IBOutlet UIView *pickView;
+@property (nonatomic, strong) IBOutlet UIButton *pickerBtn;
 - (IBAction)clickNext:(id)sender;
 - (IBAction)clickFinished:(id)sender;
 

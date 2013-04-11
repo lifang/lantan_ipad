@@ -20,7 +20,7 @@
 @synthesize txtCarNum,lblCount,orderTable,statusImg,mainView;
 @synthesize waitList;
 @synthesize orderView2;
-
+@synthesize hideView;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -44,29 +44,21 @@
     [(AppDelegate *)[UIApplication sharedApplication].delegate showRootView];
 }
 
-//-(void)viewWillAppear:(BOOL)animated {
-//    [super viewWillAppear:animated];
-//    [Utils fetchWorkingList];
-//    [self.orderTable reloadData];
-//}
 - (void)viewDidLoad
 {
-//    self.navigationController.navigationBar.hidden = YES;
     orderTable.delegate = self;
     waitList = [NSMutableArray array];
     //获取正在进行中的订单和预约信息
     [Utils fetchWorkingList];
     waitList = [DataService sharedService].workingOrders;
-    DLog(@"%@",waitList);
+//    DLog(@"%@",waitList);
     if ([DataService sharedService].reserve_count && [[DataService sharedService].reserve_count intValue] > 0) {
         self.lblCount.text = [DataService sharedService].reserve_count;
     }else{
         self.lblCount.text = @"0";
     }
     self.mainView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"search_bg"]];
-    UIImageView *imageview = [[UIImageView alloc] initWithFrame:self.view.bounds];
-    [imageview setImage:[UIImage imageNamed:@"open_bg"]];
-    [self.orderTable setBackgroundView:imageview];
+    self.hideView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"open_bg"]];
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"login_bg.jpg"]];
     [super viewDidLoad];
     if (![self.navigationItem rightBarButtonItem]) {
@@ -76,12 +68,12 @@
     frame.size.height = 48;
     self.txtCarNum.frame = frame;
     
-    [self.orderTable addPullToRefreshWithActionHandler:^{
-        [Utils fetchWorkingList];
-        self.waitList = [DataService sharedService].workingOrders;
-        [self.orderTable reloadData];
-        [self.orderTable.pullToRefreshView performSelector:@selector(stopAnimating) withObject:nil afterDelay:2];
-    }];
+//    [self.orderTable addPullToRefreshWithActionHandler:^{
+//        [Utils fetchWorkingList];
+//        self.waitList = [DataService sharedService].workingOrders;
+//        [self.orderTable reloadData];
+//        [self.orderTable.pullToRefreshView performSelector:@selector(stopAnimatingg) withObject:nil afterDelay:2];
+//    }];
     
 }
 
@@ -89,8 +81,14 @@
 - (IBAction)clickRefreshBtn:(id)sender{
     if ([DataService sharedService].store_id) {
         if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-            [alert show];
+            [AHAlertView applyCustomAlertAppearance];
+            AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:kNoReachable];
+            __block AHAlertView *alert = alertt;
+            [alertt setCancelButtonTitle:@"确定" block:^{
+                alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+                alert = nil;
+            }];
+            [alertt show];
         }else {
             MBProgressHUD *hud = [[MBProgressHUD alloc]init];
             hud = [MBProgressHUD showHUDAddedTo:self.mainView animated:YES];
@@ -120,23 +118,35 @@
     OrderViewController *orderView = [[OrderViewController alloc] initWithNibName:@"OrderViewController" bundle:nil];
     orderView.car_num = self.txtCarNum.text;
     [self.navigationController pushViewController:orderView animated:YES];
-    [MBProgressHUD hideHUDForView:self.mainView animated:YES];
+    [MBProgressHUD hideHUDForView:self.view animated:YES];
 }
 - (IBAction)clickSearchBtn:(id)sender{
     [txtCarNum resignFirstResponder];
     if(self.txtCarNum.text.length==0){
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"请输入车牌号" delegate:self cancelButtonTitle:@"" otherButtonTitles:nil, nil];
-        [alert show];
+        [AHAlertView applyCustomAlertAppearance];
+        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"请输入车牌号"];
+        __block AHAlertView *alert = alertt;
+        [alertt setCancelButtonTitle:@"确定" block:^{
+            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+            alert = nil;
+        }];
+        [alertt show];
     }else{
         if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-            [alert show];
+            [AHAlertView applyCustomAlertAppearance];
+            AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:kNoReachable];
+            __block AHAlertView *alert = alertt;
+            [alertt setCancelButtonTitle:@"确定" block:^{
+                alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+                alert = nil;
+            }];
+            [alertt show];
         }else {
-            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.mainView];
+            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
             hud.dimBackground = NO;
             [hud showWhileExecuting:@selector(showSearchResult) onTarget:self withObject:nil animated:YES];
             hud.labelText = @"正在努力加载...";
-            [self.mainView addSubview:hud];
+            [self.view addSubview:hud];
         }
     }
 }
@@ -151,10 +161,11 @@
 
 //显示隐藏正在进行中的订单
 - (IBAction)clickStatusImg:(UIButton *)sender{
+    [txtCarNum resignFirstResponder];
     CGRect frame = self.view.bounds;
     [UIView beginAnimations:nil context:nil];
     CGRect btnFrame = self.statusImg.frame;
-    CGRect tFrame = self.orderTable.frame;
+    CGRect tFrame = self.hideView.frame;
     if (btnFrame.origin.x + btnFrame.size.width == frame.size.width) {
         btnFrame.origin.x -= tFrame.size.width;
         tFrame.origin.x -= tFrame.size.width;
@@ -167,7 +178,7 @@
         [sender setImage:[UIImage imageNamed:@"close_btn"] forState:UIControlStateHighlighted];
     }
     self.statusImg.frame = btnFrame;
-    self.orderTable.frame = tFrame;
+    self.hideView.frame = tFrame;
     [UIView commitAnimations];
 }
 
@@ -195,24 +206,30 @@
 //施工中的信息
 -(void)showOrderView {
     [self.navigationController pushViewController:self.orderView2 animated:YES];
-    [MBProgressHUD hideHUDForView:self.mainView animated:YES];
+    [MBProgressHUD hideHUDForView:self.view animated:YES];
 }
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
     [tableView deselectRowAtIndexPath:indexPath animated:YES];
     [txtCarNum resignFirstResponder];
     if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-        [alert show];
+        [AHAlertView applyCustomAlertAppearance];
+        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:kNoReachable];
+        __block AHAlertView *alert = alertt;
+        [alertt setCancelButtonTitle:@"确定" block:^{
+            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+            alert = nil;
+        }];
+        [alertt show];
     }else {
         self.orderView2 = [[OrderViewController alloc] initWithNibName:@"OrderViewController" bundle:nil];
         NSDictionary *order = [waitList objectAtIndex:indexPath.row];
         orderView2.car_num = [order objectForKey:@"num"];
         
-        MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.mainView];
+        MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
         hud.dimBackground = NO;
         [hud showWhileExecuting:@selector(showOrderView) onTarget:self withObject:nil animated:YES];
         hud.labelText = @"正在努力加载...";
-        [self.mainView addSubview:hud];
+        [self.view addSubview:hud];
     }
     
     //施工中的信息 

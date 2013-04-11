@@ -119,6 +119,7 @@
                 //过往订单
                 if ([[result objectForKey:@"old"] count]>0) {
                     self.orderList = [result objectForKey:@"old"];
+                    DLog(@"%d",orderList.count);
                 }
             }
         }
@@ -127,7 +128,8 @@
 
 -(void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    [self searchOrderByCarNum];
+//    [self searchOrderByCarNum];
+    [self.orderTable reloadData];
 }
 - (void)viewDidLoad
 {
@@ -151,8 +153,7 @@
     [self.btnCheckIn addSubview:imageView];
     
     
-    self.noWorkingView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"order"]];
-    self.workingView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"order"]];
+    self.orderView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"order"]];
 }
 
 - (void)didReceiveMemoryWarning
@@ -229,6 +230,16 @@
         cell.lblPay.text = [order objectForKey:@"pay_type"];
         [cell.btnComplaint addTarget:self action:@selector(clickComplaint:) forControlEvents:UIControlEventTouchUpInside];
         cell.btnComplaint.tag = 200 + indexPath.row;
+        
+        NSString *btnTag = [NSString stringWithFormat:@"%d",cell.btnComplaint.tag];
+        NSMutableArray *array = [DataService sharedService].doneArray;
+        if ([array containsObject:btnTag]) {
+            if ([DataService sharedService].payNumber == 1) {
+                [cell.btnComplaint setBackgroundImage:[UIImage imageNamed:@"btn_cancel.jpg"] forState:UIControlStateNormal];
+                [cell.btnComplaint setBackgroundImage:[UIImage imageNamed:@"btn_cancel_active"] forState:UIControlStateHighlighted];
+            }
+        }
+        
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
         return cell;
     }
@@ -240,6 +251,9 @@
     }else{
         NSDictionary *order = [orderList objectAtIndex:indexPath.row];
         int count = [[order objectForKey:@"products"] count];
+        if (count == 0) {
+            return 44+20;
+        }
         return count * 44 +20;
     }
 }
@@ -247,6 +261,32 @@
 //点击投诉按钮
 - (void)clickComplaint:(id)sender{
     UIButton *btn = (UIButton *)sender;
+    ////////////////////////////////////////////
+    NSString *btnTag = [NSString stringWithFormat:@"%d",btn.tag];
+    DLog(@"%@",btnTag);
+    NSMutableArray *array = [DataService sharedService].doneArray;
+    NSMutableArray *tempArray = [[NSMutableArray alloc]init];//临时数组
+    if (array.count > 0) {
+        int i = 0;
+        BOOL exit = NO;
+        while (i<array.count) {
+            NSString *str = [array objectAtIndex:i];
+            if ([str isEqualToString:btnTag]) {
+                exit = YES;
+                break;
+            }
+            i++;
+        }
+        if (exit == NO) {
+            [tempArray addObject:btnTag];
+        }
+    }else {
+        [tempArray addObject:btnTag];
+    }
+    
+    [[DataService sharedService].doneArray addObjectsFromArray:tempArray];
+    
+    
     NSDictionary *order = [orderList objectAtIndex:btn.tag - 200];
     ComplaintViewController *complaintView = [[ComplaintViewController alloc] initWithNibName:@"ComplaintViewController" bundle:nil];
     NSMutableDictionary *dic = [NSMutableDictionary dictionary];
@@ -259,10 +299,12 @@
     for (NSDictionary *prod in [order objectForKey:@"products"]) {
         [prods appendFormat:@"%@,",[prod objectForKey:@"name"]];
     }
-    [dic setObject:[prods substringToIndex:prods.length - 1] forKey:@"prods"];
+    if (prods.length != 0) {
+        [dic setObject:[prods substringToIndex:prods.length - 1] forKey:@"prods"];
+    }
+    
     complaintView.info = [NSMutableDictionary dictionaryWithDictionary:dic];
     [self.navigationController pushViewController:complaintView animated:YES];
-    
 }
 
 //取消订单（未施工）
@@ -273,26 +315,45 @@
     NSError *error = nil;
     NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
     if ([[result objectForKey:@"status"] intValue]==1) {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"订单已取消" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-        [alert show];
-        [self.navigationController popToRootViewControllerAnimated:YES];
+        [AHAlertView applyCustomAlertAppearance];
+        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"订单已取消"];
+        __block AHAlertView *alert = alertt;
+        [alertt setCancelButtonTitle:@"确定" block:^{
+            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+            alert = nil;
+            [self.navigationController popToRootViewControllerAnimated:YES];
+        }];
+        [alertt show];
+        
     }else{
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"订单取消失败" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-        [alert show];
+        [AHAlertView applyCustomAlertAppearance];
+        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"订单已取消失败"];
+        __block AHAlertView *alert = alertt;
+        [alertt setCancelButtonTitle:@"确定" block:^{
+            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+            alert = nil;
+        }];
+        [alertt show];
     }
-    [MBProgressHUD hideHUDForView:self.workingView animated:YES];
+    [MBProgressHUD hideHUDForView:self.view animated:YES];
 }
 - (IBAction)clickCancel:(id)sender{
     if ([workingOrder objectForKey:@"id"] != NULL) {
         if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-            [alert show];
+            [AHAlertView applyCustomAlertAppearance];
+            AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:kNoReachable];
+            __block AHAlertView *alert = alertt;
+            [alertt setCancelButtonTitle:@"确定" block:^{
+                alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+                alert = nil;
+            }];
+            [alertt show];
         }else {
-            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.workingView];
+            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
             hud.dimBackground = NO;
             [hud showWhileExecuting:@selector(cancleOrder) onTarget:self withObject:nil animated:YES];
             hud.labelText = @"正在努力加载...";
-            [self.workingView addSubview:hud];
+            [self.view addSubview:hud];
         }
     }
 }
@@ -320,8 +381,14 @@
     
     if (btn.tag==101) {
         if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-            [alert show];
+            [AHAlertView applyCustomAlertAppearance];
+            AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:kNoReachable];
+            __block AHAlertView *alert = alertt;
+            [alertt setCancelButtonTitle:@"确定" block:^{
+                alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+                alert = nil;
+            }];
+            [alertt show];
         }else {
             MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
             hud.dimBackground = NO;
@@ -331,8 +398,14 @@
         }
     }else if (btn.tag==100){
         if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-            [alert show];
+            [AHAlertView applyCustomAlertAppearance];
+            AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:kNoReachable];
+            __block AHAlertView *alert = alertt;
+            [alertt setCancelButtonTitle:@"确定" block:^{
+                alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+                alert = nil;
+            }];
+            [alertt show];
         }else{
             MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
             hud.dimBackground = NO;
@@ -366,22 +439,34 @@
         payView.orderInfo = [result objectForKey:@"order"];
         [self.navigationController pushViewController:payView animated:YES];
     }else {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"加载失败" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-        [alert show];
+        [AHAlertView applyCustomAlertAppearance];
+        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"加载失败"];
+        __block AHAlertView *alert = alertt;
+        [alertt setCancelButtonTitle:@"确定" block:^{
+            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+            alert = nil;
+        }];
+        [alertt show];
     }
-    [MBProgressHUD hideHUDForView:self.workingView animated:YES];
+    [MBProgressHUD hideHUDForView:self.view animated:YES];
 }
 - (IBAction)clickPay:(id)sender{
     if ([workingOrder objectForKey:@"id"] != NULL) {
         if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-            [alert show];
+            [AHAlertView applyCustomAlertAppearance];
+            AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:kNoReachable];
+            __block AHAlertView *alert = alertt;
+            [alertt setCancelButtonTitle:@"确定" block:^{
+                alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+                alert = nil;
+            }];
+            [alertt show];
         }else {
-            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.workingView];
+            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
             hud.dimBackground = NO;
             [hud showWhileExecuting:@selector(pay) onTarget:self withObject:nil animated:YES];
             hud.labelText = @"正在努力加载...";
-            [self.workingView addSubview:hud];
+            [self.view addSubview:hud];
         }
     }
 }
@@ -405,8 +490,15 @@
 }
 - (IBAction)clickReg:(id)sender{
     if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-        [alert show];
+        [AHAlertView applyCustomAlertAppearance];
+        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:kNoReachable];
+        __block AHAlertView *alert = alertt;
+        [alertt setCancelButtonTitle:@"确定" block:^{
+            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+            alert = nil;
+        }];
+        [alertt show];
+        
     }else {
         MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
         hud.dimBackground = NO;

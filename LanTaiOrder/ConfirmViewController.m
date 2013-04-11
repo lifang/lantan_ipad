@@ -14,6 +14,8 @@
 #import "PayViewController.h"
 #import "AppDelegate.h"
 
+#define OPEN 100
+#define CLOSE 1000
 @interface ConfirmViewController ()
 
 @end
@@ -96,9 +98,12 @@
         cell.lblName.text = [product objectForKey:@"sale_name"];
         cell.lblPrice.text = [NSString stringWithFormat:@"%@",[product objectForKey:@"show_price"]];
         if ([[product objectForKey:@"selected"] intValue]== 0) {
-            [cell.switchBtn setOn:YES animated:NO];
+            cell.switchBtn.tag = OPEN;
+            [cell.switchBtn setImage:[UIImage imageNamed:@"cb_mono_on"] forState:UIControlStateNormal];
+
         }else{
-            [cell.switchBtn setOn:NO animated:NO];
+            cell.switchBtn.tag = CLOSE;
+            [cell.switchBtn setImage:[UIImage imageNamed:@"cb_mono_off"] forState:UIControlStateNormal];
         }
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
         return cell;
@@ -112,9 +117,11 @@
         cell.lblName.text = [NSString stringWithFormat:@"%@(%@)折",[product objectForKey:@"scard_name"],[product objectForKey:@"scard_discount"]];
         cell.lblPrice.text = [NSString stringWithFormat:@"%@",[product objectForKey:@"show_price"]];
         if ([[product objectForKey:@"selected"] intValue]== 0) {
-            [cell.switchBtn setOn:YES animated:NO];
+            cell.switchBtn.tag = OPEN;
+            [cell.switchBtn setImage:[UIImage imageNamed:@"cb_mono_on"] forState:UIControlStateNormal];
         }else{
-            [cell.switchBtn setOn:NO animated:NO];
+            cell.switchBtn.tag = CLOSE;
+            [cell.switchBtn setImage:[UIImage imageNamed:@"cb_mono_off"] forState:UIControlStateNormal];
         }
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
         return cell;
@@ -158,16 +165,19 @@
 }
 
 - (IBAction)clickCancel:(id)sender{
-    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"确定取消订单？" delegate:self cancelButtonTitle:@"取消" otherButtonTitles:@"确定", nil];
-    [alert show];
-    
-}
-- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex {
-    if (buttonIndex == 0) {
-        [alertView dismissWithClickedButtonIndex:0 animated:YES];
-    }else {
-        [self.navigationController popToRootViewControllerAnimated:YES];
-    }
+    [AHAlertView applyCustomAlertAppearance];
+    AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"确定取消订单？"];
+    __block AHAlertView *alert = alertt;
+    [alertt setCancelButtonTitle:@"取消" block:^{
+        alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+        alert = nil;
+    }];
+    [alertt addButtonWithTitle:@"确定" block:^{
+        alert.dismissalStyle = AHAlertViewDismissalStyleZoomDown;
+        alert = nil;
+        [self.navigationController popViewControllerAnimated:YES];
+    }];
+    [alertt show];
 }
 - (NSString *)checkForm{
     NSMutableString *prod_ids = [NSMutableString string];
@@ -222,10 +232,16 @@
         payView.orderInfo = [result objectForKey:@"order"];
         [self.navigationController pushViewController:payView animated:YES];
     }else{
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:[result objectForKey:@"content"] delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-        [alert show];
+        [AHAlertView applyCustomAlertAppearance];
+        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:[result objectForKey:@"content"]];
+        __block AHAlertView *alert = alertt;
+        [alertt setCancelButtonTitle:@"确定" block:^{
+            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+            alert = nil;
+        }];
+        [alertt show];
     }
-    [MBProgressHUD hideHUDForView:self.confirmBgView animated:YES];
+    [MBProgressHUD hideHUDForView:self.view animated:YES];
 }
 - (IBAction)clickConfirm:(id)sender{
     NSString *str = [self checkForm];
@@ -233,29 +249,49 @@
     if ([str length]>0 && [[DataService sharedService].user_id intValue] > 0) {
         //确定生成订单后进入订单详情页面
         if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-            [alert show];
+            [AHAlertView applyCustomAlertAppearance];
+            AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:kNoReachable];
+            __block AHAlertView *alert = alertt;
+            [alertt setCancelButtonTitle:@"确定" block:^{
+                alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+                alert = nil;
+            }];
+            [alertt show];
         }else {
-            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.confirmBgView];
+            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
             hud.dimBackground = NO;
             [hud showWhileExecuting:@selector(confirm) onTarget:self withObject:nil animated:YES];
             hud.labelText = @"正在努力加载...";
-            [self.confirmBgView addSubview:hud];
+            [self.view addSubview:hud];
         }
     }else if([[DataService sharedService].user_id intValue] == 0){
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"请登录" delegate:self cancelButtonTitle:@"" otherButtonTitles:nil, nil];
-        [alert show];
-        [DataService sharedService].user_id = nil;
-        [DataService sharedService].reserve_list = nil;
-        [DataService sharedService].reserve_count = nil;
-        [DataService sharedService].store_id = nil;
-        [DataService sharedService].car_num = nil;
-        [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"userId"];
-        [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"storeId"];
-        [(AppDelegate *)[UIApplication sharedApplication].delegate showRootView];
+        [AHAlertView applyCustomAlertAppearance];
+        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"请登录"];
+        __block AHAlertView *alert = alertt;
+        [alertt setCancelButtonTitle:@"确定" block:^{
+            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+            alert = nil;
+            
+            [DataService sharedService].user_id = nil;
+            [DataService sharedService].reserve_list = nil;
+            [DataService sharedService].reserve_count = nil;
+            [DataService sharedService].store_id = nil;
+            [DataService sharedService].car_num = nil;
+            [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"userId"];
+            [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"storeId"];
+            [(AppDelegate *)[UIApplication sharedApplication].delegate showRootView];
+        }];
+        [alertt show];
+
     }else{
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"活动，打折卡，套餐卡每类最多可以选择一个" delegate:self cancelButtonTitle:@"确认" otherButtonTitles:nil, nil];
-        [alert show];
+        [AHAlertView applyCustomAlertAppearance];
+        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"活动，打折卡，套餐卡每类最多可以选择一个"];
+        __block AHAlertView *alert = alertt;
+        [alertt setCancelButtonTitle:@"确定" block:^{
+            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+            alert = nil;
+        }];
+        [alertt show];
     }
 }
 

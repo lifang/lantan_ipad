@@ -56,7 +56,6 @@
 - (BOOL)checkForm{
     NSString *passport = [[NSString alloc] initWithString: self.txtName.text];
     NSString *password = [[NSString alloc] initWithString: self.txtPwd.text];
-    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:nil delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
     NSString *msgStr = @"";
     if (passport.length == 0){
         msgStr = @"请输入用户名";
@@ -65,8 +64,14 @@
     }
     
     if (msgStr.length > 0){
-        [alert setMessage:msgStr];
-        [alert show];
+        [AHAlertView applyCustomAlertAppearance];
+        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:msgStr];
+        __block AHAlertView *alert = alertt;
+        [alertt setCancelButtonTitle:@"确定" block:^{
+            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+            alert = nil;
+        }];
+        [alertt show];
         return FALSE;
     }
     return TRUE;
@@ -78,7 +83,7 @@
     NSError *error = nil;
     NSString *result = [request startSynchronousWithError:&error];
     NSDictionary *jsonData = [result objectFromJSONString];
-    //            DLog(@"%@",jsonData);
+    DLog(@"%@",jsonData);
     NSString *text = [jsonData objectForKey:@"info"];
     
     if (text.length == 0) {
@@ -91,10 +96,16 @@
         [(AppDelegate *)[UIApplication sharedApplication].delegate showRootView];
         
     }else{
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:text delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-        [alert show];
+        [AHAlertView applyCustomAlertAppearance];
+        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:text];
+        __block AHAlertView *alert = alertt;
+        [alertt setCancelButtonTitle:@"确定" block:^{
+            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+            alert = nil;
+        }];
+        [alertt show];
     }
-    [MBProgressHUD hideHUDForView:self.loginView animated:YES];
+    [MBProgressHUD hideHUDForView:self.view animated:YES];
 }
 - (IBAction)clickLogin:(id)sender{
     
@@ -102,14 +113,20 @@
     [self.txtPwd resignFirstResponder];
     if ([self checkForm]) {
         if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-            [alert show];
+            [AHAlertView applyCustomAlertAppearance];
+            AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:kNoReachable];
+            __block AHAlertView *alert = alertt;
+            [alertt setCancelButtonTitle:@"确定" block:^{
+                alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+                alert = nil;
+            }];
+            [alertt show];
         }else{
-            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.loginView];
+            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
             hud.dimBackground = NO;
             [hud showWhileExecuting:@selector(login) onTarget:self withObject:nil animated:YES];
             hud.labelText = @"正在努力加载...";
-            [self.loginView addSubview:hud];
+            [self.view addSubview:hud];
         }
     }
 }

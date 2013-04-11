@@ -16,7 +16,7 @@
 {
     self = [super initWithFrame:frame];
     if (self) {
-        CGRect frame = CGRectMake(0, 1, 180, 43);
+        CGRect frame = CGRectMake(1, 1, 180, 43);
         lbl_1 = [[UILabel alloc] initWithFrame:frame];
         lbl_1.backgroundColor = [UIColor clearColor];
         [self addSubview:lbl_1];

@@ -168,7 +168,7 @@ typedef NSUInteger SVPullToRefreshState;
         self.state = SVPullToRefreshStateHidden;
 }
 
-- (void)stopAnimating {
+- (void)stopAnimatingg {
 
     self.state = SVPullToRefreshStateHidden;
 }

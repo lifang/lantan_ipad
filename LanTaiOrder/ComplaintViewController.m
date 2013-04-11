@@ -60,7 +60,7 @@
     DLog(@"%@",result);
     if ([[result objectForKey:@"status"] intValue] == 1) {
         if([[info objectForKey:@"from"] intValue]==1){
-            
+            [DataService sharedService].payNumber = 1;
             [self.navigationController popViewControllerAnimated:YES];
             
         }else{
@@ -74,12 +74,24 @@
     [reasonView resignFirstResponder];
     [requestView resignFirstResponder];
     if (self.reasonView.text.length==0 || self.requestView.text.length==0) {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:@"请输入投诉理由和要求" delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-        [alert show];
+        [AHAlertView applyCustomAlertAppearance];
+        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"请输入投诉理由和要求"];
+        __block AHAlertView *alert = alertt;
+        [alertt setCancelButtonTitle:@"确定" block:^{
+            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+            alert = nil;
+        }];
+        [alertt show];
     }else{
         if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:kTip message:kNoReachable delegate:self cancelButtonTitle:@"确定" otherButtonTitles:nil, nil];
-            [alert show];
+            [AHAlertView applyCustomAlertAppearance];
+            AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:kNoReachable];
+            __block AHAlertView *alert = alertt;
+            [alertt setCancelButtonTitle:@"确定" block:^{
+                alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+                alert = nil;
+            }];
+            [alertt show];
         }else {
             MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
             hud.dimBackground = NO;
