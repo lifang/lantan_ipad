@@ -15,9 +15,10 @@
 @property (nonatomic,strong) NSMutableArray *productList;
 @property (nonatomic,strong) NSMutableDictionary *orderInfo;
 @property (nonatomic,assign) CGFloat total_count;
+@property (nonatomic,assign) CGFloat total_count_temp;
 @property (nonatomic,strong) IBOutlet UIView *confirmView,*confirmBgView;
 
-
+@property (nonatomic,strong) IBOutlet UILabel *start_lab,*end_lab;
 - (IBAction)clickConfirm:(id)sender;
 - (IBAction)clickCancel:(id)sender;
 

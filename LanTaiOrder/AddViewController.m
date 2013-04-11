@@ -1,4 +1,4 @@
-//
+ //
 //  AddViewController.m
 //  LanTaiOrder
 //
@@ -536,7 +536,12 @@ static bool refresh = NO;
             if ([result objectForKey:@"pcards"]) {
                 [confirmView.productList addObjectsFromArray:[result objectForKey:@"pcards"]];
             }
-            confirmView.total_count = [[result objectForKey:@"total"] floatValue];
+            if ([[result objectForKey:@"total"] floatValue] <0) {
+                confirmView.total_count = 0.0;
+                confirmView.total_count_temp = [[result objectForKey:@"total"] floatValue];
+            }else {
+                confirmView.total_count = [[result objectForKey:@"total"] floatValue];
+            }
             [self.navigationController pushViewController:confirmView animated:YES];
         }else{
             [AHAlertView applyCustomAlertAppearance];

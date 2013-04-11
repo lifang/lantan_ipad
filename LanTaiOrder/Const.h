@@ -7,9 +7,9 @@
 //
 
 #define kDomain @"http://bam.gankao.co"
-#define kHost @"http://bam.gankao.co/api"
-#define kSendMeg @"http://192.168.0.111:3000/apis/get_user_svcard"
-#define kSendVerifyCode @"http://192.168.0.111:3000/apis/use_svcard"
+#define kHost @"http://192.168.0.112:3000/api"
+#define kSendMeg @"http://official.gankao.co/apis/get_user_svcard"
+#define kSendVerifyCode @"http://official.gankao.co/apis/use_svcard"
 
 #define kLogin @"/orders/login"
 #define kIndex @"/orders/index_list"

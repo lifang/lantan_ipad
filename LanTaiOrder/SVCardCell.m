@@ -40,7 +40,6 @@
 - (IBAction)clickSwitch:(id)sender{
     UIButton *btn = (UIButton *)sender;
     NSString *tagStr = [NSString stringWithFormat:@"%d",btn.tag];
-    DLog(@"%@",tagStr);
     
     CGFloat x = 0;
     

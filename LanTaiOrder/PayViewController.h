@@ -24,7 +24,7 @@
 @property (nonatomic,strong) IBOutlet UIView *pleaseView,*orderBgView;
 @property (nonatomic,strong) IBOutlet UISegmentedControl *segBtn;
 
-
+@property (nonatomic,strong) IBOutlet UILabel *start_lab,*end_lab;
 - (IBAction)clickSegBtn:(UISegmentedControl *)sender;
 
 @end

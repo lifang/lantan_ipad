@@ -23,7 +23,7 @@
 @implementation ConfirmViewController
 
 @synthesize lblBrand,lblCarNum,lblEnd,lblPhone,lblStart,lblTotal,lblUsername;
-@synthesize productTable,productList,orderInfo,total_count;
+@synthesize productTable,productList,orderInfo,total_count,total_count_temp;
 @synthesize confirmView,confirmBgView;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
@@ -37,13 +37,25 @@
 
 - (void)viewDidLoad
 {
+    DLog(@"%f",self.total_count);
     if (orderInfo) {
         lblBrand.text = [orderInfo objectForKey:@"car_brand"];
         lblCarNum.text = [orderInfo objectForKey:@"car_num"];
         lblPhone.text = [orderInfo objectForKey:@"phone"];
         lblUsername.text = [orderInfo objectForKey:@"c_name"];
         lblStart.text = [orderInfo objectForKey:@"start"];
+        if ([lblStart.text isEqualToString:@""]) {
+            self.start_lab.hidden = YES;
+        }else {
+            self.start_lab.hidden = NO;
+        }
         lblEnd.text = [orderInfo objectForKey:@"end"];
+        if ([lblEnd.text isEqualToString:@""]) {
+            self.end_lab.hidden = YES;
+        }else {
+            self.end_lab.hidden = NO;
+        }
+        
         lblTotal.text = [NSString stringWithFormat:@"总计：%.2f(元)",self.total_count];
     }
     //更新总价
@@ -156,9 +168,21 @@
 
 - (void)updateTotal:(NSNotification *)notification{
     NSDictionary *dic = [notification object];
-    CGFloat f = self.total_count + [[dic objectForKey:@"object"] floatValue];
-    self.total_count = f;
-    self.lblTotal.text = [NSString stringWithFormat:@"总计：%.2f(元)",f];
+    CGFloat f = 0;
+    if (self.total_count == 0) {
+        f = self.total_count_temp + [[dic objectForKey:@"object"] floatValue];
+    }else {
+        f = self.total_count + [[dic objectForKey:@"object"] floatValue];
+    }
+    
+    if (f < 0) {
+        self.total_count = 0.0;
+        self.total_count_temp = f;
+    }else {
+        self.total_count = f;
+    }
+    
+    self.lblTotal.text = [NSString stringWithFormat:@"总计：%.2f(元)",self.total_count];
     NSIndexPath *idx = [dic objectForKey:@"idx"];
     [self.productList replaceObjectAtIndex:idx.row withObject:[dic objectForKey:@"prod"]];
     [self.productTable reloadData];

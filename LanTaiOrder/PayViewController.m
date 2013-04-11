@@ -39,7 +39,17 @@
         lblCarNum.text = [orderInfo objectForKey:@"car_num"];
         lblUsername.text = [orderInfo objectForKey:@"username"];
         lblStart.text = [orderInfo objectForKey:@"start"];
+        if ([lblStart.text isEqualToString:@""]) {
+            self.start_lab.hidden = YES;
+        }else {
+            self.start_lab.hidden = NO;
+        }
         lblEnd.text = [orderInfo objectForKey:@"end"];
+        if ([lblEnd.text isEqualToString:@""]) {
+            self.end_lab.hidden = YES;
+        }else {
+            self.end_lab.hidden = NO;
+        }
         lblTotal.text = [NSString stringWithFormat:@"总计：%.2f(元)",[[orderInfo objectForKey:@"total"] floatValue]];
         
         self.productList = [NSMutableArray array];

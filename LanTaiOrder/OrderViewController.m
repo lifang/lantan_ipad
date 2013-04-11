@@ -31,7 +31,7 @@
 @synthesize lblOrderNum,lblReceiver,lblStatus,lblWorkingCar,lblWorkingName,lblTotal;
 @synthesize car_num,customer,workingOrder;
 @synthesize addOrderView;
-
+@synthesize timeLabel;
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
@@ -82,9 +82,15 @@
                     self.noWorkingView.hidden = NO;
                     self.orderTable.hidden = YES;
                 }else{
-                    NSString *str = [Utils formateDate:[[result objectForKey:@"working"] objectForKey:@"started_at"]];
-                    NSString *time = [NSString stringWithFormat:@"%@--%@",str,[Utils formateDate:[[result objectForKey:@"working"] objectForKey:@"ended_at"]]];
-                    self.lblTime.text = time;
+                    if (![[[result objectForKey:@"working"] objectForKey:@"started_at"] isEqual:[NSNull null]]) {
+                        NSString *str = [Utils formateDate:[[result objectForKey:@"working"] objectForKey:@"started_at"]];
+                        NSString *time = [NSString stringWithFormat:@"%@--%@",str,[Utils formateDate:[[result objectForKey:@"working"] objectForKey:@"ended_at"]]];
+                        self.lblTime.text = time;
+                        self.timeLabel.hidden = NO;//有时间  不隐藏label
+                    }else {
+                        self.timeLabel.hidden = YES;//没有时间  隐藏label
+                    }
+                    
                     NSMutableString *prod = [NSMutableString string];
                     NSArray *products = [[result objectForKey:@"working"] objectForKey:@"products"];
                     for (int x=0; x<products.count; x++) {
