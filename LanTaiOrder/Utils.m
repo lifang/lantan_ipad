@@ -8,9 +8,7 @@
 
 #import "Utils.h"
 
-@implementation Utils{
-    
-}
+@implementation Utils
 
 //判断网络类型
 + (NSString *)isExistenceNetwork {
@@ -29,28 +27,26 @@
     }
     return str;
 }
-
-+ (NSMutableArray *)fetchWorkingList{
-    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kIndex]];
-    [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id", nil]];
-    [r setPostDataEncoding:NSUTF8StringEncoding];
-    NSError *error = nil;
-    NSString *result = [r startSynchronousWithError:&error];
-    NSDictionary *jsonData = [result objectFromJSONString];
-    DLog(@"%@",jsonData);
-    if ([[jsonData objectForKey:@"status"] intValue] == 1) {
-        if ([jsonData objectForKey:@"reservations"]!=nil) {
-            NSMutableArray *arr = [NSMutableArray arrayWithArray:[jsonData objectForKey:@"reservations"]];
-            [DataService sharedService].reserve_count = [NSString stringWithFormat:@"%d",[arr count]];
-            [DataService sharedService].reserve_list = arr;
-        }
-        if ([jsonData objectForKey:@"orders"]!=nil) {
-            [DataService sharedService].workingOrders = [NSMutableArray arrayWithArray:[jsonData objectForKey:@"orders"]];
-        }
-    }
-    return nil;
-}
-
+//+ (NSMutableArray *)fetchWorkingList{
+//    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kIndex]];
+//    [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id", nil]];
+//    [r setPostDataEncoding:NSUTF8StringEncoding];
+//    NSError *error = nil;
+//    NSString *result = [r startSynchronousWithError:&error];
+//    NSDictionary *jsonData = [result objectFromJSONString];
+//    DLog(@"%@",jsonData);
+//    if ([[jsonData objectForKey:@"status"] intValue] == 1) {
+//        if ([jsonData objectForKey:@"reservations"]!=nil) {
+//            NSMutableArray *arr = [NSMutableArray arrayWithArray:[jsonData objectForKey:@"reservations"]];
+//            [DataService sharedService].reserve_count = [NSString stringWithFormat:@"%d",[arr count]];
+//            [DataService sharedService].reserve_list = arr;
+//        }
+//        if ([jsonData objectForKey:@"orders"]!=nil) {
+//            [DataService sharedService].workingOrders = [NSMutableArray arrayWithArray:[jsonData objectForKey:@"orders"]];
+//        }
+//    }
+//    return nil;
+//}
 + (NSString *)orderStatus:(int)status{
     if (status==0) {
         return @"未施工";
@@ -90,6 +86,29 @@
             result[12], result[13], result[14], result[15]
             ];
 }
++(NSString *)createPostURL:(NSMutableDictionary *)params
+{
+    NSString *postString=@"";
+    for(NSString *key in [params allKeys])
+    {
+        NSString *value=[params objectForKey:key];
+        postString=[postString stringByAppendingFormat:@"%@=%@&",key,value];
+    }
+    if([postString length]>1)
+    {
+        postString=[postString substringToIndex:[postString length]-1];
+    }
+    return postString;
+}
 
++(NSMutableURLRequest *)getRequest:(NSMutableDictionary *)params string:(NSString *)theStr{
+    NSString *postURL=[Utils createPostURL:params];
+    NSMutableURLRequest *theRequest=[NSMutableURLRequest requestWithURL:[NSURL URLWithString:theStr]];
+    [theRequest setHTTPMethod:@"POST"];
+    [theRequest setHTTPBody:[postURL dataUsingEncoding:NSUTF8StringEncoding]];
+    [theRequest addValue:@"application/x-www-form-urlencoded" forHTTPHeaderField:@"Content-Type"];
+    
+    return theRequest;
+}
 
 @end

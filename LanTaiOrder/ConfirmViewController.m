@@ -268,7 +268,10 @@
     [r setPOSTDictionary:data];
     [r setPostDataEncoding:NSUTF8StringEncoding];
     NSError *error = nil;
-    NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
+    NSString *strr = [r startSynchronousWithError:&error];
+    NSDictionary *result = [strr objectFromJSONString];
+//    DLog(@"dicc = %@",dicc);
+//    NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
     DLog(@"%@",result);
     if ([[result objectForKey:@"status"] intValue]==1) {
         PayViewController *payView  = [[PayViewController alloc] initWithNibName:@"PayViewController" bundle:nil];

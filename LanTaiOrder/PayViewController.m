@@ -31,7 +31,9 @@
     }
     return self;
 }
-
+- (void)rightTapped:(id)sender{
+    [self.navigationController popViewControllerAnimated:YES];
+}
 - (void)viewDidLoad
 {
     if (orderInfo) {
@@ -40,7 +42,6 @@
         lblCarNum.text = [orderInfo objectForKey:@"car_num"];
         lblUsername.text = [orderInfo objectForKey:@"username"];
         lblStart.text = [orderInfo objectForKey:@"start"];
-        DLog(@"%@",[orderInfo objectForKey:@"start"]);
         if (lblStart.text.length <= 0) {
             self.start_lab.hidden = YES;
         }else {
@@ -65,7 +66,7 @@
             [productList addObject:[orderInfo objectForKey:@"c_svc_relation"]];
         }
         if ([orderInfo objectForKey:@"c_pcard_relation"]) {
-            [productList addObject:[orderInfo objectForKey:@"c_pcard_relation"]];
+            [productList addObjectsFromArray:[orderInfo objectForKey:@"c_pcard_relation"]];
         }
     }
     DLog(@"%@",productList);

@@ -66,6 +66,8 @@
 		0EAE806E1709662900A5E4C4 /* Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EAE80691709662700A5E4C4 /* Utils.m */; };
 		0EAE806F1709662900A5E4C4 /* NSDate+Additions.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EAE806B1709662800A5E4C4 /* NSDate+Additions.m */; };
 		0EAE80701709662900A5E4C4 /* UITextView+Border.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EAE806D1709662800A5E4C4 /* UITextView+Border.m */; };
+		0EE3F8FA172138CE000303E3 /* SVPullToRefresh.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0EE3F8F7172138CE000303E3 /* SVPullToRefresh.bundle */; };
+		0EE3F8FB172138CE000303E3 /* SVPullToRefresh.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EE3F8F9172138CE000303E3 /* SVPullToRefresh.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		0EF0E782171140370043C81D /* btn_cancel_active.png in Resources */ = {isa = PBXBuildFile; fileRef = 0EF0E781171140360043C81D /* btn_cancel_active.png */; };
 		7024914616F5A68C009EC28D /* nav_bg.png in Resources */ = {isa = PBXBuildFile; fileRef = 7024914516F5A68B009EC28D /* nav_bg.png */; };
 		7024914816F5A9E4009EC28D /* btn_cancel.jpg in Resources */ = {isa = PBXBuildFile; fileRef = 7024914716F5A9E4009EC28D /* btn_cancel.jpg */; };
@@ -215,6 +217,9 @@
 		0EAE806B1709662800A5E4C4 /* NSDate+Additions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDate+Additions.m"; sourceTree = "<group>"; };
 		0EAE806C1709662800A5E4C4 /* UITextView+Border.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UITextView+Border.h"; sourceTree = "<group>"; };
 		0EAE806D1709662800A5E4C4 /* UITextView+Border.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UITextView+Border.m"; sourceTree = "<group>"; };
+		0EE3F8F7172138CE000303E3 /* SVPullToRefresh.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = SVPullToRefresh.bundle; sourceTree = "<group>"; };
+		0EE3F8F8172138CE000303E3 /* SVPullToRefresh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SVPullToRefresh.h; sourceTree = "<group>"; };
+		0EE3F8F9172138CE000303E3 /* SVPullToRefresh.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SVPullToRefresh.m; sourceTree = "<group>"; };
 		0EF0E781171140360043C81D /* btn_cancel_active.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = btn_cancel_active.png; sourceTree = "<group>"; };
 		7024914516F5A68B009EC28D /* nav_bg.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = nav_bg.png; sourceTree = "<group>"; };
 		7024914716F5A9E4009EC28D /* btn_cancel.jpg */ = {isa = PBXFileReference; lastKnownFileType = image.jpeg; path = btn_cancel.jpg; sourceTree = "<group>"; };
@@ -353,6 +358,7 @@
 		0EAE80181709647400A5E4C4 /* utils */ = {
 			isa = PBXGroup;
 			children = (
+				0EE3F8F6172138C2000303E3 /* SVPullToRefresh */,
 				0E49BA8E1713C02200D4E60E /* alert view */,
 				0E1705C6170968F000146DAB /* Utils */,
 				0EAE80671709662700A5E4C4 /* Const.h */,
@@ -451,6 +457,16 @@
 				0EAE8062170965F900A5E4C4 /* GetPictureFromDevice.m */,
 			);
 			name = GetPicture;
+			sourceTree = "<group>";
+		};
+		0EE3F8F6172138C2000303E3 /* SVPullToRefresh */ = {
+			isa = PBXGroup;
+			children = (
+				0EE3F8F7172138CE000303E3 /* SVPullToRefresh.bundle */,
+				0EE3F8F8172138CE000303E3 /* SVPullToRefresh.h */,
+				0EE3F8F9172138CE000303E3 /* SVPullToRefresh.m */,
+			);
+			name = SVPullToRefresh;
 			sourceTree = "<group>";
 		};
 		7024914C16F5B157009EC28D /* Base */ = {
@@ -800,6 +816,7 @@
 				0E49BA9C1713C03000D4E60E /* custom-dialog-background@2x.png in Resources */,
 				0E91E68F1713FEB000A847BE /* down.png in Resources */,
 				0E92C08217156204003B293C /* sx.png in Resources */,
+				0EE3F8FA172138CE000303E3 /* SVPullToRefresh.bundle in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -849,6 +866,7 @@
 				0EAE806F1709662900A5E4C4 /* NSDate+Additions.m in Sources */,
 				0EAE80701709662900A5E4C4 /* UITextView+Border.m in Sources */,
 				0E49BA9D1713C03000D4E60E /* AHAlertView.m in Sources */,
+				0EE3F8FB172138CE000303E3 /* SVPullToRefresh.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

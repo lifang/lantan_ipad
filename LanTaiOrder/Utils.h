@@ -13,10 +13,10 @@
 
 + (NSString *)isExistenceNetwork;
 
-+ (NSMutableArray *)fetchWorkingList;
+//+ (NSMutableArray *)fetchWorkingList;
 
 + (NSString *)orderStatus:(int)status;
 + (NSString *)formateDate:(NSString *)date;
 + (NSString *)MD5:(NSString *)str;
-
++(NSMutableURLRequest *)getRequest:(NSMutableDictionary *)params string:(NSString *)theStr;
 @end

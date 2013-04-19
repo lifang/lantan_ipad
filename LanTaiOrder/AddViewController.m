@@ -200,7 +200,7 @@ static bool refresh = NO;
 
     MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
     hud.dimBackground = NO;
-    [hud showWhileExecuting:@selector(initData) onTarget:self withObject:nil animated:YES];
+    [hud showWhileExecuting:@selector(getData) onTarget:self withObject:nil animated:YES];
     hud.labelText = @"正在努力加载...";
     [self.view addSubview:hud];
 }

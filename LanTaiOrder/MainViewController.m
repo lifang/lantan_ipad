@@ -10,6 +10,7 @@
 #import "OrderViewController.h"
 #import "ReservationViewController.h"
 #import "AppDelegate.h"
+#import "SVPullToRefresh.h"
 
 @interface MainViewController ()
 
@@ -17,7 +18,7 @@
 
 @implementation MainViewController
 
-@synthesize txtCarNum,lblCount,orderTable,statusImg,mainView;
+@synthesize txtCarNum,lblCount,orderTable = _orderTable,statusImg,mainView;
 @synthesize waitList;
 @synthesize orderView2;
 @synthesize hideView;
@@ -43,15 +44,49 @@
     [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"storeId"];
     [(AppDelegate *)[UIApplication sharedApplication].delegate showRootView];
 }
-
+-(void)getData {
+    NSMutableDictionary *params=[[NSMutableDictionary alloc] init];
+    [params setObject:[DataService sharedService].store_id forKey:@"store_id"];
+    NSMutableURLRequest *request=[Utils getRequest:params string:[NSString stringWithFormat:@"%@%@",kHost,kIndex]];
+    NSOperationQueue *queue=[[NSOperationQueue alloc] init];
+    [NSURLConnection sendAsynchronousRequest:request queue:queue completionHandler:^(NSURLResponse *respone,
+                                                                                     NSData *data,
+                                                                                     NSError *error)
+     {
+         if ([data length]>0 && error==nil) {
+             [self performSelectorOnMainThread:@selector(setRespondtext:) withObject:data waitUntilDone:NO];
+             
+         }
+     }
+     ];
+}
+-(void)setRespondtext:(NSData *)data {
+    id jsonObject=[NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingAllowFragments error:nil];
+    if (jsonObject !=nil) {
+        if ([jsonObject isKindOfClass:[NSDictionary class]]) {
+            NSDictionary *jsonData=(NSDictionary *)jsonObject;
+            if ([[jsonData objectForKey:@"status"] intValue] == 1) {
+                if ([jsonData objectForKey:@"reservations"]!=nil) {
+                    NSMutableArray *arr = [NSMutableArray arrayWithArray:[jsonData objectForKey:@"reservations"]];
+                    [DataService sharedService].reserve_count = [NSString stringWithFormat:@"%d",[arr count]];
+                    [DataService sharedService].reserve_list = arr;
+                }
+                if ([jsonData objectForKey:@"orders"]!=nil) {
+                    [DataService sharedService].workingOrders = [NSMutableArray arrayWithArray:[jsonData objectForKey:@"orders"]];
+                    waitList = [DataService sharedService].workingOrders;
+                    DLog(@"%@",waitList);
+                }
+            }
+        }
+    }
+}
 - (void)viewDidLoad
 {
-    orderTable.delegate = self;
+    _orderTable.delegate = self;
     waitList = [NSMutableArray array];
     //获取正在进行中的订单和预约信息
-//    [Utils fetchWorkingList];
-    waitList = [DataService sharedService].workingOrders;
-//    DLog(@"%@",waitList);
+    [self getData];
+    
     if ([DataService sharedService].reserve_count && [[DataService sharedService].reserve_count intValue] > 0) {
         self.lblCount.text = [DataService sharedService].reserve_count;
     }else{
@@ -68,6 +103,13 @@
     frame.size.height = 48;
     self.txtCarNum.frame = frame;
     
+    //下拉刷新
+    __block MainViewController *manView = self;
+    __block UITableView *orderTable_temp = _orderTable;
+    [_orderTable addPullToRefreshWithActionHandler:^{
+        [manView getData];
+        [orderTable_temp.pullToRefreshView performSelector:@selector(stopAnimating) withObject:nil afterDelay:2];
+    }];
 }
 
 //刷新按钮

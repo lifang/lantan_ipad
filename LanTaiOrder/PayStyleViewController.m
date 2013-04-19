@@ -43,7 +43,7 @@
     NSError *error = nil;
     NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
     DLog(@"%@",result);
-    
+
     if ([[result objectForKey:@"status"] intValue]==1) {
         [AHAlertView applyCustomAlertAppearance];
         AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"交易成功！"];
