@@ -33,7 +33,12 @@
     }else{
         billing = @"0";
     }
-    [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[order objectForKey:@"order_id"],@"order_id",[order objectForKey:@"is_please"],@"please",[DataService sharedService].store_id,@"store_id",billing,@"billing",[NSNumber numberWithInt:self.payType],@"pay_type",self.txtCode.text,@"code", nil]];
+    if (self.payType == 3) {
+        [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[order objectForKey:@"order_id"],@"order_id",[order objectForKey:@"is_please"],@"please",[DataService sharedService].store_id,@"store_id",billing,@"billing",[NSNumber numberWithInt:self.payType],@"pay_type",self.txtCode.text,@"code",[NSNumber numberWithInt:1],@"is_free", nil]];
+    }else {
+        [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[order objectForKey:@"order_id"],@"order_id",[order objectForKey:@"is_please"],@"please",[DataService sharedService].store_id,@"store_id",billing,@"billing",[NSNumber numberWithInt:self.payType],@"pay_type",self.txtCode.text,@"code",[NSNumber numberWithInt:0],@"is_free", nil]];
+    }
+    
     [r setPostDataEncoding:NSUTF8StringEncoding];
     NSError *error = nil;
     NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
@@ -127,7 +132,10 @@
         self.phoneView.hidden = NO;
         self.codeView.hidden = YES;
         self.payStyle.hidden = YES;
+    }else if (sender.selectedSegmentIndex == 3) {
+        [self pay:sender.selectedSegmentIndex];
     }
+    
 }
 
 - (void)payResult:(NSNotification *)notification{

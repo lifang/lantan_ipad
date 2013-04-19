@@ -170,6 +170,20 @@ static bool refresh = NO;
         [fileManager removeItemAtPath:savePath error:nil];
     }
 }
+-(void)getData {
+    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kBrandProduct]];
+    [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id", nil]];
+    [r setPostDataEncoding:NSUTF8StringEncoding];
+    NSError *error = nil;
+    NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
+    self.brandResult = [NSMutableDictionary dictionaryWithDictionary:result];
+    if ([[result objectForKey:@"status"] intValue]==1) {
+        self.brandList = [NSMutableArray arrayWithArray:[result objectForKey:@"brands"]];
+        self.productList = [NSMutableArray arrayWithArray:[result objectForKey:@"products"]];
+    }
+    
+    [self initData];
+}
 //刷新
 -(IBAction)refreshBtnPressed:(id)sender {
     refresh = YES;
@@ -191,18 +205,6 @@ static bool refresh = NO;
     [self.view addSubview:hud];
 }
 - (void)initData{
-    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kBrandProduct]];
-    [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id", nil]];
-    [r setPostDataEncoding:NSUTF8StringEncoding];
-    NSError *error = nil;
-    NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
-    self.brandResult = [NSMutableDictionary dictionaryWithDictionary:result];
-    if ([[result objectForKey:@"status"] intValue]==1) {
-        self.brandList = [NSMutableArray arrayWithArray:[result objectForKey:@"brands"]];
-        self.productList = [NSMutableArray arrayWithArray:[result objectForKey:@"products"]];
-    }
-    DLog(@"%@",productList);
-    
     if ([DataService sharedService].number == 0) {
         self.picArray = [NSMutableArray array];
         [self getPci];
@@ -317,11 +319,9 @@ static bool refresh = NO;
     
     //日期得pickerView
     self.dateFormatter = [[NSDateFormatter alloc] init];
-    [self.dateFormatter setDateStyle:NSDateFormatterMediumStyle];
-    [self.dateFormatter setTimeStyle:NSDateFormatterNoStyle];
-    
-    
+    [self.dateFormatter setDateFormat:@"yyyy-MM-dd"];
     [self initData];
+    
     [super viewDidLoad];
     [self initView];
     [self initPicView];
@@ -352,11 +352,6 @@ static bool refresh = NO;
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"view_bg"]];
 }
 
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
-}
 -(IBAction)btnPressed:(id)sender {
     [self.txtName resignFirstResponder];
     [self.txtPhone resignFirstResponder];
@@ -435,7 +430,6 @@ static bool refresh = NO;
 }
 - (IBAction)dateAction:(id)sender
 {
-    NSLog(@"date = %@",self.pickerView.date);
 	self.txtBirth.text = [self.dateFormatter stringFromDate:self.pickerView.date];
 }
 - (void)slideDownDidStop
@@ -515,7 +509,12 @@ static bool refresh = NO;
         [r setPostDataEncoding:NSUTF8StringEncoding];
         [r setPOSTDictionary:dic];
         NSError *error = nil;
+        
+//        NSString *dicc = [r startSynchronousWithError:&error];
+//        DLog(@"dicc = %@",dicc);
+//        NSDictionary *result = [dicc objectFromJSONString];
         NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
+        
         
         DLog(@"result = %@",result);
         if ([[result objectForKey:@"status"] intValue]==1) {
@@ -800,7 +799,11 @@ static bool refresh = NO;
     
     if ([pickerVieww isEqual:modelView]) {
         NSDictionary *brand  = [brandList objectAtIndex:[brandView selectedRowInComponent:0]];
-        return [[brand objectForKey:@"models"] count];
+        if ([[brand objectForKey:@"models"] isKindOfClass:[NSNull class]]) {
+            return 0;
+        }else {
+            return [[brand objectForKey:@"models"] count];
+        }
     }
     return self.brandList.count;
 }
@@ -855,12 +858,9 @@ static bool refresh = NO;
                 }else{
                     cell.contentView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"collectioncell_bg"]];
                 }
-//                if (![[prod objectForKey:@"img"] isEqual:[NSNull null]]) {
                     if ([DataService sharedService].number == 0){
                         cell.prodImage.image = [[self.picArray objectAtIndex:x]objectAtIndex:indexPath.section];
                     }
-//                }
-                
             }else{
                 cell.prodName.hidden = YES;
                 cell.prodImage.hidden = YES;
@@ -902,44 +902,48 @@ static bool refresh = NO;
                 [selectedIndexs removeObject:indexPath];
             }
         }else{
-            if (indexPath.row == 3) {
-                if (self.selectedIndexs.count>0) {
-                    int i=0;
-                    BOOL exit = NO;
-                    while (i<selectedIndexs.count) {
-                        NSIndexPath *index = [selectedIndexs objectAtIndex:i];
-                        if (index.row == indexPath.row) {
-                            exit = YES;
-                            [AHAlertView applyCustomAlertAppearance];
-                            AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"活动，打折卡，套餐卡每类最多可以选择一个"];
-                            __block AHAlertView *alert = alertt;
-                            [alertt setCancelButtonTitle:@"确定" block:^{
-                                alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
-                                alert = nil;
-                            }];
-                            [alertt show];
-                            break;
-                        }
-                        i++;
-                    }
-                    if (exit == NO) {
-                        cell.backgroundColor = [UIColor redColor];
-                        if (![self isSelected:indexPath]) {
-                            [selectedIndexs addObject:indexPath];
-                        }
-                    }
-                }else {
-                    cell.backgroundColor = [UIColor redColor];
-                    if (![self isSelected:indexPath]) {
-                        [selectedIndexs addObject:indexPath];
-                    }
-                }
-            }else {
-                cell.backgroundColor = [UIColor redColor];
-                if (![self isSelected:indexPath]) {
-                    [selectedIndexs addObject:indexPath];
-                }
+            cell.backgroundColor = [UIColor redColor];
+            if (![self isSelected:indexPath]) {
+                [selectedIndexs addObject:indexPath];
             }
+//            if (indexPath.row == 3) {
+//                if (self.selectedIndexs.count>0) {
+//                    int i=0;
+//                    BOOL exit = NO;
+//                    while (i<selectedIndexs.count) {
+//                        NSIndexPath *index = [selectedIndexs objectAtIndex:i];
+//                        if (index.row == indexPath.row) {
+//                            exit = YES;
+//                            [AHAlertView applyCustomAlertAppearance];
+//                            AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"活动，打折卡，套餐卡每类最多可以选择一个"];
+//                            __block AHAlertView *alert = alertt;
+//                            [alertt setCancelButtonTitle:@"确定" block:^{
+//                                alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+//                                alert = nil;
+//                            }];
+//                            [alertt show];
+//                            break;
+//                        }
+//                        i++;
+//                    }
+//                    if (exit == NO) {
+//                        cell.backgroundColor = [UIColor redColor];
+//                        if (![self isSelected:indexPath]) {
+//                            [selectedIndexs addObject:indexPath];
+//                        }
+//                    }
+//                }else {
+//                    cell.backgroundColor = [UIColor redColor];
+//                    if (![self isSelected:indexPath]) {
+//                        [selectedIndexs addObject:indexPath];
+//                    }
+//                }
+//            }else {
+//                cell.backgroundColor = [UIColor redColor];
+//                if (![self isSelected:indexPath]) {
+//                    [selectedIndexs addObject:indexPath];
+//                }
+//            }
         }
     }
     //***************刷新页面

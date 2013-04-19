@@ -20,6 +20,7 @@
 @property (nonatomic,strong) IBOutlet UILabel *lblCarNum,*lblBrand,*lblUserName,*lblPhone,*lblProduct,*lblTime;
 @property (nonatomic,strong) IBOutlet UILabel *lblReceiver,*lblOrderNum,*lblWorkingCar,*lblStatus,*lblWorkingName,*lblTotal;
 @property (nonatomic,strong) IBOutlet UILabel *timeLabel;
+@property (nonatomic,strong) IBOutlet UILabel *productLabel;
 
 @property (nonatomic,strong) NSMutableArray *orderList,*orderItems;
 @property (nonatomic,strong) NSString *car_num;

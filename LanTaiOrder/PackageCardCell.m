@@ -14,6 +14,8 @@
 @implementation PackageCardCell
 @synthesize lblName,lblPrice,selectedArr,product,index,cellType;
 
+static int number= 0;
+
 - (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier  with:(NSMutableDictionary *)prod indexPath:(NSIndexPath *)idx type:(NSInteger)type{
     self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
     if (self) {
@@ -78,49 +80,118 @@
 
 //选择开关
 - (void)clickSwitch:(UIButton *)sender{
-    
+    [DataService sharedService].first = NO;
     UIButton *btn = (UIButton *)sender;
     NSString *tagStr = [NSString stringWithFormat:@"%d",btn.tag];
     NSMutableDictionary *dic;
     CGFloat x = [self.lblPrice.text floatValue];
     CGFloat y = 0;
-    
-    
+    DLog(@"dic = %@",[DataService sharedService].temp_dictionary);
+    NSArray *array = [[DataService sharedService].temp_dictionary allKeys];
     if (tagStr.length == 3) {
         dic = [[selectedArr objectAtIndex:sender.tag - OPEN] mutableCopy];
-        int num = [[dic objectForKey:@"num"]intValue];
-        y = [[dic objectForKey:@"product_price"] floatValue];
-        x += [[dic objectForKey:@"product_price"] floatValue];
-        [dic setValue:@"1" forKey:@"selected"];
-        [dic setObject:[NSString stringWithFormat:@"%d",num + 1] forKey:@"num"];
-        [selectedArr replaceObjectAtIndex:sender.tag - OPEN withObject:dic];
+        NSString * product_id = [dic objectForKey:@"product_id"];
+        if ([array containsObject:product_id]) {//套餐卡包含此产品／服务
+            
+            int num = [[dic objectForKey:@"num"]intValue];
+            y = [[dic objectForKey:@"product_price"] floatValue];
+            y = y * number;
+            x =x + y ;
+           
+            //重置temp—dic数据
+            int count_num = [[[DataService sharedService].temp_dictionary objectForKey:product_id]intValue];//剩余次数
+            [[DataService sharedService].temp_dictionary removeObjectForKey:product_id];
+            [[DataService sharedService].temp_dictionary setObject:[NSString stringWithFormat:@"%d", number+count_num] forKey:product_id];
+            DLog(@"dic = %@",[DataService sharedService].temp_dictionary);
+            
+            [dic setObject:[NSString stringWithFormat:@"%d",num + number] forKey:@"num"];
+            
+            [dic setValue:@"1" forKey:@"selected"];
+            [selectedArr replaceObjectAtIndex:sender.tag - OPEN withObject:dic];
+            
+            int tag = btn.tag;
+            btn.tag = tag - OPEN + CLOSE;
+            [btn setImage:[UIImage imageNamed:@"cb_mono_off"] forState:UIControlStateNormal];
+            
+            NSString *price = [NSString stringWithFormat:@"%.2f",x];
+            self.lblPrice.text = price;
+            [self.product setObject:selectedArr forKey:@"products"];
+            
+            [self.product setObject:price forKey:@"show_price"];
+            
+            NSString *p = [NSString stringWithFormat:@"%.2f",y];
+            NSMutableDictionary *dic1 = [NSMutableDictionary dictionaryWithObjectsAndKeys:p,@"object",self.product,@"prod",self.index,@"idx",@"2",@"type", nil];
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"update_total" object:dic1];
+        }
         
-        int tag = btn.tag;
-        btn.tag = tag - OPEN + CLOSE;
-        [btn setImage:[UIImage imageNamed:@"cb_mono_off"] forState:UIControlStateNormal];
     }else {
         dic = [[selectedArr objectAtIndex:sender.tag - CLOSE] mutableCopy];
-        int num = [[dic objectForKey:@"num"]intValue];
-        y = 0-[[dic objectForKey:@"product_price"] floatValue];
-        x -= [[dic objectForKey:@"product_price"] floatValue];
-        [dic setValue:@"0" forKey:@"selected"];
-        [dic setObject:[NSString stringWithFormat:@"%d",num - 1] forKey:@"num"];
-        [selectedArr replaceObjectAtIndex:sender.tag - CLOSE withObject:dic];
-        
-        int tag = btn.tag;
-        btn.tag = tag - CLOSE + OPEN;
-        [btn setImage:[UIImage imageNamed:@"cb_mono_on"] forState:UIControlStateNormal];
+        NSString * product_id = [dic objectForKey:@"product_id"];
+        if ([array containsObject:product_id]) {//套餐卡包含此产品／服务
+            [DataService sharedService].first = NO;
+            int num = [[dic objectForKey:@"num"]intValue];//套餐卡里面的数目
+            int count_num = [[[DataService sharedService].temp_dictionary objectForKey:product_id]intValue];//用户选择的数目
+            y =0- [[dic objectForKey:@"product_price"] floatValue];
+            if (count_num == 0) {
+                [AHAlertView applyCustomAlertAppearance];
+                AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"您没有该产品可消费"];
+                __block AHAlertView *alert = alertt;
+                [alertt setCancelButtonTitle:@"确定" block:^{
+                    alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+                    alert = nil;
+                }];
+                [alertt show];
+            }else{
+                if (num <= count_num) {//用户次数大于套餐卡提供次数
+                    DLog(@"%f",y * num);
+                    number = num;//全局变量保存初始count
+                    //用户选择的次数  －  消费的次数 （用户还需要消费的次数）>=0
+                    y = y * num;
+                    x = x + y;
+                    //重置temp—dic数据
+                    [[DataService sharedService].temp_dictionary removeObjectForKey:product_id];
+                    [[DataService sharedService].temp_dictionary setObject:[NSString stringWithFormat:@"%d",count_num - num] forKey:product_id];
+                    DLog(@"dic = %@",[DataService sharedService].temp_dictionary);
+                    
+                    [dic setObject:[NSString stringWithFormat:@"%d",num - num] forKey:@"num"];
+                }else {
+                    number = count_num;
+                    //重置temp—dic数据
+                    [[DataService sharedService].temp_dictionary removeObjectForKey:product_id];
+                    [[DataService sharedService].temp_dictionary setObject:@"0" forKey:product_id];
+                    DLog(@"dic = %@",[DataService sharedService].temp_dictionary);
+                    
+                    y = y * count_num;
+                    x =x + y ;
+                    [dic setObject:[NSString stringWithFormat:@"%d",num - count_num] forKey:@"num"];
+                }
+                [dic setValue:@"0" forKey:@"selected"];
+                [selectedArr replaceObjectAtIndex:sender.tag - CLOSE withObject:dic];
+                int tag = btn.tag;
+                btn.tag = tag - CLOSE + OPEN;
+                [btn setImage:[UIImage imageNamed:@"cb_mono_on"] forState:UIControlStateNormal];
+                
+                NSString *price = [NSString stringWithFormat:@"%.2f",x];
+                self.lblPrice.text = price;
+                [self.product setObject:selectedArr forKey:@"products"];
+                
+                [self.product setObject:price forKey:@"show_price"];
+                
+                NSString *p = [NSString stringWithFormat:@"%.2f",y];
+                NSMutableDictionary *dic1 = [NSMutableDictionary dictionaryWithObjectsAndKeys:p,@"object",self.product,@"prod",self.index,@"idx",@"2",@"type", nil];
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"update_total" object:dic1];
+            }
+        }else {
+            [AHAlertView applyCustomAlertAppearance];
+            AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"您没有选择此产品或服务"];
+            __block AHAlertView *alert = alertt;
+            [alertt setCancelButtonTitle:@"确定" block:^{
+                alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+                alert = nil;
+            }];
+            [alertt show];
+        }
     }
-
-    NSString *price = [NSString stringWithFormat:@"%.2f",x];
-    self.lblPrice.text = price;
-    [self.product setObject:selectedArr forKey:@"products"];
-    
-    [self.product setObject:price forKey:@"show_price"];
-    
-    NSString *p = [NSString stringWithFormat:@"%.2f",y];
-    NSMutableDictionary *dic1 = [NSMutableDictionary dictionaryWithObjectsAndKeys:p,@"object",self.product,@"prod",self.index,@"idx",@"2",@"type", nil];
-    [[NSNotificationCenter defaultCenter] postNotificationName:@"update_total" object:dic1];
 }
 
 @end

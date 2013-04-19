@@ -14,6 +14,7 @@
 @synthesize number,payNumber;
 @synthesize doneArray;
 @synthesize tagOfBtn;
+@synthesize temp_dictionary,first;
 
 - (id)init{
     if (self == [super init]) {
@@ -25,6 +26,8 @@
         self.reserve_list = [NSMutableArray array];
         self.doneArray = [NSMutableArray array];
         self.tagOfBtn = 0;
+        self.temp_dictionary = [NSMutableDictionary dictionary];
+        first = YES;
     }
     return self;
 }

@@ -18,6 +18,9 @@
 @property (nonatomic,assign) int payNumber;//判断是否弹出pay的popView:1弹出，0不弹出
 @property (nonatomic,strong) NSMutableArray *doneArray;//已投诉得数组
 @property (nonatomic,assign) int tagOfBtn;//判断生日按钮
+
+@property (nonatomic,strong) NSMutableDictionary *temp_dictionary;//选择产品／服务的id 和数量
+@property (nonatomic,assign) BOOL first;//判断 temp_dictionary 是否加载数据；
 + (DataService *)sharedService;
 
 @end

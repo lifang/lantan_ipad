@@ -36,16 +36,18 @@
 {
     if (orderInfo) {
         DLog(@"%@",orderInfo);
+        lblBrand.text = [orderInfo objectForKey:@"code"];
         lblCarNum.text = [orderInfo objectForKey:@"car_num"];
         lblUsername.text = [orderInfo objectForKey:@"username"];
         lblStart.text = [orderInfo objectForKey:@"start"];
-        if ([lblStart.text isEqualToString:@""]) {
+        DLog(@"%@",[orderInfo objectForKey:@"start"]);
+        if (lblStart.text.length <= 0) {
             self.start_lab.hidden = YES;
         }else {
             self.start_lab.hidden = NO;
         }
         lblEnd.text = [orderInfo objectForKey:@"end"];
-        if ([lblEnd.text isEqualToString:@""]) {
+        if (lblEnd.text.length <= 0) {
             self.end_lab.hidden = YES;
         }else {
             self.end_lab.hidden = NO;

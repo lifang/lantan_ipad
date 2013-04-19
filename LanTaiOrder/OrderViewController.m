@@ -31,7 +31,8 @@
 @synthesize lblOrderNum,lblReceiver,lblStatus,lblWorkingCar,lblWorkingName,lblTotal;
 @synthesize car_num,customer,workingOrder;
 @synthesize addOrderView;
-@synthesize timeLabel;
+@synthesize timeLabel,productLabel;
+
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
@@ -76,11 +77,13 @@
                 
                 if ([[result objectForKey:@"working"] count]==0) {
                     //没有正在进行中的订单
-                  self.lblProduct.text = @"";
-                  self.lblTime.text = @"";
+                    self.lblProduct.text = @"";
+                    self.lblTime.text = @"";
                     self.workingView.hidden = YES;
                     self.noWorkingView.hidden = NO;
                     self.orderTable.hidden = YES;
+                    self.timeLabel.hidden = YES;//没有时间  隐藏label
+                    self.productLabel.hidden = YES;//服务lab
                 }else{
                     if (![[[result objectForKey:@"working"] objectForKey:@"started_at"] isEqual:[NSNull null]]) {
                         NSString *str = [Utils formateDate:[[result objectForKey:@"working"] objectForKey:@"started_at"]];
@@ -111,6 +114,11 @@
                     self.lblWorkingCar.text = [[result objectForKey:@"customer"] objectForKey:@"num"];
                     self.lblTotal.text = [NSString stringWithFormat:@"%@(元)",[[result objectForKey:@"working"] objectForKey:@"price"]];
                     self.orderItems = [[result objectForKey:@"working"] objectForKey:@"products"];
+                    if (self.orderItems.count == 0) {
+                        self.productLabel.hidden = YES;//服务lab
+                    }else {
+                        self.productLabel.hidden = NO;//服务lab
+                    }
                     if ([[workingOrder objectForKey:@"status"] intValue]==0) {
                         self.btnCancel.hidden = NO;
                     }else{
@@ -134,7 +142,6 @@
 
 -(void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-//    [self searchOrderByCarNum];
     [self.orderTable reloadData];
 }
 - (void)viewDidLoad
@@ -143,6 +150,8 @@
     self.orderItems = [NSMutableArray array];
     self.customer = [NSMutableDictionary dictionary];
     self.workingOrder = [NSMutableDictionary dictionary];
+    self.addOrderView = [[AddViewController alloc] initWithNibName:@"AddViewController" bundle:nil];
+    
     [self searchOrderByCarNum];
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"order_bg"]];
@@ -261,7 +270,7 @@
             return 44+20;
         }
         return count * 44 +20;
-    }
+        }
 }
 
 //点击投诉按钮
@@ -366,19 +375,40 @@
 
 //点击下单按钮
 -(void)showAddView {
-    self.addOrderView = [[AddViewController alloc] initWithNibName:@"AddViewController" bundle:nil];
     self.addOrderView.customer = [NSMutableDictionary dictionaryWithDictionary:self.customer];
     [DataService sharedService].car_num = self.lblCarNum.text;
     [DataService sharedService].number = 0;
     self.addOrderView.step = @"3";
+    //下单获取数据
+    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kBrandProduct]];
+    [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id", nil]];
+    [r setPostDataEncoding:NSUTF8StringEncoding];
+    NSError *error = nil;
+    NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
+    self.addOrderView.brandResult = [NSMutableDictionary dictionaryWithDictionary:result];
+    if ([[result objectForKey:@"status"] intValue]==1) {
+        self.addOrderView.brandList = [NSMutableArray arrayWithArray:[result objectForKey:@"brands"]];
+        self.addOrderView.productList = [NSMutableArray arrayWithArray:[result objectForKey:@"products"]];
+    }
+    
     [self.navigationController pushViewController:self.addOrderView animated:YES];
     [MBProgressHUD hideHUDForView:self.view animated:YES];
 }
 -(void)addView {
-    self.addOrderView = [[AddViewController alloc] initWithNibName:@"AddViewController" bundle:nil];
-//    self.addOrderView.customer = [NSMutableDictionary dictionaryWithDictionary:self.customer];
     self.addOrderView.step = @"0";
     self.addOrderView.car_num = self.car_num;//车牌号
+    [DataService sharedService].number = 0;
+    //下单获取数据
+    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kBrandProduct]];
+    [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id", nil]];
+    [r setPostDataEncoding:NSUTF8StringEncoding];
+    NSError *error = nil;
+    NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
+    self.addOrderView.brandResult = [NSMutableDictionary dictionaryWithDictionary:result];
+    if ([[result objectForKey:@"status"] intValue]==1) {
+        self.addOrderView.brandList = [NSMutableArray arrayWithArray:[result objectForKey:@"brands"]];
+        self.addOrderView.productList = [NSMutableArray arrayWithArray:[result objectForKey:@"products"]];
+    }
     [self.navigationController pushViewController:self.addOrderView animated:YES];
     [MBProgressHUD hideHUDForView:self.view animated:YES];
 }
@@ -487,11 +517,22 @@
 
 //或登记信息
 -(void)reg {
-    AddViewController *addOrder = [[AddViewController alloc] initWithNibName:@"AddViewController" bundle:nil];
-    addOrder.step = @"1";
-    addOrder.car_num = self.car_num;//车牌号
+    self.addOrderView.step = @"1";
+    self.addOrderView.car_num = self.car_num;//车牌号
     [DataService sharedService].number = 1;
-    [self.navigationController pushViewController:addOrder animated:YES];
+    //下单获取数据
+    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kBrandProduct]];
+    [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id", nil]];
+    [r setPostDataEncoding:NSUTF8StringEncoding];
+    NSError *error = nil;
+    NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
+    self.addOrderView.brandResult = [NSMutableDictionary dictionaryWithDictionary:result];
+    if ([[result objectForKey:@"status"] intValue]==1) {
+        self.addOrderView.brandList = [NSMutableArray arrayWithArray:[result objectForKey:@"brands"]];
+        self.addOrderView.productList = [NSMutableArray arrayWithArray:[result objectForKey:@"products"]];
+    }
+    
+    [self.navigationController pushViewController:self.addOrderView animated:YES];
     [MBProgressHUD hideHUDForView:self.view animated:YES];
 }
 - (IBAction)clickReg:(id)sender{

@@ -21,10 +21,10 @@
 @end
 
 @implementation ConfirmViewController
-
 @synthesize lblBrand,lblCarNum,lblEnd,lblPhone,lblStart,lblTotal,lblUsername;
 @synthesize productTable,productList,orderInfo,total_count,total_count_temp;
 @synthesize confirmView,confirmBgView;
+
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -35,9 +35,14 @@
     return self;
 }
 
+-(void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [DataService sharedService].temp_dictionary = nil;
+    [DataService sharedService].first = YES;
+    [DataService sharedService].temp_dictionary = [NSMutableDictionary dictionary];
+}
 - (void)viewDidLoad
 {
-    DLog(@"%f",self.total_count);
     if (orderInfo) {
         lblBrand.text = [orderInfo objectForKey:@"car_brand"];
         lblCarNum.text = [orderInfo objectForKey:@"car_num"];
@@ -97,6 +102,15 @@
         if ([product objectForKey:@"count"]) {
             cell.lblCount.text = [NSString stringWithFormat:@"%@",[product objectForKey:@"count"]];
             cell.stepBtn.value = [[product objectForKey:@"count"] doubleValue];
+            
+            //第一次加载tableView
+            if ([DataService sharedService].first == YES) {
+                if ([[DataService sharedService].temp_dictionary objectForKey:[product objectForKey:@"id"]]) {
+                    [[DataService sharedService].temp_dictionary removeObjectForKey:[product objectForKey:@"id"]];
+                }
+                [[DataService sharedService].temp_dictionary setObject:[product objectForKey:@"count"] forKey:[product objectForKey:@"id"]];
+            }
+            
         }
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
         return cell;
@@ -139,7 +153,8 @@
         return cell;
     }else if([product objectForKey:@"products"]){
         //套餐卡
-        static NSString *CellIdentifier = @"PackageCardCell";
+//        static NSString *CellIdentifier = @"PackageCardCell";
+        NSString *CellIdentifier = [NSString stringWithFormat:@"PackageCardCell%d", [indexPath row]];
         PackageCardCell *cell = (PackageCardCell *)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
         if (cell == nil) {
             cell = [[PackageCardCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier with:product indexPath:indexPath type:0];
@@ -154,7 +169,6 @@
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
         return cell;
     }
-
     return nil;
 }
 
@@ -168,6 +182,7 @@
 
 - (void)updateTotal:(NSNotification *)notification{
     NSDictionary *dic = [notification object];
+    //dic套餐卡剩余
     CGFloat f = 0;
     if (self.total_count == 0) {
         f = self.total_count_temp + [[dic objectForKey:@"object"] floatValue];
@@ -208,14 +223,18 @@
     int x=0,y=0,z=0;
     for (NSDictionary *product in self.productList) {
         if ([product objectForKey:@"id"] && ![product objectForKey:@"has_p_card"]){
+            //服务
             [prod_ids appendFormat:@"0_%d_%d,",[[product objectForKey:@"id"] intValue],[[product objectForKey:@"count"] intValue]];
         }else if([product objectForKey:@"sale_id"] && [[product objectForKey:@"selected"] intValue] == 0){
+            //活动
             x += 1;
            [prod_ids appendFormat:@"1_%d,",[[product objectForKey:@"sale_id"] intValue]]; 
         }else if([product objectForKey:@"scard_id"] && [[product objectForKey:@"selected"] intValue] == 0){
+            //打折卡
             y += 1;
             [prod_ids appendFormat:@"2_%d,",[[product objectForKey:@"scard_id"] intValue]];
         }else if([product objectForKey:@"products"]){
+            //套餐卡
             NSMutableString *p_str = [NSMutableString string];
             for (NSDictionary *pro in [product objectForKey:@"products"]) {
                 if([[pro objectForKey:@"selected"] intValue]==0){
@@ -226,7 +245,7 @@
            [prod_ids appendFormat:@"3_%d_%d_%@,",[[product objectForKey:@"id"] intValue],[[product objectForKey:@"has_p_card"] intValue],p_str];
         }
     }
-    if (x>1 || y>1 || z>1) {
+    if (x>1 || y>1) {
         return @"";
     }
     return prod_ids;

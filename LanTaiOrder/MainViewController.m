@@ -49,7 +49,7 @@
     orderTable.delegate = self;
     waitList = [NSMutableArray array];
     //获取正在进行中的订单和预约信息
-    [Utils fetchWorkingList];
+//    [Utils fetchWorkingList];
     waitList = [DataService sharedService].workingOrders;
 //    DLog(@"%@",waitList);
     if ([DataService sharedService].reserve_count && [[DataService sharedService].reserve_count intValue] > 0) {
@@ -67,13 +67,6 @@
     CGRect frame = self.txtCarNum.frame;
     frame.size.height = 48;
     self.txtCarNum.frame = frame;
-    
-//    [self.orderTable addPullToRefreshWithActionHandler:^{
-//        [Utils fetchWorkingList];
-//        self.waitList = [DataService sharedService].workingOrders;
-//        [self.orderTable reloadData];
-//        [self.orderTable.pullToRefreshView performSelector:@selector(stopAnimatingg) withObject:nil afterDelay:2];
-//    }];
     
 }
 

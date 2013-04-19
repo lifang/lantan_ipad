@@ -32,7 +32,6 @@
     }else {
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
         NSString *userInfo = [defaults objectForKey:@"userId"];
-        DLog(@"%@--------%i",userInfo,[userInfo isEqualToString:@""]);
         if (userInfo != nil) {
             [DataService sharedService].store_id = [defaults objectForKey:@"storeId"];
             [DataService sharedService].user_id = userInfo;
@@ -57,7 +56,6 @@
     self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
     self.lantan_initView = [[InitViewController alloc]initWithNibName:@"InitViewController" bundle:nil];
     self.window.rootViewController = self.lantan_initView;
-//    [self showRootView];
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
     

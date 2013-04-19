@@ -40,7 +40,7 @@
 - (IBAction)clickSwitch:(id)sender{
     UIButton *btn = (UIButton *)sender;
     NSString *tagStr = [NSString stringWithFormat:@"%d",btn.tag];
-    
+    [DataService sharedService].first = NO;
     CGFloat x = 0;
     
     if (tagStr.length == 3) {
