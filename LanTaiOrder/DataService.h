@@ -21,6 +21,9 @@
 
 @property (nonatomic,strong) NSMutableDictionary *temp_dictionary;//选择产品／服务的id 和数量
 @property (nonatomic,assign) BOOL first;//判断 temp_dictionary 是否加载数据；
+
+@property (nonatomic,strong) NSMutableArray *row_id_countArray;
+@property (nonatomic,strong) NSMutableArray *productList;
 + (DataService *)sharedService;
 
 @end

@@ -258,14 +258,14 @@ static bool refresh = NO;
                                     [tempArray addObject:picDictionary];
                                 }
                                 if (image == nil) {
-                                    image = [UIImage imageNamed:@"close_btn"];
+                                    image = [UIImage imageNamed:@"defualt.jpg"];
                                     [array addObject:image];
                                 }else {
                                     [array addObject:image];
                                 }
                                 
                             }else {
-                                image = [UIImage imageNamed:@"close_btn"];
+                                image = [UIImage imageNamed:@"defualt.jpg"];
                                 [array addObject:image];
                             }
                     }
@@ -455,7 +455,6 @@ static bool refresh = NO;
         modelStr = [[[brand objectForKey:@"models"] objectAtIndex:[modelView selectedRowInComponent:0]] objectForKey:@"id"];
     }
     [dic setObject:[NSString stringWithFormat:@"%@_%@",brandStr,modelStr] forKey:@"brand"];
-    DLog(@"dic = %@",dic);
     [r setPostDataEncoding:NSUTF8StringEncoding];
     [r setPOSTDictionary:dic];
     
@@ -484,9 +483,12 @@ static bool refresh = NO;
         NSDictionary *brand  = [brandList objectAtIndex:[brandView selectedRowInComponent:0]];
         NSString *brandStr = [brand objectForKey:@"id"];
         NSString *modelStr = @"";
-        if ([[brand objectForKey:@"models"] count]>0) {
+        if (![[brand objectForKey:@"models"] isKindOfClass:[NSNull class]]) {
             modelStr = [[[brand objectForKey:@"models"] objectAtIndex:[modelView selectedRowInComponent:0]] objectForKey:@"id"];
         }
+//        if ([[brand objectForKey:@"models"] count]>0) {
+//            modelStr = [[[brand objectForKey:@"models"] objectAtIndex:[modelView selectedRowInComponent:0]] objectForKey:@"id"];
+//        }
         NSMutableString *prod_ids = [NSMutableString string];
         for (NSIndexPath *idx in selectedIndexs) {
             NSDictionary *prod = [[self.productList objectAtIndex:idx.row] objectAtIndex:idx.section];
@@ -499,7 +501,13 @@ static bool refresh = NO;
         [dic setObject:txtEmail.text forKey:@"email"];
         [dic setObject:txtBirth.text forKey:@"birth"];
         [dic setObject:txtCarYear.text forKey:@"year"];
-        [dic setObject:[NSString stringWithFormat:@"%@_%@",brandStr,modelStr] forKey:@"brand"];
+        
+        if ([modelStr intValue] == 0) {
+            [dic setObject:[NSString stringWithFormat:@"%@",brandStr] forKey:@"brand"];
+        }else {
+           [dic setObject:[NSString stringWithFormat:@"%@_%@",brandStr,modelStr] forKey:@"brand"]; 
+        }
+        
         [dic setObject:prod_ids forKey:@"prod_ids"];
         [dic setObject:[DataService sharedService].store_id forKey:@"store_id"];
         if ([customer objectForKey:@"reserv_at"]) {
@@ -510,11 +518,9 @@ static bool refresh = NO;
         [r setPOSTDictionary:dic];
         NSError *error = nil;
         
-//        NSString *dicc = [r startSynchronousWithError:&error];
-//        DLog(@"dicc = %@",dicc);
-//        NSDictionary *result = [dicc objectFromJSONString];
-        NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
-        
+        NSString *dicc = [r startSynchronousWithError:&error];
+        DLog(@"dicc = %@",dicc);
+        NSDictionary *result = [dicc objectFromJSONString]; 
         
         DLog(@"result = %@",result);
         if ([[result objectForKey:@"status"] intValue]==1) {

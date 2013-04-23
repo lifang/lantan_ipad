@@ -85,8 +85,9 @@
     // Make the Background Clickable
     UIButton * dismissButton = [UIButton buttonWithType:UIButtonTypeCustom];
     dismissButton.backgroundColor = [UIColor clearColor];
-    dismissButton.frame = sourceView.bounds;
-    [overlayView addSubview:dismissButton];
+    dismissButton.frame = CGRectMake(popupView.frame.size.width-30, 20,10 , 10);
+    [dismissButton setImage:[UIImage imageNamed:@"close"] forState:UIControlStateNormal];
+    [popupView addSubview:dismissButton];
     
     popupView.alpha = 0.0f;
     [overlayView addSubview:popupView];

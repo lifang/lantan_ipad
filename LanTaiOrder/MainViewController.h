@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 
 @class OrderViewController;
-@interface MainViewController : BaseViewController<UITableViewDataSource,UITableViewDelegate,MBProgressHUDDelegate>
+@interface MainViewController : BaseViewController<UITableViewDataSource,UITableViewDelegate>
 
 @property (nonatomic,strong) NSMutableArray *waitList;
 

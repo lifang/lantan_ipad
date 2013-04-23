@@ -12,12 +12,7 @@
 #import "AppDelegate.h"
 #import "SVPullToRefresh.h"
 
-@interface MainViewController ()
-
-@end
-
 @implementation MainViewController
-
 @synthesize txtCarNum,lblCount,orderTable = _orderTable,statusImg,mainView;
 @synthesize waitList;
 @synthesize orderView2;
@@ -40,12 +35,17 @@
     [DataService sharedService].reserve_count = nil;
     [DataService sharedService].store_id = nil;
     [DataService sharedService].car_num = nil;
-    [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"userId"];
-    [[NSUserDefaults standardUserDefaults] removeObjectForKey:@"storeId"];
+    
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    [defaults removeObjectForKey:@"userId"];
+    [defaults removeObjectForKey:@"storeId"];
+    [defaults synchronize];
+    
     [(AppDelegate *)[UIApplication sharedApplication].delegate showRootView];
 }
 -(void)getData {
     NSMutableDictionary *params=[[NSMutableDictionary alloc] init];
+//    DLog(@"store_id = %@",[DataService sharedService].store_id);
     [params setObject:[DataService sharedService].store_id forKey:@"store_id"];
     NSMutableURLRequest *request=[Utils getRequest:params string:[NSString stringWithFormat:@"%@%@",kHost,kIndex]];
     NSOperationQueue *queue=[[NSOperationQueue alloc] init];
@@ -65,6 +65,8 @@
     if (jsonObject !=nil) {
         if ([jsonObject isKindOfClass:[NSDictionary class]]) {
             NSDictionary *jsonData=(NSDictionary *)jsonObject;
+//            DLog(@"result = %@",jsonData);
+            
             if ([[jsonData objectForKey:@"status"] intValue] == 1) {
                 if ([jsonData objectForKey:@"reservations"]!=nil) {
                     NSMutableArray *arr = [NSMutableArray arrayWithArray:[jsonData objectForKey:@"reservations"]];
@@ -74,12 +76,13 @@
                 if ([jsonData objectForKey:@"orders"]!=nil) {
                     [DataService sharedService].workingOrders = [NSMutableArray arrayWithArray:[jsonData objectForKey:@"orders"]];
                     waitList = [DataService sharedService].workingOrders;
-                    DLog(@"%@",waitList);
+                    [self.orderTable reloadData];
                 }
             }
         }
     }
 }
+
 - (void)viewDidLoad
 {
     _orderTable.delegate = self;

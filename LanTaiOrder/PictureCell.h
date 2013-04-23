@@ -17,6 +17,7 @@
 }
 
 @property (nonatomic,strong) UIButton *addBtn;
+@property (nonatomic,strong) UILabel *titleLab;
 @property (nonatomic,strong) UIImageView *carImageView;
 @property (nonatomic,strong) id<PictureCellDelegate> delegate;
 

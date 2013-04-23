@@ -14,7 +14,7 @@
 @synthesize number,payNumber;
 @synthesize doneArray;
 @synthesize tagOfBtn;
-@synthesize temp_dictionary,first;
+@synthesize temp_dictionary,first,row_id_countArray,productList;
 
 - (id)init{
     if (self == [super init]) {
@@ -28,6 +28,8 @@
         self.tagOfBtn = 0;
         self.temp_dictionary = [NSMutableDictionary dictionary];
         first = YES;
+        self.row_id_countArray = [NSMutableArray array];
+        self.productList = [NSMutableArray array];
     }
     return self;
 }

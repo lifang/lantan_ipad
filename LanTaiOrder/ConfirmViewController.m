@@ -37,9 +37,19 @@
 
 -(void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    [DataService sharedService].temp_dictionary = nil;
     [DataService sharedService].first = YES;
+    [DataService sharedService].temp_dictionary = nil;
     [DataService sharedService].temp_dictionary = [NSMutableDictionary dictionary];
+    
+    [DataService sharedService].row_id_countArray = nil;
+    [DataService sharedService].row_id_countArray =[NSMutableArray array];
+    
+    [DataService sharedService].productList = self.productList;
+}
+-(void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    [DataService sharedService].productList = nil;
+    [DataService sharedService].productList = [NSMutableArray array];
 }
 - (void)viewDidLoad
 {
@@ -65,18 +75,15 @@
     }
     //更新总价
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateTotal:) name:@"update_total" object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reloadTableView:) name:@"reloadTableView" object:nil];
+    
     [super viewDidLoad];
     if (![self.navigationItem rightBarButtonItem]) {
         [self addRightnaviItemWithImage:@"back"];
     }
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"view_bg"]];
     self.confirmBgView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"confirm_bg"]];
-}
-
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
@@ -153,7 +160,6 @@
         return cell;
     }else if([product objectForKey:@"products"]){
         //套餐卡
-//        static NSString *CellIdentifier = @"PackageCardCell";
         NSString *CellIdentifier = [NSString stringWithFormat:@"PackageCardCell%d", [indexPath row]];
         PackageCardCell *cell = (PackageCardCell *)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
         if (cell == nil) {
@@ -200,7 +206,9 @@
     self.lblTotal.text = [NSString stringWithFormat:@"总计：%.2f(元)",self.total_count];
     NSIndexPath *idx = [dic objectForKey:@"idx"];
     [self.productList replaceObjectAtIndex:idx.row withObject:[dic objectForKey:@"prod"]];
-    [self.productTable reloadData];
+    [DataService sharedService].productList = self.productList;
+//    [[DataService sharedService].productList replaceObjectAtIndex:idx.row withObject:[dic objectForKey:@"prod"]];
+//    [self.productTable reloadData];
 }
 
 - (IBAction)clickCancel:(id)sender{
@@ -238,7 +246,9 @@
             NSMutableString *p_str = [NSMutableString string];
             for (NSDictionary *pro in [product objectForKey:@"products"]) {
                 if([[pro objectForKey:@"selected"] intValue]==0){
-                    [p_str appendFormat:@"%d=%d-",[[pro objectForKey:@"product_id"] intValue],[[pro objectForKey:@"num"] intValue]];
+                    
+                    int num = [[pro objectForKey:@"Total_num"]intValue] - [[pro objectForKey:@"num"]intValue];
+                    [p_str appendFormat:@"%d=%d-",[[pro objectForKey:@"product_id"] intValue],num];
                 }
             }
             z += 1;
@@ -331,7 +341,7 @@
 
     }else{
         [AHAlertView applyCustomAlertAppearance];
-        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"活动，打折卡，套餐卡每类最多可以选择一个"];
+        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"活动，打折卡每类最多可以选择一个"];
         __block AHAlertView *alert = alertt;
         [alertt setCancelButtonTitle:@"确定" block:^{
             alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
@@ -340,5 +350,84 @@
         [alertt show];
     }
 }
-
+- (void)reloadTableView:(NSNotification *)notification{
+    NSDictionary *dic = [notification object];
+    NSString * product_id = [dic objectForKey:@"id"];//服务／产品的id
+    
+    NSMutableArray *p_arr = [NSMutableArray array];
+    NSMutableDictionary *p_dic;
+    
+    CGFloat y = 0;
+    NSArray *array = [[DataService sharedService].temp_dictionary allKeys];
+    if ([array containsObject:product_id]) {
+        y = [[dic objectForKey:@"price"] floatValue];//服务／产品的  单价
+        int num_count = 0;
+        int index_row = 0;
+        int num = 0;
+        //从找到row_id_countArray数组中找到产品id
+        if ([DataService sharedService].row_id_countArray.count >0) {
+            for (int i=0; i<[DataService sharedService].row_id_countArray.count; i++) {
+                NSString *str = [[DataService sharedService].row_id_countArray objectAtIndex:i];
+                NSArray *arr = [str componentsSeparatedByString:@"_"];
+                
+                int p_id = [[arr objectAtIndex:1]intValue];//放在单列里面消费的服务/产品id
+                if (p_id == [product_id intValue]) {//id相同
+                    //通过id找到index
+                    index_row = [[arr objectAtIndex:0]intValue];
+                    //通过index找到cell
+                    NSIndexPath *idx = [NSIndexPath indexPathForRow:index_row inSection:0];
+                    NSMutableDictionary *product_dic = [[DataService sharedService].productList objectAtIndex:index_row];
+                    PackageCardCell *cell = (PackageCardCell *)[self.productTable cellForRowAtIndexPath:idx];
+                    CGFloat x = [cell.lblPrice.text floatValue];
+                    
+                    p_arr = [product_dic objectForKey:@"products"];
+                    DLog(@"p_arr = %@",p_arr);
+                    
+                    for (int j=0; j<p_arr.count; j++) {
+                        
+                        p_dic = [[p_arr objectAtIndex:j] mutableCopy];
+                        NSString * pro_id = [p_dic objectForKey:@"product_id"];//套餐卡包含的服务/产品id
+                        
+                        if ([product_id intValue] == [pro_id intValue]) {//id相同  找到服务  产品
+                            UIButton *btn = (UIButton *)[cell viewWithTag:OPEN+j];
+                            num = [[p_dic objectForKey:@"num"]intValue];//套餐卡剩余次数
+                            
+                            num_count = [[arr objectAtIndex:2]intValue];//放在单列里面此id产品消费次数
+                            y = y * num_count;
+                            x =x + y ;
+                            
+                            //重置temp—dic数据
+                            int count_num = [[[DataService sharedService].temp_dictionary objectForKey:product_id]intValue];//剩余次数
+                            [[DataService sharedService].temp_dictionary removeObjectForKey:product_id];
+                            [[DataService sharedService].temp_dictionary setObject:[NSString stringWithFormat:@"%d", num_count+count_num] forKey:product_id];
+                            DLog(@"dic = %@",[DataService sharedService].temp_dictionary);
+                            
+                            [p_dic setObject:[NSString stringWithFormat:@"%d",num + num_count] forKey:@"num"];
+                            [p_dic setValue:@"1" forKey:@"selected"];
+                            [p_arr replaceObjectAtIndex:j withObject:p_dic];
+                            
+                            int tag = btn.tag;
+                            btn.tag = tag - OPEN + CLOSE;
+                            [btn setImage:[UIImage imageNamed:@"cb_mono_off"] forState:UIControlStateNormal];
+                            
+                            NSString *price = [NSString stringWithFormat:@"%.2f",x];
+                            cell.lblPrice.text = price;
+                            [product_dic setObject:p_arr forKey:@"products"];
+                            
+                            [product_dic setObject:price forKey:@"show_price"];
+                            
+                            NSString *p = [NSString stringWithFormat:@"%.2f",y];
+                            NSMutableDictionary *dic1 = [NSMutableDictionary dictionaryWithObjectsAndKeys:p,@"object",product_dic,@"prod",idx,@"idx",@"2",@"type", nil];
+                            [[NSNotificationCenter defaultCenter] postNotificationName:@"update_total" object:dic1];
+                            
+                            //删除
+                            [[DataService sharedService].row_id_countArray removeObjectAtIndex:i];
+                        }
+                    }
+                }
+            }
+        }
+        
+    }
+}
 @end
