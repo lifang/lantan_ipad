@@ -8,13 +8,17 @@
 
 #import <UIKit/UIKit.h>
 
-@interface ComplaintViewController : BaseViewController
+@interface ComplaintViewController : BaseViewController <UITextViewDelegate,UIScrollViewDelegate>
 
 @property (nonatomic,strong) IBOutlet UILabel *lblName,*lblCarNum,*lblCode,*lblProduct;
-@property (nonatomic,strong) IBOutlet UITextView *reasonView,*requestView;
+
 @property (nonatomic,strong) IBOutlet UIView *infoBgView;
 
 @property (nonatomic,strong) NSMutableDictionary *info;
+@property (nonatomic,strong) IBOutlet UIScrollView *scView;
+@property (nonatomic,strong) IBOutlet UITextView *reasonView,*requestView;
+@property (nonatomic,strong) IBOutlet UILabel *resonLab,*requestLab;
+@property (nonatomic,strong) IBOutlet UIButton *sureBtn,*cancleBtn;
 
 - (IBAction)clickSubmit:(id)sender;
 

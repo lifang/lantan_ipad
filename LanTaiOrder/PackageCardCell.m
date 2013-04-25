@@ -62,10 +62,10 @@
             frame.origin.y -= 10;
         }
 
-        frame = CGRectMake(20, 0, 300, self.frame.size.height);
+        frame = CGRectMake(20, 0, 260, self.frame.size.height);
         lblName = [[UILabel alloc] initWithFrame:frame];
         [self addSubview:lblName];
-        frame.origin.x = 300;
+        frame.origin.x = 280;
         frame.size.width = 120;
         lblPrice = [[UILabel alloc] initWithFrame:frame];
         [self addSubview:lblPrice];

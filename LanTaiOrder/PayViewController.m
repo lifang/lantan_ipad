@@ -36,6 +36,7 @@
 }
 - (void)viewDidLoad
 {
+    self.segBtn.momentary = YES;
     if (orderInfo) {
         DLog(@"%@",orderInfo);
         lblBrand.text = [orderInfo objectForKey:@"code"];
@@ -153,6 +154,7 @@
 }
 
 - (IBAction)clickSegBtn:(UISegmentedControl *)sender{
+    self.segBtn = (UISegmentedControl *)sender;
     //评价，不满意
     if (sender.selectedSegmentIndex == 0) {
         ComplaintViewController *complaint = [[ComplaintViewController alloc] initWithNibName:@"ComplaintViewController" bundle:nil];
@@ -210,7 +212,6 @@
 
 - (void)closePopView:(PayStyleViewController *)payStyleViewController{
     [self dismissPopupViewControllerWithanimationType:MJPopupViewAnimationFade];
-    
     if (payStyleViewController.isSuccess) {
         [self.navigationController popToRootViewControllerAnimated:YES];
     }

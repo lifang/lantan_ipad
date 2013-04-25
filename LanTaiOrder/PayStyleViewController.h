@@ -18,7 +18,7 @@
 @property (nonatomic,assign) BOOL isSuccess;
 @property (nonatomic,strong) IBOutlet UIView *payStyle,*phoneView,*codeView;
 @property (nonatomic,strong) IBOutlet UITextField *txtPhone,*txtCode;
-
+@property (nonatomic,strong) IBOutlet UISegmentedControl *segBtn;
 @property (nonatomic,strong) NSString *codeStr;
 @property (nonatomic,assign) int payType;
 
@@ -28,7 +28,6 @@
 @end
 
 @protocol PayStyleViewDelegate <NSObject>
-
 @optional
 - (void)closePopView:(PayStyleViewController *)payStyleViewController;
 

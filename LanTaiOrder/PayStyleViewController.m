@@ -23,6 +23,7 @@
 @synthesize isSuccess,codeStr;
 @synthesize payStyle,phoneView,codeView,txtCode,txtPhone;
 @synthesize payType;
+@synthesize segBtn;
 
 //支付
 -(void)payWithType {
@@ -276,6 +277,7 @@
 {
     [super viewDidLoad];
     self.payType = -1;
+    self.segBtn.momentary = YES;
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(payResult:) name:@"payQFPOS" object:nil];
     self.payStyle.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"alert_bg"]];
     self.phoneView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"alert_bg"]];

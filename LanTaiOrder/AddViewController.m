@@ -339,9 +339,13 @@ static bool refresh = NO;
         self.txtCarNum.text = [customer objectForKey:@"carNum"];
         self.txtName.text = [customer objectForKey:@"name"];
         self.txtPhone.text = [customer objectForKey:@"phone"];
-        self.txtEmail.text = [customer objectForKey:@"email"];
-        self.txtBirth.text = [customer objectForKey:@"birth"];
-        if([customer objectForKey:@"year"]!= NULL){
+        if (![[customer objectForKey:@"email"] isKindOfClass:[NSNull class]]) {
+            self.txtEmail.text = [customer objectForKey:@"email"];
+        }
+        if (![[customer objectForKey:@"birth"] isKindOfClass:[NSNull class]]) {
+            self.txtBirth.text = [customer objectForKey:@"birth"];
+        }
+        if(![[customer objectForKey:@"year"]isKindOfClass:[NSNull class]]){
             self.txtCarYear.text = [NSString stringWithFormat:@"%@",[customer objectForKey:@"year"]];
         }
     }

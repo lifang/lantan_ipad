@@ -9,15 +9,13 @@
 #import "ComplaintViewController.h"
 #import "PayViewController.h"
 
-@interface ComplaintViewController ()
-
-@end
-
 @implementation ComplaintViewController
 
 @synthesize lblCarNum,lblCode,lblName,lblProduct;
 @synthesize reasonView,requestView;
-@synthesize info,infoBgView;
+@synthesize info,infoBgView,scView;
+@synthesize resonLab,requestLab;
+@synthesize sureBtn,cancleBtn;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -27,7 +25,12 @@
     }
     return self;
 }
-
+-(void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    [self.scView setScrollEnabled:NO];
+    
+    self.scView.contentSize = CGSizeMake(320, 868);
+}
 - (void)viewDidLoad
 {
     [super viewDidLoad];
@@ -40,7 +43,7 @@
         self.lblName.text = [info objectForKey:@"name"];
         self.lblProduct.text = [info objectForKey:@"prods"];
     }
-    [self.reasonView becomeFirstResponder];
+//    [self.reasonView becomeFirstResponder];
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"view_bg"]];
      self.infoBgView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"dot_1_bg"]];
 }
@@ -102,6 +105,20 @@
     }
 }
 
+- (void)textViewDidBeginEditing:(UITextView *)textView {
+    [self.scView setScrollEnabled:YES];
+    
+    if (textView.tag == 888) {
+        [self.scView setContentOffset:CGPointMake(0, 0)];
+    }else {
+        [self.scView setContentOffset:CGPointMake(0, 236)];
+    }
+    
+}
+- (void)textViewDidEndEditing:(UITextView *)textView {
+    [self.scView setScrollEnabled:NO];
+    [self.scView setContentOffset:CGPointMake(0, 0)];
+}
 -(IBAction)clickCancle:(id)sender {
     [reasonView resignFirstResponder];
     [requestView resignFirstResponder];
