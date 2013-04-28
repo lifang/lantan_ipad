@@ -36,6 +36,38 @@ static bool refresh = NO;
     return self;
 }
 
+- (BOOL)addSkipBackupAttributeToItemAtURL:(NSURL *)fileURL
+{
+    if (![[NSFileManager defaultManager] fileExistsAtPath:[fileURL path]]) {
+        NSLog(@"File %@ doesn't exist!",[fileURL path]);
+        return NO;
+    }
+    NSString *currSysVer = [[UIDevice currentDevice] systemVersion];
+    if ([currSysVer isEqualToString:@"5.0.1"]) {
+        const char* filePath = [[fileURL path] fileSystemRepresentation];
+        const char* attrName = "com.apple.MobileBackup";
+        u_int8_t attrValue = 1;
+        int result = setxattr(filePath, attrName, &attrValue, sizeof(attrValue), 0, 0);
+        NSLog(@"Excluded '%@' from backup",fileURL);
+        return result == 0;
+    }
+    else if (&NSURLIsExcludedFromBackupKey) {
+        NSError *error = nil;
+        BOOL result = [fileURL setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:&error];
+        if (result == NO) {
+            NSLog(@"Error excluding '%@' from backup. Error: %@",fileURL, error);
+            return NO;
+        }
+        else {
+            NSLog(@"Excluded '%@' from backup",fileURL);
+            return YES;
+        }
+    } else {
+        return YES;
+    }
+}
+
+
 - (void)initView{
     self.btnNext.hidden = NO;
     self.btnDone.hidden = YES;
@@ -260,13 +292,15 @@ static bool refresh = NO;
                                         NSDictionary *dictionary = [self.dataArray objectAtIndex:i];
                                         if ([dictionary isEqualToDictionary:picDictionary]) {
                                             exit = YES;
-                                            NSString *picDocument = [self getDoucmentFilePathLittleImageWithName:PICTURE];//保存图片的文件夹
-                                            NSString *picture = [picDocument stringByAppendingPathComponent:picName];//保存图片的路径
-                                            //直接从沙盒读取图片
-                                            NSData *imageData=[[NSData alloc ]initWithContentsOfFile:picture];
-                                            image = [UIImage imageWithData:imageData];
                                             
-                                            break;
+                                            NSString *picDocument = [self getDoucmentFilePathLittleImageWithName:PICTURE];//保存图片的文件夹
+                                            if ([self addSkipBackupAttributeToItemAtURL:[NSURL fileURLWithPath:picDocument]]) {
+                                                NSString *picture = [picDocument stringByAppendingPathComponent:picName];//保存图片的路径
+                                                //直接从沙盒读取图片
+                                                NSData *imageData=[[NSData alloc ]initWithContentsOfFile:picture];
+                                                image = [UIImage imageWithData:imageData];
+                                                break;
+                                            }
                                         }
                                         i++;
                                     }
@@ -274,14 +308,18 @@ static bool refresh = NO;
                                     if (exit == NO) {
                                         image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",kDomain,pic]]]];
                                         NSString *picDocument = [self getDoucmentFilePathLittleImageWithName:PICTURE];
-                                        [self savePhotoDataWithfile:picDocument andImage:image andName:picName];//保存图片
-                                        [tempArray addObject:picDictionary];
+                                        if ([self addSkipBackupAttributeToItemAtURL:[NSURL fileURLWithPath:picDocument]]) {
+                                            [self savePhotoDataWithfile:picDocument andImage:image andName:picName];//保存图片
+                                            [tempArray addObject:picDictionary];
+                                        }
                                     }
                                 }else {//plist为空
                                     image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",kDomain,pic]]]];
                                     NSString *picDocument = [self getDoucmentFilePathLittleImageWithName:PICTURE];
-                                    [self savePhotoDataWithfile:picDocument andImage:image andName:picName];//保存图片
-                                    [tempArray addObject:picDictionary];
+                                    if ([self addSkipBackupAttributeToItemAtURL:[NSURL fileURLWithPath:picDocument]]) {
+                                        [self savePhotoDataWithfile:picDocument andImage:image andName:picName];//保存图片
+                                        [tempArray addObject:picDictionary];
+                                    }
                                 }
                                 if (image == nil) {
                                     image = [UIImage imageNamed:@"defualt.jpg"];

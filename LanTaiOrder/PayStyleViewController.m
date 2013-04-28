@@ -99,7 +99,9 @@
 //    NSString *busicode = @"";
     NSString *callback = @"pospal";//[[[NSBundle mainBundle] infoDictionary] objectForKey:@"C"];
     NSString *appname = @"lantan";
-    NSString *params = [NSString stringWithFormat:@"appid=%@&amount=%@&tradetype=%@&callback=%@&appname=%@",kPosAppId,@"1",@"0",callback,appname,nil];
+    float account = [[self.order objectForKey:@"price"]floatValue];
+    NSString *pricr = [NSString stringWithFormat:@"%2f",account*100];
+    NSString *params = [NSString stringWithFormat:@"appid=%@&amount=%@&tradetype=%@&callback=%@&appname=%@",kPosAppId,pricr,@"0",callback,appname,nil];
     NSString *strKey = [NSString stringWithFormat:@"%@qfpos",params];
     NSString *md5Key = [Utils MD5:strKey];
     NSString *stringParams = [NSString stringWithFormat:@"%@&sign=%@",params,md5Key];
@@ -273,7 +275,9 @@
     }
     return self;
 }
-
+-(void)setsetTotal:(NSNotification *)notification {
+    
+}
 - (void)viewDidLoad
 {
     [super viewDidLoad];
