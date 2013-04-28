@@ -52,7 +52,9 @@
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
-
+- (void)closeAlert:(NSTimer*)timer {
+    [(AHAlertView*) timer.userInfo  dismissWithStyle:AHAlertViewDismissalStyleZoomDown];
+}
 - (BOOL)checkForm{
     NSString *passport = [[NSString alloc] initWithString: self.txtName.text];
     NSString *password = [[NSString alloc] initWithString: self.txtPwd.text];
@@ -66,12 +68,13 @@
     if (msgStr.length > 0){
         [AHAlertView applyCustomAlertAppearance];
         AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:msgStr];
-        __block AHAlertView *alert = alertt;
-        [alertt setCancelButtonTitle:@"确定" block:^{
-            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
-            alert = nil;
-        }];
+//        __block AHAlertView *alert = alertt;
+//        [alertt setCancelButtonTitle:@"确定" block:^{
+//            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+//            alert = nil;
+//        }];
         [alertt show];
+        [NSTimer scheduledTimerWithTimeInterval:1.0f target:self selector:@selector(closeAlert:) userInfo:alertt repeats:NO];
         return FALSE;
     }
     return TRUE;
@@ -86,32 +89,46 @@
     DLog(@"%@",jsonData);
     NSString *text = [jsonData objectForKey:@"info"];
     
-    if (text.length == 0) {
-        NSDictionary *staff = [jsonData objectForKey:@"staff"];
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-        [defaults setObject:[NSString stringWithFormat:@"%@",[staff objectForKey:@"id"]] forKey:@"userId"];
-        [defaults setObject:[NSString stringWithFormat:@"%@",[staff objectForKey:@"store_id"]] forKey:@"storeId"];
-        [defaults synchronize];
-        
-        [DataService sharedService].user_id = [NSString stringWithFormat:@"%@",[staff objectForKey:@"id"]];
-        [DataService sharedService].store_id = [NSString stringWithFormat:@"%@",[staff objectForKey:@"store_id"]];
-        [(AppDelegate *)[UIApplication sharedApplication].delegate showRootView];
-        
-    }else{
+    if (jsonData != nil) {
+        if (text.length == 0) {
+            NSDictionary *staff = [jsonData objectForKey:@"staff"];
+            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+            [defaults setObject:[NSString stringWithFormat:@"%@",[staff objectForKey:@"id"]] forKey:@"userId"];
+            [defaults setObject:[NSString stringWithFormat:@"%@",[staff objectForKey:@"store_id"]] forKey:@"storeId"];
+            [defaults synchronize];
+            
+            [DataService sharedService].user_id = [NSString stringWithFormat:@"%@",[staff objectForKey:@"id"]];
+            [DataService sharedService].store_id = [NSString stringWithFormat:@"%@",[staff objectForKey:@"store_id"]];
+            [(AppDelegate *)[UIApplication sharedApplication].delegate showRootView];
+            
+        }else{
+            [AHAlertView applyCustomAlertAppearance];
+            AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:text];
+//            __block AHAlertView *alert = alertt;
+//            [alertt setCancelButtonTitle:@"确定" block:^{
+//                alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+//                alert = nil;
+//            }];
+            [alertt show];
+            [NSTimer scheduledTimerWithTimeInterval:1.0f target:self selector:@selector(closeAlert:) userInfo:alertt repeats:NO];
+        }
+    }else {
         [AHAlertView applyCustomAlertAppearance];
-        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:text];
-        __block AHAlertView *alert = alertt;
-        [alertt setCancelButtonTitle:@"确定" block:^{
-            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
-            alert = nil;
-        }];
+        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"出错了"];
+//        __block AHAlertView *alert = alertt;
+//        [alertt setCancelButtonTitle:@"确定" block:^{
+//            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+//            alert = nil;
+//        }];
         [alertt show];
+        [NSTimer scheduledTimerWithTimeInterval:1.0f target:self selector:@selector(closeAlert:) userInfo:alertt repeats:NO];
     }
+    
     [MBProgressHUD hideHUDForView:self.view animated:YES];
 }
 - (IBAction)clickLogin:(id)sender{
     
-    [self.txtPwd resignFirstResponder];
+    [self.txtName resignFirstResponder];
     [self.txtPwd resignFirstResponder];
     if ([self checkForm]) {
         if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {

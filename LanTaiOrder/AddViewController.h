@@ -41,6 +41,10 @@
 @property (nonatomic, strong) NSDateFormatter *dateFormatter;
 @property (nonatomic, strong) IBOutlet UIView *pickView;
 @property (nonatomic, strong) IBOutlet UIButton *pickerBtn;
+
+@property (nonatomic, strong) IBOutlet UILabel *label;
+
+@property (nonatomic, strong) NSMutableArray *product_ids;
 - (IBAction)clickNext:(id)sender;
 - (IBAction)clickFinished:(id)sender;
 

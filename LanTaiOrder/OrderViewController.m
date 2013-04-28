@@ -49,7 +49,8 @@
         [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id",car_num,@"car_num", nil]];
         [r setPostDataEncoding:NSUTF8StringEncoding];
         NSError *error = nil;
-        NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
+        NSString *str = [r startSynchronousWithError:&error];
+        NSDictionary *result = [str objectFromJSONString];
         DLog(@"%@",result);
         if ([[result objectForKey:@"status"] intValue]==1) {
             if ([[result objectForKey:@"customer"] count]==0) {
@@ -72,6 +73,9 @@
                 [self.customer setObject:[[result objectForKey:@"customer"] objectForKey:@"email"] forKey:@"email"];
                 [self.customer setObject:[[result objectForKey:@"customer"] objectForKey:@"birth"] forKey:@"birth"];
                 [self.customer setObject:[[result objectForKey:@"customer"] objectForKey:@"year"] forKey:@"year"];
+                [self.customer setObject:[[result objectForKey:@"customer"] objectForKey:@"model_name"] forKey:@"model_name"];
+                [self.customer setObject:[[result objectForKey:@"customer"] objectForKey:@"brand_name"] forKey:@"brand_name"];
+                
                 //正在进行中的订单
                 self.workingOrder = [result objectForKey:@"working"];
                 
@@ -301,7 +305,6 @@
     
     [[DataService sharedService].doneArray addObjectsFromArray:tempArray];
     
-    
     NSDictionary *order = [orderList objectAtIndex:btn.tag - 200];
     ComplaintViewController *complaintView = [[ComplaintViewController alloc] initWithNibName:@"ComplaintViewController" bundle:nil];
     NSMutableDictionary *dic = [NSMutableDictionary dictionary];
@@ -384,7 +387,8 @@
     [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id", nil]];
     [r setPostDataEncoding:NSUTF8StringEncoding];
     NSError *error = nil;
-    NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
+    NSString *str = [r startSynchronousWithError:&error];
+    NSDictionary *result = [str objectFromJSONString];
     self.addOrderView.brandResult = [NSMutableDictionary dictionaryWithDictionary:result];
     if ([[result objectForKey:@"status"] intValue]==1) {
         self.addOrderView.brandList = [NSMutableArray arrayWithArray:[result objectForKey:@"brands"]];
@@ -403,7 +407,8 @@
     [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id", nil]];
     [r setPostDataEncoding:NSUTF8StringEncoding];
     NSError *error = nil;
-    NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
+    NSString *str = [r startSynchronousWithError:&error];
+    NSDictionary *result = [str objectFromJSONString];
     self.addOrderView.brandResult = [NSMutableDictionary dictionaryWithDictionary:result];
     if ([[result objectForKey:@"status"] intValue]==1) {
         self.addOrderView.brandList = [NSMutableArray arrayWithArray:[result objectForKey:@"brands"]];

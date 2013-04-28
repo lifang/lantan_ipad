@@ -31,9 +31,7 @@
     }
     return self;
 }
-- (void)rightTapped:(id)sender{
-    [self.navigationController popViewControllerAnimated:YES];
-}
+
 - (void)viewDidLoad
 {
     self.segBtn.momentary = YES;

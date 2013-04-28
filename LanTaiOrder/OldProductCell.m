@@ -29,6 +29,7 @@
         //订单号
         lblCode = [[UILabel alloc] initWithFrame:frame];
         lblCode.textAlignment = NSTextAlignmentCenter;
+        lblCode.font = [UIFont boldSystemFontOfSize:15];
         [self addSubview:lblCode];
         
         //日期
@@ -36,6 +37,7 @@
         frame.size.width = 100;
         lblDate = [[UILabel alloc] initWithFrame:frame];
         lblDate.textAlignment = NSTextAlignmentCenter;
+        lblDate.font = [UIFont boldSystemFontOfSize:15];
         [self addSubview:lblDate];
         
         //消费项目
@@ -47,6 +49,7 @@
             frame.size.height = 44;
             
             UILabel *lblName = [[UILabel alloc] initWithFrame:frame];
+            lblName.font = [UIFont boldSystemFontOfSize:15];
             lblName.textAlignment = NSTextAlignmentCenter;
             lblName.text = @"";
             [self addSubview:lblName];
@@ -67,6 +70,7 @@
                 
                 UILabel *lblName = [[UILabel alloc] initWithFrame:frame];
                 lblName.textAlignment = NSTextAlignmentCenter;
+                lblName.font = [UIFont boldSystemFontOfSize:15];
                 lblName.text = [[items objectAtIndex:i] objectForKey:@"name"];
                 [self addSubview:lblName];
             }
@@ -81,6 +85,7 @@
         if (items.count == 0) {
             frame.size.height = 44;
             UILabel *lblName = [[UILabel alloc] initWithFrame:frame];
+            lblName.font = [UIFont boldSystemFontOfSize:15];
             lblName.textAlignment = NSTextAlignmentCenter;
             lblName.text = @"";
             [self addSubview:lblName];
@@ -100,6 +105,7 @@
                 }
                 UILabel *lblName = [[UILabel alloc] initWithFrame:frame];
                 lblName.textAlignment = NSTextAlignmentCenter;
+                lblName.font = [UIFont boldSystemFontOfSize:15];
                 lblName.text = [NSString stringWithFormat:@"%.2f",[[[items objectAtIndex:i] objectForKey:@"price"] floatValue]];
                 [self addSubview:lblName];
             }
@@ -114,12 +120,14 @@
             frame.size.height = items.count * 44;
         }
         lblTotal = [[UILabel alloc] initWithFrame:frame];
+        lblTotal.font = [UIFont boldSystemFontOfSize:15];
         lblTotal.textAlignment = NSTextAlignmentCenter;
         [self addSubview:lblTotal];
         
         //付款方式
         frame.origin.x += 101;
         lblPay = [[UILabel alloc] initWithFrame:frame];
+        lblPay.font = [UIFont boldSystemFontOfSize:15];
         lblPay.textAlignment = NSTextAlignmentCenter;
         [self addSubview:lblPay];
         

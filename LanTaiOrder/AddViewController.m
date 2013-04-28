@@ -25,6 +25,8 @@
 @synthesize pickerView,pickView,dateFormatter;
 @synthesize pickerBtn,refreshBtn;
 static bool refresh = NO;
+@synthesize label,product_ids;
+
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
@@ -104,6 +106,29 @@ static bool refresh = NO;
     frame = self.modelView.frame;
     frame.size.height = 162.0;
     self.modelView.frame = frame;
+    
+    if ((brandList.count>0) && (![[customer objectForKey:@"brand_name"] isKindOfClass:[NSNull class]])) {
+        for (int i = 0; i<brandList.count; i++) {
+            NSDictionary *brand_dic = [brandList objectAtIndex:i];
+            NSString *name_brand = [brand_dic objectForKey:@"name"];
+
+            if ([name_brand isEqualToString:[customer objectForKey:@"brand_name"]]) {
+                [self.brandView selectRow:i inComponent:0 animated:YES];
+                
+                NSArray *models_array = [brand_dic objectForKey:@"models"];
+                if ((models_array.count >0)&& (![[customer objectForKey:@"model_name"] isKindOfClass:[NSNull class]])) {
+                    for (int j=0; j<models_array.count; j++) {
+                        NSDictionary *model_dic = [models_array objectAtIndex:j];
+                        NSString *name_model = [model_dic objectForKey:@"name"];
+                        if ([name_model isEqualToString:[customer objectForKey:@"model_name"]]) {
+                            [self.modelView selectRow:j inComponent:0 animated:YES];
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
 }
 -(NSString *)getDoucmentFilePathLittleImageWithName:(NSString *)theName {
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask, YES);
@@ -175,7 +200,8 @@ static bool refresh = NO;
     [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id", nil]];
     [r setPostDataEncoding:NSUTF8StringEncoding];
     NSError *error = nil;
-    NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
+    NSString *str = [r startSynchronousWithError:&error];
+    NSDictionary *result = [str objectFromJSONString];
     self.brandResult = [NSMutableDictionary dictionaryWithDictionary:result];
     if ([[result objectForKey:@"status"] intValue]==1) {
         self.brandList = [NSMutableArray arrayWithArray:[result objectForKey:@"brands"]];
@@ -395,7 +421,7 @@ static bool refresh = NO;
     [self.txtBirth resignFirstResponder];
     
     //初识状态
-    if (![self.txtBirth.text isEqualToString:@""]) {
+    if(![[customer objectForKey:@"birth"]isKindOfClass:[NSNull class]] && [customer objectForKey:@"birth"] != nil) {
         self.pickerView.date = [self.dateFormatter dateFromString:self.txtBirth.text];
     }else {
         self.pickerView.date = [NSDate date];
@@ -416,8 +442,26 @@ static bool refresh = NO;
         [DataService sharedService].tagOfBtn = 1;
     }
 }
+- (void)textFieldDidEndEditing:(UITextField *)textField {
+    if ([textField isEqual:self.txtBirth] || [textField isEqual:self.txtName] || [textField isEqual:self.txtEmail] || [textField isEqual:self.txtPhone]) {
+        
+        [UIView beginAnimations:nil context:nil];
+        CGRect frame = self.stepView_3.frame;
+        if (frame.origin.y== 68) {
+            frame.origin.y = 100;
+        }
+        self.stepView_3.frame = frame;
+        
+        CGRect frame2 = self.label.frame;
+        if (frame2.origin.y==38) {
+            frame2.origin.y = 6;
+        }
+        self.label.frame = frame2;
+        [UIView commitAnimations];
+    }
+}
 - (void)textFieldDidBeginEditing:(UITextField *)textField {
-    if ([textField isEqual:self.txtBirth]) {
+    if (textField.tag == 102) {
     }else {
         CGRect pickerFrame = self.pickView.frame;
         pickerFrame.origin.y = self.view.frame.size.height;
@@ -430,6 +474,21 @@ static bool refresh = NO;
         [UIView commitAnimations];
         
         [DataService sharedService].tagOfBtn = 0;
+    }
+    if ([textField isEqual:self.txtBirth] || [textField isEqual:self.txtName] || [textField isEqual:self.txtEmail] || [textField isEqual:self.txtPhone]) {
+        [UIView beginAnimations:nil context:nil];
+        CGRect frame = self.stepView_3.frame;
+        if (frame.origin.y==100) {
+            frame.origin.y = 68;
+        }
+        self.stepView_3.frame = frame;
+        
+        CGRect frame2 = self.label.frame;
+        if (frame2.origin.y==6) {
+            frame2.origin.y = 38;
+        }
+        self.label.frame = frame2;
+        [UIView commitAnimations];
     }
 }
 - (IBAction)dateAction:(id)sender
@@ -444,7 +503,6 @@ static bool refresh = NO;
 -(void)finishInfo {
     STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kcheckIn]];
     NSMutableDictionary *dic = [NSMutableDictionary dictionary];
-    DLog(@"name = %@",self.txtName.text);
     [dic setObject:txtCarNum.text forKey:@"carNum"];
     [dic setObject:txtName.text forKey:@"userName"];
     [dic setObject:txtPhone.text forKey:@"phone"];
@@ -463,7 +521,8 @@ static bool refresh = NO;
     [r setPOSTDictionary:dic];
     
     NSError *error = nil;
-    NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
+    NSString *str = [r startSynchronousWithError:&error];
+    NSDictionary *result = [str objectFromJSONString];
     DLog(@"%@",result);
     if ([[result objectForKey:@"status"] intValue]==1) {
         [self.navigationController popToRootViewControllerAnimated:YES];
@@ -523,10 +582,8 @@ static bool refresh = NO;
         NSError *error = nil;
         
         NSString *dicc = [r startSynchronousWithError:&error];
-        DLog(@"dicc = %@",dicc);
         NSDictionary *result = [dicc objectFromJSONString]; 
-        
-        DLog(@"result = %@",result);
+
         if ([[result objectForKey:@"status"] intValue]==1) {
             ConfirmViewController *confirmView = [[ConfirmViewController alloc] initWithNibName:@"ConfirmViewController" bundle:nil];
             confirmView.productList = [NSMutableArray array];
@@ -609,7 +666,7 @@ static bool refresh = NO;
                     str = @"请输入出生年月日";
                 }else {
                     
-                    NSString *regexCall =@"((19[0-9]{2})|(2[0-9]{3})）-((1[0-2])|([1-9]))-(([1-9])|([1-2][0-9])|3[0-1])";
+                    NSString *regexCall =@"((19[0-9]{2})|(2[0-9]{3})）-((1[0-2])|(0[1-9]))-((0[1-9])|([1-2][0-9])|3[0-1])";
                     NSPredicate *predicateCall = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regexCall];
                     if ([predicateCall evaluateWithObject:txtBirth.text]) {
                         //获取年份
@@ -734,7 +791,7 @@ static bool refresh = NO;
                 if (txtBirth.text.length == 0) {
                     str = @"请输入出生年月日";
                 }else {
-                    NSString *regexCall =@"((19[0-9]{2})|(2[0-9]{3})）-((1[0-2])|([1-9]))-(([1-9])|([1-2][0-9])|3[0-1])";
+                    NSString *regexCall =@"((19[0-9]{2})|(2[0-9]{3})）-((1[0-2])|(0[1-9]))-((0[1-9])|([1-2][0-9])|3[0-1])";
                     NSPredicate *predicateCall = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regexCall];
                     if ([predicateCall evaluateWithObject:txtBirth.text]) {
                         //获取年份
@@ -857,20 +914,28 @@ static bool refresh = NO;
     cell.contentView.backgroundColor = [UIColor clearColor];
     for (int x=0; x<4; x++) {
         if (indexPath.row == x) {
+            
             int len = [[self.productList objectAtIndex:x] count];
             if (indexPath.section < len) {
                 NSDictionary *prod = [[self.productList objectAtIndex:x] objectAtIndex:indexPath.section];
                 cell.prodName.text = [prod objectForKey:@"name"];
                 cell.prodName.hidden = NO;
                 cell.prodImage.hidden = NO;
+                if (self.product_ids.count >0  && x<3) {
+                    NSString *p_id = [prod objectForKey:@"id"];
+                    if ([product_ids containsObject:p_id]) {
+                        cell.contentView.backgroundColor = [UIColor redColor];
+                        [selectedIndexs addObject:indexPath];
+                    }
+                }
                 if ([self isSelected:indexPath]) {
                     cell.contentView.backgroundColor = [UIColor redColor];
                 }else{
                     cell.contentView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"collectioncell_bg"]];
                 }
-                    if ([DataService sharedService].number == 0){
-                        cell.prodImage.image = [[self.picArray objectAtIndex:x]objectAtIndex:indexPath.section];
-                    }
+                if ([DataService sharedService].number == 0){
+                    cell.prodImage.image = [[self.picArray objectAtIndex:x]objectAtIndex:indexPath.section];
+                }
             }else{
                 cell.prodName.hidden = YES;
                 cell.prodImage.hidden = YES;

@@ -45,7 +45,6 @@
 }
 -(void)getData {
     NSMutableDictionary *params=[[NSMutableDictionary alloc] init];
-//    DLog(@"store_id = %@",[DataService sharedService].store_id);
     [params setObject:[DataService sharedService].store_id forKey:@"store_id"];
     NSMutableURLRequest *request=[Utils getRequest:params string:[NSString stringWithFormat:@"%@%@",kHost,kIndex]];
     NSOperationQueue *queue=[[NSOperationQueue alloc] init];
@@ -65,13 +64,17 @@
     if (jsonObject !=nil) {
         if ([jsonObject isKindOfClass:[NSDictionary class]]) {
             NSDictionary *jsonData=(NSDictionary *)jsonObject;
-//            DLog(@"result = %@",jsonData);
-            
             if ([[jsonData objectForKey:@"status"] intValue] == 1) {
                 if ([jsonData objectForKey:@"reservations"]!=nil) {
                     NSMutableArray *arr = [NSMutableArray arrayWithArray:[jsonData objectForKey:@"reservations"]];
                     [DataService sharedService].reserve_count = [NSString stringWithFormat:@"%d",[arr count]];
                     [DataService sharedService].reserve_list = arr;
+                    
+                    if ([DataService sharedService].reserve_count && [[DataService sharedService].reserve_count intValue] > 0) {
+                        self.lblCount.text = [DataService sharedService].reserve_count;
+                    }else{
+                        self.lblCount.text = @"0";
+                    }
                 }
                 if ([jsonData objectForKey:@"orders"]!=nil) {
                     [DataService sharedService].workingOrders = [NSMutableArray arrayWithArray:[jsonData objectForKey:@"orders"]];
@@ -90,11 +93,6 @@
     //获取正在进行中的订单和预约信息
     [self getData];
     
-    if ([DataService sharedService].reserve_count && [[DataService sharedService].reserve_count intValue] > 0) {
-        self.lblCount.text = [DataService sharedService].reserve_count;
-    }else{
-        self.lblCount.text = @"0";
-    }
     self.mainView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"search_bg"]];
     self.hideView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"open_bg"]];
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"login_bg.jpg"]];
@@ -158,17 +156,23 @@
     [self.navigationController pushViewController:orderView animated:YES];
     [MBProgressHUD hideHUDForView:self.view animated:YES];
 }
+- (void)closeAlert:(NSTimer*)timer {
+    [(AHAlertView*) timer.userInfo  dismissWithStyle:AHAlertViewDismissalStyleZoomDown];
+}
 - (IBAction)clickSearchBtn:(id)sender{
     [txtCarNum resignFirstResponder];
     if(self.txtCarNum.text.length==0){
         [AHAlertView applyCustomAlertAppearance];
         AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"请输入车牌号"];
-        __block AHAlertView *alert = alertt;
-        [alertt setCancelButtonTitle:@"确定" block:^{
-            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
-            alert = nil;
-        }];
+    
+        
+//        __block AHAlertView *alert = alertt;
+//        [alertt setCancelButtonTitle:@"确定" block:^{
+//            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+//            alert = nil;
+//        }];
         [alertt show];
+        [NSTimer scheduledTimerWithTimeInterval:1.0f target:self selector:@selector(closeAlert:) userInfo:alertt repeats:NO];
     }else{
         if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
             [AHAlertView applyCustomAlertAppearance];

@@ -42,7 +42,8 @@
     
     [r setPostDataEncoding:NSUTF8StringEncoding];
     NSError *error = nil;
-    NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
+    NSString *str = [r startSynchronousWithError:&error];
+    NSDictionary *result = [str objectFromJSONString];
     DLog(@"%@",result);
 
     if ([[result objectForKey:@"status"] intValue]==1) {

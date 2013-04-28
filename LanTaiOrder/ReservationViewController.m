@@ -34,9 +34,16 @@
         [self addRightnaviItemWithImage:@"back"];
     }
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refreshData:) name:@"updateReservation" object:nil];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(loading) name:@"loading" object:nil];
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"view_bg"]];
 }
-
+-(void)loading {
+    MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+    hud.dimBackground = NO;
+    hud.labelText = @"正在努力加载...";
+    [self.view addSubview:hud];
+}
 - (void)didReceiveMemoryWarning
 {
     [super didReceiveMemoryWarning];
@@ -61,9 +68,17 @@
     }
     cell.lblCreatedAt.text = [Utils formateDate:[dic objectForKey:@"created_at"]];
     cell.lblCarNum.text = [dic objectForKey:@"num"];
-    cell.lblUsername.text = [dic objectForKey:@"name"];
-    cell.lblPhone.text = [dic objectForKey:@"phone"];
-    cell.lblEmail.text = [dic objectForKey:@"email"];
+    if (![[dic objectForKey:@"name"] isKindOfClass:[NSNull class]]) {
+        cell.lblUsername.text = [dic objectForKey:@"name"];
+    }
+    if (![[dic objectForKey:@"phone"] isKindOfClass:[NSNull class]]) {
+        cell.lblPhone.text = [dic objectForKey:@"phone"];
+    }
+    
+    if (![[dic objectForKey:@"email"] isKindOfClass:[NSNull class]]) {
+        cell.lblEmail.text = [dic objectForKey:@"email"];
+    }
+    
     cell.txtReservAt.text = [Utils formateDate:[dic objectForKey:@"reserv_at"]];
     cell.reserv_id = [dic objectForKey:@"id"];
     if ([[dic objectForKey:@"status"] intValue]==0) {
@@ -91,6 +106,7 @@
 
 - (void)refreshData:(NSNotification *)notification{
     self.reservList = [DataService sharedService].reserve_list;
+    [MBProgressHUD hideHUDForView:self.view animated:YES];
     [reservTable reloadData];
 }
 @end
