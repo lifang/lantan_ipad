@@ -25,6 +25,7 @@
 @synthesize payType;
 @synthesize segBtn;
 
+
 //支付
 -(void)payWithType {
     STHTTPRequest *r  = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kPay]];
@@ -47,6 +48,7 @@
     DLog(@"%@",result);
 
     if ([[result objectForKey:@"status"] intValue]==1) {
+        [DataService sharedService].refreshing = YES;
         [AHAlertView applyCustomAlertAppearance];
         AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"交易成功！"];
         __block AHAlertView *alert = alertt;
@@ -129,7 +131,7 @@
 {
     //根据不同的支付方式
     if (sender.selectedSegmentIndex == 0) {
-        [self pay:sender.selectedSegmentIndex];
+        [self pay:0];
     }else if (sender.selectedSegmentIndex == 1 && order){
         [self payPal];
     }else if (sender.selectedSegmentIndex == 2){
@@ -137,9 +139,20 @@
         self.codeView.hidden = YES;
         self.payStyle.hidden = YES;
     }else if (sender.selectedSegmentIndex == 3) {
-        [self pay:sender.selectedSegmentIndex];
+        [AHAlertView applyCustomAlertAppearance];
+        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"确定免单？"];
+        __block AHAlertView *alert = alertt;
+        [alertt setCancelButtonTitle:@"取消" block:^{
+            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+            alert = nil;
+        }];
+        [alertt addButtonWithTitle:@"确定" block:^{
+            alert.dismissalStyle = AHAlertViewDismissalStyleZoomDown;
+            alert = nil;
+            [self pay:5];
+        }];
+        [alertt show];
     }
-    
 }
 
 - (void)payResult:(NSNotification *)notification{

@@ -36,6 +36,7 @@
 }
 
 - (void)rightTapped:(id)sender{
+    [DataService sharedService].refreshing = NO;
     [self.navigationController popToRootViewControllerAnimated:YES];
 }
 

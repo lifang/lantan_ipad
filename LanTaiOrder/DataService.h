@@ -24,6 +24,9 @@
 
 @property (nonatomic,strong) NSMutableArray *row_id_countArray;
 @property (nonatomic,strong) NSMutableArray *productList;
+
+@property (nonatomic,assign) BOOL ReservationFirst;//判断预约是否是第一次；
+@property (nonatomic,assign) BOOL refreshing;//判断跟页面刷新
 + (DataService *)sharedService;
 
 @end

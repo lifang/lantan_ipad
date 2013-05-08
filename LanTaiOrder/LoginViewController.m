@@ -104,24 +104,23 @@
         }else{
             [AHAlertView applyCustomAlertAppearance];
             AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:text];
-//            __block AHAlertView *alert = alertt;
-//            [alertt setCancelButtonTitle:@"确定" block:^{
-//                alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
-//                alert = nil;
-//            }];
+            __block AHAlertView *alert = alertt;
+            [alertt setCancelButtonTitle:@"确定" block:^{
+                alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+                alert = nil;
+            }];
             [alertt show];
-            [NSTimer scheduledTimerWithTimeInterval:1.0f target:self selector:@selector(closeAlert:) userInfo:alertt repeats:NO];
         }
     }else {
         [AHAlertView applyCustomAlertAppearance];
         AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"出错了"];
-//        __block AHAlertView *alert = alertt;
-//        [alertt setCancelButtonTitle:@"确定" block:^{
-//            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
-//            alert = nil;
-//        }];
+        __block AHAlertView *alert = alertt;
+        [alertt setCancelButtonTitle:@"确定" block:^{
+            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+            alert = nil;
+        }];
         [alertt show];
-        [NSTimer scheduledTimerWithTimeInterval:1.0f target:self selector:@selector(closeAlert:) userInfo:alertt repeats:NO];
+        
     }
     
     [MBProgressHUD hideHUDForView:self.view animated:YES];

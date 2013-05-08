@@ -20,16 +20,16 @@
 
 - (void)showRootView{
     [self.lantan_initView.view removeFromSuperview];//initView消失
-    if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
-        [AHAlertView applyCustomAlertAppearance];
-        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:kNoReachable];
-        __block AHAlertView *alert = alertt;
-        [alertt setCancelButtonTitle:@"确定" block:^{
-            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
-            alert = nil;
-        }];
-        [alertt show];
-    }else {
+//    if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
+//        [AHAlertView applyCustomAlertAppearance];
+//        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:kNoReachable];
+//        __block AHAlertView *alert = alertt;
+//        [alertt setCancelButtonTitle:@"确定" block:^{
+//            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+//            alert = nil;
+//        }];
+//        [alertt show];
+//    }else {
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
         NSString *userInfo = [defaults objectForKey:@"userId"];
         if (userInfo != nil) {
@@ -48,7 +48,7 @@
             self.window.rootViewController = navigationView;
         }
 
-    }
+//    }
 }
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions

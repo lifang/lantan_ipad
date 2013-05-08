@@ -8,7 +8,7 @@
 
 #import <UIKit/UIKit.h>
 
-@interface ReservationCell : UITableViewCell
+@interface ReservationCell : UITableViewCell<UITextFieldDelegate>
 
 @property (nonatomic,strong) IBOutlet UILabel *lblCreatedAt,*lblCarNum,*lblUsername,*lblPhone,*lblEmail,*lblStatus;
 @property (nonatomic,strong) IBOutlet UITextField *txtReservAt;

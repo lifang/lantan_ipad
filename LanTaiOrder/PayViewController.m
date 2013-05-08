@@ -31,7 +31,10 @@
     }
     return self;
 }
-
+- (void)rightTapped:(id)sender{
+    [DataService sharedService].refreshing = YES;
+    [self.navigationController popToRootViewControllerAnimated:YES];
+}
 - (void)viewDidLoad
 {
     self.segBtn.momentary = YES;
@@ -168,7 +171,6 @@
                [prods appendFormat:@"%@,",[prod objectForKey:@"name"]]; 
             }
         }
-        DLog(@"%@",prods);
         if (prods.length>0) {
             [dic setObject:[prods substringToIndex:prods.length - 1] forKey:@"prods"];
         }

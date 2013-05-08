@@ -10,12 +10,13 @@
 #import "ReservationCell.h"
 
 @interface ReservationViewController ()
-
+@property (nonatomic, strong) ReservationCell *cellReser;
 @end
 
 @implementation ReservationViewController
 
 @synthesize reservList,reservTable;
+@synthesize cellReser;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -37,6 +38,22 @@
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(loading) name:@"loading" object:nil];
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"view_bg"]];
+    
+    //更改frame
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(update:) name:@"update" object:nil];
+}
+
+//更改frame
+- (void)update:(NSNotification *)notification {
+    NSDictionary *dic = [notification object];
+    self.cellReser = [dic objectForKey:@"cell"];
+    int value = [[dic objectForKey:@"frame"]intValue];
+    if (value == 0) {
+        self.reservTable.frame = CGRectMake(62, 134, 900, 200);
+        [self.reservTable setContentOffset:CGPointMake(0, self.cellReser.frame.origin.y)];
+    }else if(value == 1){
+        self.reservTable.frame = CGRectMake(62, 134, 900, 526);
+    }
 }
 -(void)loading {
     MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
@@ -49,7 +66,9 @@
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
-
+- (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView {
+    [self.cellReser.txtReservAt resignFirstResponder];
+}
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
     return self.reservList.count;
 }
@@ -59,7 +78,7 @@
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
-    static NSString *CellIdentifier = @"Cell";
+    NSString *CellIdentifier = [NSString stringWithFormat:@"Cell%d",indexPath.row];
     NSDictionary *dic = [reservList objectAtIndex:indexPath.row];
     ReservationCell *cell = (ReservationCell *)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
     if (cell == nil) {
@@ -78,6 +97,8 @@
     if (![[dic objectForKey:@"email"] isKindOfClass:[NSNull class]]) {
         cell.lblEmail.text = [dic objectForKey:@"email"];
     }
+    cell.btnConfirm.tag = indexPath.row;
+    cell.btnCancel.tag = indexPath.row;
     
     cell.txtReservAt.text = [Utils formateDate:[dic objectForKey:@"reserv_at"]];
     cell.reserv_id = [dic objectForKey:@"id"];
@@ -106,7 +127,6 @@
 
 - (void)refreshData:(NSNotification *)notification{
     self.reservList = [DataService sharedService].reserve_list;
-    [MBProgressHUD hideHUDForView:self.view animated:YES];
-    [reservTable reloadData];
+    [self.reservTable reloadData];
 }
 @end

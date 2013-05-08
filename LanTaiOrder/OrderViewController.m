@@ -41,6 +41,9 @@
     }
     return self;
 }
+-(void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+}
 
 //发送查询请求
 - (void)searchOrderByCarNum{
@@ -522,7 +525,7 @@
 
 //或登记信息
 -(void)reg {
-    self.addOrderView.step = @"1";
+    self.addOrderView.step = @"0";
     self.addOrderView.car_num = self.car_num;//车牌号
     [DataService sharedService].number = 1;
     //下单获取数据

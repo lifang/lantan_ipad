@@ -6,8 +6,8 @@
 //  Copyright (c) 2013年 LanTai. All rights reserved.
 //
 
-#define kDomain @"http://116.255.135.175:3001"
-#define kHost @"http://116.255.135.175:3001/api"
+#define kDomain @"http://bam.gankao.co"
+#define kHost @"http://bam.gankao.co/api"
 #define kSendMeg @"http://116.255.135.175:3003/apis/get_user_svcard"
 #define kSendVerifyCode @"http://116.255.135.175:3003/apis/use_svcard"
 

@@ -67,7 +67,9 @@
             if ([[jsonData objectForKey:@"status"] intValue] == 1) {
                 if ([jsonData objectForKey:@"reservations"]!=nil) {
                     NSMutableArray *arr = [NSMutableArray arrayWithArray:[jsonData objectForKey:@"reservations"]];
+                    [DataService sharedService].reserve_count = nil;
                     [DataService sharedService].reserve_count = [NSString stringWithFormat:@"%d",[arr count]];
+                    [DataService sharedService].reserve_list = nil;
                     [DataService sharedService].reserve_list = arr;
                     
                     if ([DataService sharedService].reserve_count && [[DataService sharedService].reserve_count intValue] > 0) {
@@ -77,6 +79,7 @@
                     }
                 }
                 if ([jsonData objectForKey:@"orders"]!=nil) {
+                    [DataService sharedService].workingOrders = nil;
                     [DataService sharedService].workingOrders = [NSMutableArray arrayWithArray:[jsonData objectForKey:@"orders"]];
                     waitList = [DataService sharedService].workingOrders;
                     [self.orderTable reloadData];
@@ -85,7 +88,12 @@
         }
     }
 }
-
+-(void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    if ([DataService sharedService].refreshing == YES) {
+        [self getData];
+    }
+}
 - (void)viewDidLoad
 {
     _orderTable.delegate = self;
@@ -164,13 +172,6 @@
     if(self.txtCarNum.text.length==0){
         [AHAlertView applyCustomAlertAppearance];
         AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"请输入车牌号"];
-    
-        
-//        __block AHAlertView *alert = alertt;
-//        [alertt setCancelButtonTitle:@"确定" block:^{
-//            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
-//            alert = nil;
-//        }];
         [alertt show];
         [NSTimer scheduledTimerWithTimeInterval:1.0f target:self selector:@selector(closeAlert:) userInfo:alertt repeats:NO];
     }else{
@@ -195,10 +196,17 @@
 
 //查看预约信息
 - (IBAction)clickShowBtn:(id)sender{
-    ReservationViewController *reservationView = [[ReservationViewController alloc] initWithNibName:@"ReservationViewController" bundle:nil];
-    reservationView.reservList = [NSMutableArray arrayWithArray:[DataService sharedService].reserve_list];
-    [self.navigationController pushViewController:reservationView animated:YES];
-    
+    int count = [self.lblCount.text intValue];
+    if (count == 0) {
+        [AHAlertView applyCustomAlertAppearance];
+        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"暂没有预约信息"];
+        [alertt show];
+        [NSTimer scheduledTimerWithTimeInterval:1.0f target:self selector:@selector(closeAlert:) userInfo:alertt repeats:NO];
+    }else {
+        ReservationViewController *reservationView = [[ReservationViewController alloc] initWithNibName:@"ReservationViewController" bundle:nil];
+        reservationView.reservList = [NSMutableArray arrayWithArray:[DataService sharedService].reserve_list];
+        [self.navigationController pushViewController:reservationView animated:YES];
+    }
 }
 
 //显示隐藏正在进行中的订单
@@ -273,7 +281,6 @@
         hud.labelText = @"正在努力加载...";
         [self.view addSubview:hud];
     }
-    
     //施工中的信息 
     
 }

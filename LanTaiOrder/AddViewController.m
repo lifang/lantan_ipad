@@ -39,7 +39,7 @@ static bool refresh = NO;
 - (BOOL)addSkipBackupAttributeToItemAtURL:(NSURL *)fileURL
 {
     if (![[NSFileManager defaultManager] fileExistsAtPath:[fileURL path]]) {
-        NSLog(@"File %@ doesn't exist!",[fileURL path]);
+//        NSLog(@"File %@ doesn't exist!",[fileURL path]);
         return NO;
     }
     NSString *currSysVer = [[UIDevice currentDevice] systemVersion];
@@ -48,18 +48,18 @@ static bool refresh = NO;
         const char* attrName = "com.apple.MobileBackup";
         u_int8_t attrValue = 1;
         int result = setxattr(filePath, attrName, &attrValue, sizeof(attrValue), 0, 0);
-        NSLog(@"Excluded '%@' from backup",fileURL);
+//        NSLog(@"Excluded '%@' from backup",fileURL);
         return result == 0;
     }
     else if (&NSURLIsExcludedFromBackupKey) {
         NSError *error = nil;
         BOOL result = [fileURL setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:&error];
         if (result == NO) {
-            NSLog(@"Error excluding '%@' from backup. Error: %@",fileURL, error);
+//            NSLog(@"Error excluding '%@' from backup. Error: %@",fileURL, error);
             return NO;
         }
         else {
-            NSLog(@"Excluded '%@' from backup",fileURL);
+//            NSLog(@"Excluded '%@' from backup",fileURL);
             return YES;
         }
     } else {
@@ -87,27 +87,27 @@ static bool refresh = NO;
         stepView_3.hidden = YES;
         stepView_4.hidden = YES;
     }else if ([step intValue]==2) {
-        stepView_0.hidden = YES;
-        stepView_1.hidden = YES;
-        stepView_2.hidden = NO;
-        stepView_3.hidden = YES;
-        stepView_4.hidden = YES;
-    }else if ([step intValue]==3) {
         if ([DataService sharedService].number == 1) {
             stepView_0.hidden = YES;
             stepView_1.hidden = YES;
-            stepView_2.hidden = YES;
-            stepView_3.hidden = NO;
+            stepView_2.hidden = NO;
+            stepView_3.hidden = YES;
             stepView_4.hidden = YES;
             self.btnNext.hidden = YES;
             self.btnDone.hidden = NO;
         }else {
             stepView_0.hidden = YES;
             stepView_1.hidden = YES;
-            stepView_2.hidden = YES;
-            stepView_3.hidden = NO;
+            stepView_2.hidden = NO;
+            stepView_3.hidden = YES;
             stepView_4.hidden = YES;
         }
+    }else if ([step intValue]==3) {
+        stepView_0.hidden = YES;
+        stepView_1.hidden = YES;
+        stepView_2.hidden = YES;
+        stepView_3.hidden = NO;
+        stepView_4.hidden = YES;
     }else if ([step intValue]==4) {
         self.refreshBtn.hidden = NO;
         self.btnNext.hidden = YES;
@@ -125,10 +125,10 @@ static bool refresh = NO;
     picView_1 = [[PictureCell alloc] initWithFrame:CGRectMake(520, 50, 172, 192) title:@"车后" delegate:self img:@"behind"];
     picView_2 = [[PictureCell alloc] initWithFrame:CGRectMake(250, 260, 172, 192) title:@"车左" delegate:self img:@"left"];
     picView_3 = [[PictureCell alloc] initWithFrame:CGRectMake(520, 260, 172, 192) title:@"车右" delegate:self img:@"right"];
-    [stepView_0 addSubview:picView_0];
-    [stepView_0 addSubview:picView_1];
-    [stepView_0 addSubview:picView_2];
-    [stepView_0 addSubview:picView_3];
+    [stepView_3 addSubview:picView_0];
+    [stepView_3 addSubview:picView_1];
+    [stepView_3 addSubview:picView_2];
+    [stepView_3 addSubview:picView_3];
 }
 
 - (void)initBrandView{
@@ -484,11 +484,11 @@ static bool refresh = NO;
     if ([textField isEqual:self.txtBirth] || [textField isEqual:self.txtName] || [textField isEqual:self.txtEmail] || [textField isEqual:self.txtPhone]) {
         
         [UIView beginAnimations:nil context:nil];
-        CGRect frame = self.stepView_3.frame;
+        CGRect frame = self.stepView_2.frame;
         if (frame.origin.y== 68) {
             frame.origin.y = 100;
         }
-        self.stepView_3.frame = frame;
+        self.stepView_2.frame = frame;
         
         CGRect frame2 = self.label.frame;
         if (frame2.origin.y==38) {
@@ -515,11 +515,11 @@ static bool refresh = NO;
     }
     if ([textField isEqual:self.txtBirth] || [textField isEqual:self.txtName] || [textField isEqual:self.txtEmail] || [textField isEqual:self.txtPhone]) {
         [UIView beginAnimations:nil context:nil];
-        CGRect frame = self.stepView_3.frame;
+        CGRect frame = self.stepView_2.frame;
         if (frame.origin.y==100) {
             frame.origin.y = 68;
         }
-        self.stepView_3.frame = frame;
+        self.stepView_2.frame = frame;
         
         CGRect frame2 = self.label.frame;
         if (frame2.origin.y==6) {
@@ -544,9 +544,13 @@ static bool refresh = NO;
     [dic setObject:txtCarNum.text forKey:@"carNum"];
     [dic setObject:txtName.text forKey:@"userName"];
     [dic setObject:txtPhone.text forKey:@"phone"];
-    [dic setObject:txtEmail.text forKey:@"email"];
-    [dic setObject:txtBirth.text forKey:@"birth"];
     [dic setObject:txtCarYear.text forKey:@"year"];
+    if (![self.txtBirth.text isEqualToString:@""]) {
+        [dic setObject:txtBirth.text forKey:@"birth"];
+    }
+    if (![self.txtEmail.text isEqualToString:@""])  {
+        [dic setObject:txtEmail.text forKey:@"email"];
+    }
     [dic setObject:[DataService sharedService].store_id forKey:@"store_id"];
     NSDictionary *brand  = [brandList objectAtIndex:[brandView selectedRowInComponent:0]];
     NSString *brandStr = [brand objectForKey:@"id"];
@@ -563,7 +567,16 @@ static bool refresh = NO;
     NSDictionary *result = [str objectFromJSONString];
     DLog(@"%@",result);
     if ([[result objectForKey:@"status"] intValue]==1) {
-        [self.navigationController popToRootViewControllerAnimated:YES];
+        [AHAlertView applyCustomAlertAppearance];
+        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"登记信息成功"];
+        __block AHAlertView *alert = alertt;
+        [alertt setCancelButtonTitle:@"确定" block:^{
+            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+            alert = nil;
+            [self.navigationController popToRootViewControllerAnimated:YES];
+        }];
+        [alertt show];
+        
     }else {
         [AHAlertView applyCustomAlertAppearance];
         AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:[result objectForKey:@"content"]];
@@ -587,9 +600,6 @@ static bool refresh = NO;
         if (![[brand objectForKey:@"models"] isKindOfClass:[NSNull class]]) {
             modelStr = [[[brand objectForKey:@"models"] objectAtIndex:[modelView selectedRowInComponent:0]] objectForKey:@"id"];
         }
-//        if ([[brand objectForKey:@"models"] count]>0) {
-//            modelStr = [[[brand objectForKey:@"models"] objectAtIndex:[modelView selectedRowInComponent:0]] objectForKey:@"id"];
-//        }
         NSMutableString *prod_ids = [NSMutableString string];
         for (NSIndexPath *idx in selectedIndexs) {
             NSDictionary *prod = [[self.productList objectAtIndex:idx.row] objectAtIndex:idx.section];
@@ -599,9 +609,13 @@ static bool refresh = NO;
         [dic setObject:txtCarNum.text forKey:@"carNum"];
         [dic setObject:txtName.text forKey:@"userName"];
         [dic setObject:txtPhone.text forKey:@"phone"];
-        [dic setObject:txtEmail.text forKey:@"email"];
-        [dic setObject:txtBirth.text forKey:@"birth"];
         [dic setObject:txtCarYear.text forKey:@"year"];
+        if (![self.txtBirth.text isEqualToString:@""] && (![self.txtBirth.text isKindOfClass:[NSNull class]])) {
+            [dic setObject:txtBirth.text forKey:@"birth"];
+        }
+        if (![self.txtEmail.text isEqualToString:@""] && (![self.txtEmail.text isKindOfClass:[NSNull class]]))  {
+            [dic setObject:txtEmail.text forKey:@"email"];
+        }
         
         if ([modelStr intValue] == 0) {
             [dic setObject:[NSString stringWithFormat:@"%@",brandStr] forKey:@"brand"];
@@ -701,7 +715,7 @@ static bool refresh = NO;
                 }
                 //判断生日
                 if (txtBirth.text.length == 0) {
-                    str = @"请输入出生年月日";
+//                    str = @"请输入出生年月日";
                 }else {
                     
                     NSString *regexCall =@"((19[0-9]{2})|(2[0-9]{3})）-((1[0-2])|(0[1-9]))-((0[1-9])|([1-2][0-9])|3[0-1])";
@@ -732,10 +746,10 @@ static bool refresh = NO;
                 }
                 //判断邮箱
                 if (self.txtEmail.text.length == 0) {
-                    str = @"请输入QQ/微信/邮箱地址";
+//                    str = @"请输入QQ/微信/邮箱地址";
                 }
             }
-            if (self.txtName.text.length==0 || self.txtPhone.text.length==0 || self.txtBirth.text.length==0 || self.txtEmail.text.length ==0 || ![str isEqualToString:@""]) {
+            if (self.txtName.text.length==0 || self.txtPhone.text.length==0 || ![str isEqualToString:@""]) {
                 [AHAlertView applyCustomAlertAppearance];
                 AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:str];
                 __block AHAlertView *alert = alertt;
@@ -781,11 +795,11 @@ static bool refresh = NO;
         x -= 1;
     }else{
         NSString *str = @"";
-        if (x==1 && txtCarNum.text.length==0) {
+        if (x==0 && txtCarNum.text.length==0) {
             str = @"请输入你的车牌号";
         }
         //判断购车时间
-        else if(x==2){
+        else if(x==1){
             //获取年份
             NSDate *now = [NSDate date];
             NSCalendar *calendar = [NSCalendar currentCalendar];
@@ -809,7 +823,7 @@ static bool refresh = NO;
                 }
             }
         }
-        else if(x==3){
+        else if(x==2){
             if(txtName.text.length==0){
                 str = @"请输入您的名称";
             }else {
@@ -827,7 +841,7 @@ static bool refresh = NO;
                 }
                 //判断生日
                 if (txtBirth.text.length == 0) {
-                    str = @"请输入出生年月日";
+//                    str = @"请输入出生年月日";
                 }else {
                     NSString *regexCall =@"((19[0-9]{2})|(2[0-9]{3})）-((1[0-2])|(0[1-9]))-((0[1-9])|([1-2][0-9])|3[0-1])";
                     NSPredicate *predicateCall = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regexCall];
@@ -857,7 +871,7 @@ static bool refresh = NO;
                 }
                 //判断邮箱
                 if (self.txtEmail.text.length == 0) {
-                    str = @"请输入邮箱地址";
+//                    str = @"请输入邮箱地址";
                 }
             }
         }
@@ -959,18 +973,24 @@ static bool refresh = NO;
                 cell.prodName.text = [prod objectForKey:@"name"];
                 cell.prodName.hidden = NO;
                 cell.prodImage.hidden = NO;
-                if (self.product_ids.count >0  && x<3) {
-                    NSString *p_id = [prod objectForKey:@"id"];
-                    if ([product_ids containsObject:p_id]) {
-                        cell.contentView.backgroundColor = [UIColor redColor];
-                        [selectedIndexs addObject:indexPath];
+                //预约页面首次进来  加载此项
+                DLog(@"%@",self.product_ids);
+                if ([DataService sharedService].ReservationFirst == YES) {
+                    if (self.product_ids.count >0  && x<3) {
+                        NSString *p_id = [prod objectForKey:@"id"];
+                        if ([product_ids containsObject:p_id]) {
+                            cell.contentView.backgroundColor = [UIColor redColor];
+                            [selectedIndexs addObject:indexPath];
+                        }
                     }
                 }
+                /////////////////
                 if ([self isSelected:indexPath]) {
                     cell.contentView.backgroundColor = [UIColor redColor];
                 }else{
                     cell.contentView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"collectioncell_bg"]];
                 }
+                
                 if ([DataService sharedService].number == 0){
                     cell.prodImage.image = [[self.picArray objectAtIndex:x]objectAtIndex:indexPath.section];
                 }
@@ -1008,6 +1028,7 @@ static bool refresh = NO;
 //设置选中效果
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath{
     CollectionCell *cell = (CollectionCell *)[collectionView cellForItemAtIndexPath:indexPath];
+    [DataService sharedService].ReservationFirst = NO;
     if (cell.prodName.hidden == NO) {
         if (cell.backgroundColor == [UIColor redColor]) {
             cell.backgroundColor = [UIColor whiteColor];
@@ -1019,44 +1040,6 @@ static bool refresh = NO;
             if (![self isSelected:indexPath]) {
                 [selectedIndexs addObject:indexPath];
             }
-//            if (indexPath.row == 3) {
-//                if (self.selectedIndexs.count>0) {
-//                    int i=0;
-//                    BOOL exit = NO;
-//                    while (i<selectedIndexs.count) {
-//                        NSIndexPath *index = [selectedIndexs objectAtIndex:i];
-//                        if (index.row == indexPath.row) {
-//                            exit = YES;
-//                            [AHAlertView applyCustomAlertAppearance];
-//                            AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"活动，打折卡，套餐卡每类最多可以选择一个"];
-//                            __block AHAlertView *alert = alertt;
-//                            [alertt setCancelButtonTitle:@"确定" block:^{
-//                                alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
-//                                alert = nil;
-//                            }];
-//                            [alertt show];
-//                            break;
-//                        }
-//                        i++;
-//                    }
-//                    if (exit == NO) {
-//                        cell.backgroundColor = [UIColor redColor];
-//                        if (![self isSelected:indexPath]) {
-//                            [selectedIndexs addObject:indexPath];
-//                        }
-//                    }
-//                }else {
-//                    cell.backgroundColor = [UIColor redColor];
-//                    if (![self isSelected:indexPath]) {
-//                        [selectedIndexs addObject:indexPath];
-//                    }
-//                }
-//            }else {
-//                cell.backgroundColor = [UIColor redColor];
-//                if (![self isSelected:indexPath]) {
-//                    [selectedIndexs addObject:indexPath];
-//                }
-//            }
         }
     }
     //***************刷新页面

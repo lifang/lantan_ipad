@@ -122,7 +122,7 @@
 										<int key="NSvFlags">292</int>
 										<string key="NSFrame">{{299, 12}, {185, 21}}</string>
 										<reference key="NSSuperview" ref="566921786"/>
-										<reference key="NSNextKeyView" ref="11164818"/>
+										<reference key="NSNextKeyView" ref="173808061"/>
 										<string key="NSReuseIdentifierKey">_NS:9</string>
 										<bool key="IBUIOpaque">NO</bool>
 										<bool key="IBUIClipsSubviews">YES</bool>
@@ -164,7 +164,7 @@
 										<int key="NSvFlags">292</int>
 										<string key="NSFrame">{{598, 12}, {90, 21}}</string>
 										<reference key="NSSuperview" ref="566921786"/>
-										<reference key="NSNextKeyView" ref="295724700"/>
+										<reference key="NSNextKeyView" ref="11164818"/>
 										<string key="NSReuseIdentifierKey">_NS:9</string>
 										<bool key="IBUIOpaque">NO</bool>
 										<bool key="IBUIClipsSubviews">YES</bool>
@@ -204,7 +204,7 @@
 										<int key="NSvFlags">292</int>
 										<string key="NSFrame">{{83, 43}, {112, 21}}</string>
 										<reference key="NSSuperview" ref="566921786"/>
-										<reference key="NSNextKeyView" ref="173808061"/>
+										<reference key="NSNextKeyView" ref="295724700"/>
 										<string key="NSReuseIdentifierKey">_NS:9</string>
 										<bool key="IBUIOpaque">NO</bool>
 										<bool key="IBUIClipsSubviews">YES</bool>
@@ -368,13 +368,13 @@
 											<int key="NSColorSpace">3</int>
 											<bytes key="NSWhite">MC41AA</bytes>
 										</object>
-										<object class="NSCustomResource" key="IBUIHighlightedBackgroundImage" id="138754764">
+										<object class="NSCustomResource" key="IBUIHighlightedBackgroundImage">
 											<string key="NSClassName">NSImage</string>
-											<string key="NSResourceName">btn_bg_active.png</string>
+											<string key="NSResourceName">btn_cancel_active.png</string>
 										</object>
-										<object class="NSCustomResource" key="IBUINormalBackgroundImage" id="543249636">
+										<object class="NSCustomResource" key="IBUINormalBackgroundImage">
 											<string key="NSClassName">NSImage</string>
-											<string key="NSResourceName">btn_bg.png</string>
+											<string key="NSResourceName">btn_cancel.jpg</string>
 										</object>
 										<object class="IBUIFontDescription" key="IBUIFontDescription" id="330725751">
 											<int key="type">2</int>
@@ -401,8 +401,14 @@
 										<reference key="IBUIHighlightedTitleColor" ref="590421525"/>
 										<reference key="IBUINormalTitleColor" ref="590421525"/>
 										<reference key="IBUINormalTitleShadowColor" ref="771527310"/>
-										<reference key="IBUIHighlightedBackgroundImage" ref="138754764"/>
-										<reference key="IBUINormalBackgroundImage" ref="543249636"/>
+										<object class="NSCustomResource" key="IBUIHighlightedBackgroundImage">
+											<string key="NSClassName">NSImage</string>
+											<string key="NSResourceName">btn_bg_active.png</string>
+										</object>
+										<object class="NSCustomResource" key="IBUINormalBackgroundImage">
+											<string key="NSClassName">NSImage</string>
+											<string key="NSResourceName">btn_bg.png</string>
+										</object>
 										<reference key="IBUIFontDescription" ref="330725751"/>
 										<reference key="IBUIFont" ref="53148760"/>
 									</object>
@@ -842,6 +848,8 @@
 		<dictionary class="NSMutableDictionary" key="IBDocument.LastKnownImageSizes">
 			<string key="btn_bg.png">{60, 30}</string>
 			<string key="btn_bg_active.png">{60, 30}</string>
+			<string key="btn_cancel.jpg">{102, 37}</string>
+			<string key="btn_cancel_active.png">{60, 30}</string>
 			<string key="lbl_bg.png">{150, 29}</string>
 			<string key="p_head.png">{600, 44}</string>
 		</dictionary>

@@ -193,6 +193,7 @@
 								<string key="NSFrame">{{442, 436}, {60, 30}}</string>
 								<reference key="NSSuperview" ref="342547768"/>
 								<reference key="NSWindow"/>
+								<reference key="NSNextKeyView"/>
 								<string key="NSReuseIdentifierKey">_NS:9</string>
 								<bool key="IBUIOpaque">NO</bool>
 								<string key="targetRuntimeIdentifier">IBIPadFramework</string>
@@ -279,7 +280,7 @@
 							<object class="IBUILabel" id="186781948">
 								<reference key="NSNextResponder" ref="315411516"/>
 								<int key="NSvFlags">292</int>
-								<string key="NSFrame">{{99, 4}, {165, 21}}</string>
+								<string key="NSFrame">{{99, 4}, {233, 21}}</string>
 								<reference key="NSSuperview" ref="315411516"/>
 								<reference key="NSWindow"/>
 								<reference key="NSNextKeyView" ref="437174595"/>
@@ -300,7 +301,7 @@
 							<object class="IBUILabel" id="437174595">
 								<reference key="NSNextResponder" ref="315411516"/>
 								<int key="NSvFlags">292</int>
-								<string key="NSFrame">{{285, 4}, {69, 21}}</string>
+								<string key="NSFrame">{{340, 4}, {69, 21}}</string>
 								<reference key="NSSuperview" ref="315411516"/>
 								<reference key="NSWindow"/>
 								<reference key="NSNextKeyView" ref="727388804"/>
@@ -321,7 +322,7 @@
 							<object class="IBUILabel" id="727388804">
 								<reference key="NSNextResponder" ref="315411516"/>
 								<int key="NSvFlags">292</int>
-								<string key="NSFrame">{{356, 4}, {159, 21}}</string>
+								<string key="NSFrame">{{411, 4}, {159, 21}}</string>
 								<reference key="NSSuperview" ref="315411516"/>
 								<reference key="NSWindow"/>
 								<reference key="NSNextKeyView" ref="884463532"/>
@@ -363,7 +364,7 @@
 							<object class="IBUILabel" id="554598005">
 								<reference key="NSNextResponder" ref="315411516"/>
 								<int key="NSvFlags">292</int>
-								<string key="NSFrame">{{83, 30}, {181, 21}}</string>
+								<string key="NSFrame">{{83, 30}, {249, 21}}</string>
 								<reference key="NSSuperview" ref="315411516"/>
 								<reference key="NSWindow"/>
 								<reference key="NSNextKeyView" ref="397809486"/>
@@ -384,7 +385,7 @@
 							<object class="IBUILabel" id="397809486">
 								<reference key="NSNextResponder" ref="315411516"/>
 								<int key="NSvFlags">292</int>
-								<string key="NSFrame">{{285, 30}, {85, 21}}</string>
+								<string key="NSFrame">{{340, 30}, {85, 21}}</string>
 								<reference key="NSSuperview" ref="315411516"/>
 								<reference key="NSWindow"/>
 								<reference key="NSNextKeyView" ref="943233693"/>
@@ -405,7 +406,7 @@
 							<object class="IBUILabel" id="943233693">
 								<reference key="NSNextResponder" ref="315411516"/>
 								<int key="NSvFlags">292</int>
-								<string key="NSFrame">{{369, 30}, {393, 21}}</string>
+								<string key="NSFrame">{{424, 30}, {393, 21}}</string>
 								<reference key="NSSuperview" ref="315411516"/>
 								<reference key="NSWindow"/>
 								<reference key="NSNextKeyView" ref="342547768"/>
@@ -644,13 +645,13 @@
 						<reference key="object" ref="315411516"/>
 						<array class="NSMutableArray" key="children">
 							<reference ref="435420220"/>
-							<reference ref="397809486"/>
 							<reference ref="186781948"/>
-							<reference ref="943233693"/>
 							<reference ref="554598005"/>
 							<reference ref="437174595"/>
 							<reference ref="727388804"/>
 							<reference ref="884463532"/>
+							<reference ref="397809486"/>
+							<reference ref="943233693"/>
 						</array>
 						<reference key="parent" ref="766721923"/>
 					</object>
@@ -791,17 +792,20 @@
 				<object class="IBPartialClassDescription">
 					<string key="className">ComplaintViewController</string>
 					<string key="superclassName">BaseViewController</string>
-					<object class="NSMutableDictionary" key="actions">
-						<string key="NS.key.0">clickSubmit:</string>
-						<string key="NS.object.0">id</string>
-					</object>
-					<object class="NSMutableDictionary" key="actionInfosByName">
-						<string key="NS.key.0">clickSubmit:</string>
-						<object class="IBActionInfo" key="NS.object.0">
+					<dictionary class="NSMutableDictionary" key="actions">
+						<string key="clickCancle:">id</string>
+						<string key="clickSubmit:">id</string>
+					</dictionary>
+					<dictionary class="NSMutableDictionary" key="actionInfosByName">
+						<object class="IBActionInfo" key="clickCancle:">
+							<string key="name">clickCancle:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+						<object class="IBActionInfo" key="clickSubmit:">
 							<string key="name">clickSubmit:</string>
 							<string key="candidateClassName">id</string>
 						</object>
-					</object>
+					</dictionary>
 					<dictionary class="NSMutableDictionary" key="outlets">
 						<string key="cancleBtn">UIButton</string>
 						<string key="infoBgView">UIView</string>

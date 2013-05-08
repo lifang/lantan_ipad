@@ -27,6 +27,8 @@
             return nil;
         }
         self = [arrayOfViews objectAtIndex:0];
+        
+        self.txtReservAt.delegate = self;
     }
     return self;
 }
@@ -36,6 +38,14 @@
     [super setSelected:selected animated:animated];
 
     // Configure the view for the selected state
+}
+- (void)textFieldDidBeginEditing:(UITextField *)textField{
+    NSDictionary *dic = [[NSDictionary alloc]initWithObjectsAndKeys:@"0",@"frame",self,@"cell", nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"update" object:dic];
+}
+- (void)textFieldDidEndEditing:(UITextField *)textField {
+    NSDictionary *dic = [[NSDictionary alloc]initWithObjectsAndKeys:@"1",@"frame",self,@"cell", nil];
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"update" object:dic];
 }
 -(void)cancle {
     AppDelegate *delegate = [AppDelegate shareInstance];
@@ -57,6 +67,9 @@
 }
 //作废预约
 - (IBAction)clickCancel:(id)sender{
+    [self.txtReservAt becomeFirstResponder];
+    [self.txtReservAt resignFirstResponder];
+    
     AppDelegate *delegate = [AppDelegate shareInstance];
     MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:delegate.window];
     [hud showWhileExecuting:@selector(cancle) onTarget:self withObject:nil animated:YES];
@@ -78,6 +91,7 @@
     
     if ([[result objectForKey:@"status"] intValue]==1) {
         [DataService sharedService].reserve_list = [result objectForKey:@"reservation"];
+        [DataService sharedService].ReservationFirst = YES;
         [[NSNotificationCenter defaultCenter] postNotificationName:@"updateReservation" object:nil];
         AddViewController *addOrder = [[AddViewController alloc] initWithNibName:@"AddViewController" bundle:nil];
         addOrder.brandResult = [NSMutableDictionary dictionaryWithDictionary:result];
@@ -86,7 +100,7 @@
         addOrder.productList = [NSMutableArray arrayWithArray:[result objectForKey:@"products"]];
         addOrder.product_ids = [NSMutableArray arrayWithArray:[result objectForKey:@"product_ids"]];
         [DataService sharedService].number = 0;
-        addOrder.step = @"1";
+        addOrder.step = @"0";
         [viewController pushViewController:addOrder animated:YES];
     }
 
@@ -94,6 +108,9 @@
 }
 //确认预约
 - (IBAction)clickConfirm:(id)sender{
+    [self.txtReservAt becomeFirstResponder];
+    [self.txtReservAt resignFirstResponder];
+    
     AppDelegate *delegate = [AppDelegate shareInstance];
     MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:delegate.window];
     [hud showWhileExecuting:@selector(confirm) onTarget:self withObject:nil animated:YES];
