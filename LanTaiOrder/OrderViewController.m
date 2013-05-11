@@ -32,6 +32,7 @@
 @synthesize car_num,customer,workingOrder;
 @synthesize addOrderView;
 @synthesize timeLabel,productLabel;
+@synthesize car_id;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -46,14 +47,26 @@
 }
 
 //发送查询请求
-- (void)searchOrderByCarNum{
+- (void)searchOrderByCarNumWithCar_id:(NSString *)carid{
     if (car_num) {
-        STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kSearchCar]];
-        [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id",car_num,@"car_num", nil]];
-        [r setPostDataEncoding:NSUTF8StringEncoding];
-        NSError *error = nil;
-        NSString *str = [r startSynchronousWithError:&error];
-        NSDictionary *result = [str objectFromJSONString];
+        NSDictionary *result = nil;
+        if (self.car_id) {
+            STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kShowCar]];
+            [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id",car_num,@"car_num",car_id,@"car_id", nil]];
+            [r setPostDataEncoding:NSUTF8StringEncoding];
+            NSError *error = nil;
+            NSString *str = [r startSynchronousWithError:&error];
+            result = [str objectFromJSONString];
+        }else {
+            STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kSearchCar]];
+            [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id",car_num,@"car_num", nil]];
+            [r setPostDataEncoding:NSUTF8StringEncoding];
+            NSError *error = nil;
+            NSString *str = [r startSynchronousWithError:&error];
+            result = [str objectFromJSONString];
+        }
+        
+        
         DLog(@"%@",result);
         if ([[result objectForKey:@"status"] intValue]==1) {
             if ([[result objectForKey:@"customer"] count]==0) {
@@ -140,7 +153,6 @@
                 //过往订单
                 if ([[result objectForKey:@"old"] count]>0) {
                     self.orderList = [result objectForKey:@"old"];
-                    DLog(@"%d",orderList.count);
                 }
             }
         }
@@ -159,7 +171,7 @@
     self.workingOrder = [NSMutableDictionary dictionary];
     self.addOrderView = [[AddViewController alloc] initWithNibName:@"AddViewController" bundle:nil];
     
-    [self searchOrderByCarNum];
+    [self searchOrderByCarNumWithCar_id:self.car_id];
     [super viewDidLoad];
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"order_bg"]];
     self.carInfoView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"dot_bg"]];

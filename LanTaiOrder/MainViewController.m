@@ -247,7 +247,15 @@
     if (cell == nil) {
         cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
     }
-    cell.textLabel.text = [NSString stringWithFormat:@"%@ 施工中",[order objectForKey:@"num"]];
+    int status = [[order objectForKey:@"status"]intValue];
+    if (status == 0) {
+        cell.textLabel.text = [NSString stringWithFormat:@"%@ 未施工",[order objectForKey:@"num"]];
+    }else if (status == 1) {
+        cell.textLabel.text = [NSString stringWithFormat:@"%@ 施工中",[order objectForKey:@"num"]];
+    }else if (status == 2) {
+        cell.textLabel.text = [NSString stringWithFormat:@"%@ 等待付款",[order objectForKey:@"num"]];
+    }
+    
     cell.textLabel.font = [UIFont systemFontOfSize:18.0];
     cell.textLabel.textColor = [UIColor colorWithRed:51.0/255.0 green:51.0/255.0 blue:51.0/255.0 alpha:1.0];
     cell.selectionStyle = UITableViewCellSelectionStyleBlue;
@@ -274,7 +282,7 @@
         self.orderView2 = [[OrderViewController alloc] initWithNibName:@"OrderViewController" bundle:nil];
         NSDictionary *order = [waitList objectAtIndex:indexPath.row];
         orderView2.car_num = [order objectForKey:@"num"];
-        
+        orderView2.car_id = [order objectForKey:@"id"];
         MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
         hud.dimBackground = NO;
         [hud showWhileExecuting:@selector(showOrderView) onTarget:self withObject:nil animated:YES];

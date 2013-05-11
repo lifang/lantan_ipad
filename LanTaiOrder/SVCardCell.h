@@ -17,7 +17,7 @@
 @property (nonatomic,strong) IBOutlet UIButton *switchBtn;
 @property (nonatomic,strong) NSMutableDictionary *prod;
 @property (nonatomic,strong) NSIndexPath *index;
-
+@property (nonatomic,strong) NSMutableArray *selectedArr;
 - (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier with:(NSMutableDictionary *)product indexPath:(NSIndexPath *)idx;
 - (IBAction)clickSwitch:(UISwitch *)sender;
 @end

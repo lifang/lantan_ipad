@@ -88,7 +88,6 @@
     NSDictionary *jsonData = [result objectFromJSONString];
     DLog(@"%@",jsonData);
     NSString *text = [jsonData objectForKey:@"info"];
-    
     if (jsonData != nil) {
         if (text.length == 0) {
             NSDictionary *staff = [jsonData objectForKey:@"staff"];

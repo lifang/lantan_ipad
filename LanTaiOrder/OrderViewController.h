@@ -23,7 +23,8 @@
 @property (nonatomic,strong) IBOutlet UILabel *productLabel;
 
 @property (nonatomic,strong) NSMutableArray *orderList,*orderItems;
-@property (nonatomic,strong) NSString *car_num;
+@property (nonatomic,strong) NSString *car_num;//车牌号
+@property (nonatomic,strong) NSString *car_id;//车辆id
 @property (nonatomic,strong) NSMutableDictionary *customer,*workingOrder;
 
 @property (nonatomic,strong)AddViewController *addOrderView;

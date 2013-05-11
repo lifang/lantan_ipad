@@ -40,10 +40,17 @@
     [DataService sharedService].first = YES;
     [DataService sharedService].temp_dictionary = nil;
     [DataService sharedService].temp_dictionary = [NSMutableDictionary dictionary];
+    [DataService sharedService].price_id = nil;
+    [DataService sharedService].price_id = [NSMutableDictionary dictionary];
+    [DataService sharedService].number_id = nil;
+    [DataService sharedService].number_id = [NSMutableDictionary dictionary];
     
+    //套餐卡
     [DataService sharedService].row_id_countArray = nil;
     [DataService sharedService].row_id_countArray =[NSMutableArray array];
-    
+    //活动打折卡
+    [DataService sharedService].row_id_numArray = nil;
+    [DataService sharedService].row_id_numArray =[NSMutableArray array];
     [DataService sharedService].productList = self.productList;
 }
 -(void)viewWillDisappear:(BOOL)animated {
@@ -75,9 +82,10 @@
     }
     //更新总价
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(updateTotal:) name:@"update_total" object:nil];
-    
+    //套餐卡
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(reloadTableView:) name:@"reloadTableView" object:nil];
-    
+    //活动
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(saleReloadTableView:) name:@"saleReloadTableView" object:nil];
     [super viewDidLoad];
     if (![self.navigationItem rightBarButtonItem]) {
         [self addRightnaviItemWithImage:@"back"];
@@ -112,18 +120,27 @@
             
             //第一次加载tableView
             if ([DataService sharedService].first == YES) {
+                //套餐卡
                 if ([[DataService sharedService].temp_dictionary objectForKey:[product objectForKey:@"id"]]) {
                     [[DataService sharedService].temp_dictionary removeObjectForKey:[product objectForKey:@"id"]];
                 }
                 [[DataService sharedService].temp_dictionary setObject:[product objectForKey:@"count"] forKey:[product objectForKey:@"id"]];
+                //活动  打折卡
+                if ([[DataService sharedService].price_id objectForKey:[product objectForKey:@"id"]]) {
+                    [[DataService sharedService].price_id removeObjectForKey:[product objectForKey:@"id"]];
+                    [[DataService sharedService].number_id removeObjectForKey:[product objectForKey:@"id"]];
+                }
+                [[DataService sharedService].price_id setObject:[product objectForKey:@"price"] forKey:[product objectForKey:@"id"]];
+                [[DataService sharedService].number_id setObject:[product objectForKey:@"count"] forKey:[product objectForKey:@"id"]];
+        
             }
-            
         }
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
         return cell;
     }else if([product objectForKey:@"sale_id"]){
         //活动
-        static NSString *CellIdentifier = @"SVCardCell";
+        NSString *CellIdentifier = [NSString stringWithFormat:@"SVCardCell%d", [indexPath row]];
+       
         SVCardCell *cell = (SVCardCell *)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
         if (cell == nil) {
             cell = [[SVCardCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier with:product indexPath:indexPath];
@@ -140,6 +157,7 @@
         }
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
         return cell;
+        
     }else if([product objectForKey:@"scard_id"]){
         //打折卡
         static NSString *CellIdentifier = @"SVCardCell";
@@ -201,14 +219,13 @@
         self.total_count_temp = f;
     }else {
         self.total_count = f;
+        self.total_count_temp = f;
     }
     
     self.lblTotal.text = [NSString stringWithFormat:@"总计：%.2f(元)",self.total_count];
     NSIndexPath *idx = [dic objectForKey:@"idx"];
     [self.productList replaceObjectAtIndex:idx.row withObject:[dic objectForKey:@"prod"]];
     [DataService sharedService].productList = self.productList;
-//    [[DataService sharedService].productList replaceObjectAtIndex:idx.row withObject:[dic objectForKey:@"prod"]];
-//    [self.productTable reloadData];
 }
 
 - (IBAction)clickCancel:(id)sender{
@@ -427,7 +444,139 @@
                 }
             }
         }
+    }
+}
+
+- (void)saleReloadTableView:(NSNotification *)notification{
+    NSDictionary *dic = [notification object];
+    NSString * product_id = [dic objectForKey:@"id"];//服务／产品的id
+    
+    NSMutableArray *collection_index = [NSMutableArray array];//单个活动消费的产品index集合
+    NSMutableArray *collection_id = [NSMutableArray array];//单个活动消费的产品id集合
+    NSMutableArray *collection_number = [NSMutableArray array];//单个活动消费的产品number集合
+    NSMutableArray *collection = [NSMutableArray array];//纪录位置
+    NSMutableArray *collection2 = [NSMutableArray array];//纪录位置
+    
+    NSMutableArray *p_arr = [NSMutableArray array];
+    NSMutableDictionary *p_dic;
+    
+    CGFloat discount_x = 0;
+    CGFloat discount_y = 0;
+    
+    NSArray *array = [[DataService sharedService].price_id allKeys];
+    if ([array containsObject:product_id]) {
+        discount_x = [[dic objectForKey:@"price"] floatValue];//服务／产品的  单价
+        int num_count = 0;//放在单列里面此id产品消费次数
+        int index_row = 0;
+        int num = 0;//活动里面剩余次数
+        if ([DataService sharedService].row_id_numArray.count >0) {
+            for (int i=0; i<[DataService sharedService].row_id_numArray.count; i++) {
+                NSMutableString *str = [[DataService sharedService].row_id_numArray objectAtIndex:i];
+                str = [NSMutableString stringWithString:[str substringToIndex:str.length-1]];
+                NSArray *arr = [str componentsSeparatedByString:@"_"];
+                [collection_index addObject:[arr objectAtIndex:0]];
+                [collection_id addObject:[arr objectAtIndex:1]];
+                [collection_number addObject:[arr objectAtIndex:2]];
+                
+            }
+        }
+        //遍历 id的集合找到位置
+        for (int i=0; i<collection_id.count; i++) {
+            NSString *prod_id = [collection_id objectAtIndex:i];
+            if ([product_id intValue] == [prod_id intValue]) {
+                [collection addObject:[NSString stringWithFormat:@"%d",i]];
+            }
+        }
         
+        if (collection.count>0) {
+            for (int i=0; i<collection.count; i++) {
+                NSMutableArray *collection_temp = [NSMutableArray array];//纪录[DataService sharedService].row_id_numArray里面要删除的元素
+                int h = [[collection objectAtIndex:i]intValue];//位置
+                //根据位置找到index
+                index_row = [[collection_index objectAtIndex:h]intValue];
+                //通过index找到的活动
+                NSMutableDictionary *product_dic = [[DataService sharedService].productList objectAtIndex:index_row];
+                discount_y = 0-[[product_dic objectForKey:@"show_price"]floatValue];//差价
+                //通过index找到cell
+                NSIndexPath *idx = [NSIndexPath indexPathForRow:index_row inSection:0];
+                SVCardCell *cell = (SVCardCell *)[self.productTable cellForRowAtIndexPath:idx];
+                
+                p_arr = [product_dic objectForKey:@"sale_products"];//活动里面产品的集合
+                DLog(@"p_arr = %@",p_arr);
+                for (int k=0; k<p_arr.count; k++) {
+                    p_dic = [[p_arr objectAtIndex:k] mutableCopy];
+                    NSString * pro_id = [p_dic objectForKey:@"product_id"];//套餐卡包含的服务/产品id
+                    num = [[p_dic objectForKey:@"prod_num"]intValue];//活动里面剩余次数
+                    if ([pro_id intValue] == [product_id intValue]) {//id相同,找到服务,产品
+                        num_count = [[collection_number objectAtIndex:h]intValue];//放在单列里面此id产品消费次数
+                        
+                        //重置number_id数据
+                        int count_num = [[[DataService sharedService].number_id objectForKey:product_id]intValue];//剩余次数
+                        [[DataService sharedService].number_id removeObjectForKey:product_id];
+                        [[DataService sharedService].number_id setObject:[NSString stringWithFormat:@"%d", num_count+count_num] forKey:product_id];
+                        DLog(@"dic = %@",[DataService sharedService].number_id);
+                        
+                        [p_dic setObject:[NSString stringWithFormat:@"%d",num + num_count] forKey:@"prod_num"];
+                        [p_arr replaceObjectAtIndex:k withObject:p_dic];
+                        //删除
+                        [collection_temp addObject:[[DataService sharedService].row_id_numArray objectAtIndex:h]];
+                    }else {
+                        //遍历 id的集合找到位置
+                        for (int m=0; m<collection_id.count; m++) {
+                            NSString *prod_id = [collection_id objectAtIndex:m];
+                            if ([prod_id intValue] == [pro_id intValue]) {
+                                [collection2 addObject:[NSString stringWithFormat:@"%d",m]];
+                            }
+                        }
+                        if (collection2.count>0) {
+                            for (int j=0; j<collection2.count; j++) {
+                                int d = [[collection2 objectAtIndex:j]intValue];
+                                NSString *sale_index = [collection_index objectAtIndex:d];
+                                if ([sale_index intValue] == index_row) {
+                                    num_count = [[collection_number objectAtIndex:d]intValue];//放在单列里面此id产品消费次数
+                                    
+                                    //重置number_id数据
+                                    int count_num = [[[DataService sharedService].number_id objectForKey:pro_id]intValue];//剩余次数
+                                    [[DataService sharedService].number_id removeObjectForKey:pro_id];
+                                    [[DataService sharedService].number_id setObject:[NSString stringWithFormat:@"%d", num_count+count_num] forKey:pro_id];
+                                    DLog(@"dic = %@",[DataService sharedService].number_id);
+                                    
+                                    [p_dic setObject:[NSString stringWithFormat:@"%d",num + num_count] forKey:@"prod_num"];
+                                    [p_arr replaceObjectAtIndex:k withObject:p_dic];
+                                    //删除
+                                    [collection_temp addObject:[[DataService sharedService].row_id_numArray objectAtIndex:d]];
+                                }
+                            }
+                        }
+                    }
+                }
+                if (collection_temp.count>0) {
+                    for (int v=0; v<collection_temp.count; v++) {
+                        [[DataService sharedService].row_id_numArray removeObjectsInArray:collection_temp];
+                    }
+                }
+                UIButton *btn =(UIButton *)[cell viewWithTag:OPEN];
+                int tag = btn.tag;
+                btn.tag = tag - OPEN + CLOSE;
+                [btn setImage:[UIImage imageNamed:@"cb_mono_off"] forState:UIControlStateNormal];
+                
+                CGFloat lbl_price = [cell.lblPrice.text floatValue];
+                if ((lbl_price+discount_y) <0.0001f ) {
+                    cell.lblPrice.text = @"0";
+                }else {
+                    cell.lblPrice.text = [NSString stringWithFormat:@"%.2f",discount_y+lbl_price];
+                }
+                [product_dic setValue:@"1" forKey:@"selected"];
+                [product_dic setObject:p_arr forKey:@"sale_products"];
+                [product_dic setObject:cell.lblPrice.text forKey:@"show_price"];
+                
+                NSString *p = [NSString stringWithFormat:@"%.2f",discount_y];
+                NSMutableDictionary *dic1 = [NSMutableDictionary dictionaryWithObjectsAndKeys:p,@"object",product_dic,@"prod",idx,@"idx",@"2",@"type", nil];
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"update_total" object:dic1];
+                
+                
+            }
+        }
     }
 }
 @end

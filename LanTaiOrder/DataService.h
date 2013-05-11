@@ -22,7 +22,10 @@
 @property (nonatomic,strong) NSMutableDictionary *temp_dictionary;//选择产品／服务的id 和数量
 @property (nonatomic,assign) BOOL first;//判断 temp_dictionary 是否加载数据；
 
-@property (nonatomic,strong) NSMutableArray *row_id_countArray;
+@property (nonatomic,strong) NSMutableArray *row_id_countArray;//套餐卡
+@property (nonatomic,strong) NSMutableArray *row_id_numArray;//活动打折卡
+@property (nonatomic,strong) NSMutableDictionary *price_id;//选择产品价格／服务的id 
+@property (nonatomic,strong) NSMutableDictionary *number_id;//选择产品服务的id 和数量
 @property (nonatomic,strong) NSMutableArray *productList;
 
 @property (nonatomic,assign) BOOL ReservationFirst;//判断预约是否是第一次；

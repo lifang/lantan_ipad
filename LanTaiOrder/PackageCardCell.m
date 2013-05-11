@@ -178,7 +178,7 @@
                     //初始count  --num
                     NSString *str = [self checkFormWithIndexRow:self.index.row andId:[product_id intValue] andNumber:num];
                     [[DataService sharedService].row_id_countArray addObject:str];
-                    //                    DLog(@"arr = %@",[DataService sharedService].row_id_countArray);
+//                    DLog(@"arr = %@",[DataService sharedService].row_id_countArray);
                     //用户选择的次数  －  消费的次数 （用户还需要消费的次数）>=0
                     y = y * num;
                     x = x + y;
@@ -188,14 +188,14 @@
                     //                    DLog(@"dic = %@",[DataService sharedService].temp_dictionary);
                     
                     [dic setObject:[NSString stringWithFormat:@"%d",num - num] forKey:@"num"];
-                }else {
+                }else {//用户次数小于套餐卡提供次数
                     //初始count  --count_num
                     NSString *str = [self checkFormWithIndexRow:self.index.row andId:[product_id intValue] andNumber:count_num];
                     [[DataService sharedService].row_id_countArray addObject:str];
                     //                    DLog(@"arr = %@",[DataService sharedService].row_id_countArray);
                     //重置temp—dic数据
                     [[DataService sharedService].temp_dictionary removeObjectForKey:product_id];
-                    [[DataService sharedService].temp_dictionary setObject:@"0" forKey:product_id];
+                    [[DataService sharedService].temp_dictionary setObject:[NSString stringWithFormat:@"%d",count_num - count_num] forKey:product_id];
                     //                    DLog(@"dic = %@",[DataService sharedService].temp_dictionary);
                     
                     y = y * count_num;

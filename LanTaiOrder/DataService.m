@@ -14,8 +14,9 @@
 @synthesize number,payNumber;
 @synthesize doneArray;
 @synthesize tagOfBtn;
-@synthesize temp_dictionary,first,row_id_countArray,productList;
+@synthesize temp_dictionary,first,row_id_countArray,productList,row_id_numArray,price_id,number_id;
 @synthesize ReservationFirst,refreshing;
+
 - (id)init{
     if (self == [super init]) {
         self.reserve_count = [NSString string];
@@ -31,7 +32,10 @@
         ReservationFirst = YES;
         refreshing = NO;
         self.row_id_countArray = [NSMutableArray array];
+        self.row_id_numArray = [NSMutableArray array];
         self.productList = [NSMutableArray array];
+        self.price_id = [NSMutableDictionary dictionary];
+        self.number_id = [NSMutableDictionary dictionary];
     }
     return self;
 }

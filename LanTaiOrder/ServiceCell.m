@@ -39,11 +39,17 @@ static NSMutableDictionary *product_dic = nil;
 - (IBAction)stepCount:(UIStepper *)sender{
     [DataService sharedService].first = NO;
     product_dic = self.product;
+    //套餐卡
     [[NSNotificationCenter defaultCenter] postNotificationName:@"reloadTableView" object:self.product];
+    //活动
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"saleReloadTableView" object:self.product];
     
     self.product = product_dic;
     NSString * product_id = [self.product objectForKey:@"id"];
+    //套餐卡
     int product_count = [[[DataService sharedService].temp_dictionary objectForKey:product_id]intValue];//所选产品 “被” 服务剩余次数
+    //活动
+    int sale_count = [[[DataService sharedService].number_id objectForKey:product_id]intValue];//所选产品 “被” 服务剩余次数
     double val = [sender value];
     double old = [self.lblCount.text doubleValue];
     self.lblCount.text = [NSString stringWithFormat:@"%d",(int)val];
@@ -54,7 +60,12 @@ static NSMutableDictionary *product_dic = nil;
     //重置temp—dic数据
     [[DataService sharedService].temp_dictionary removeObjectForKey:product_id];
     [[DataService sharedService].temp_dictionary setObject:[NSString stringWithFormat:@"%d",num+product_count ] forKey:product_id];
-    DLog(@"dicccc = %@",[DataService sharedService].temp_dictionary);
+//    DLog(@"dicccc = %@",[DataService sharedService].temp_dictionary);
+    
+    //重置number_id数据
+    [[DataService sharedService].number_id removeObjectForKey:product_id];
+    [[DataService sharedService].number_id setObject:[NSString stringWithFormat:@"%d",num+sale_count ] forKey:product_id];
+    DLog(@"dicccc = %@",[DataService sharedService].number_id);
     
     NSMutableDictionary *dic = [NSMutableDictionary dictionaryWithObjectsAndKeys:price,@"object",self.product,@"prod",self.index,@"idx",@"0",@"type", nil];
     [[NSNotificationCenter defaultCenter] postNotificationName:@"update_total" object:dic];

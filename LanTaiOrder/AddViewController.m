@@ -974,7 +974,6 @@ static bool refresh = NO;
                 cell.prodName.hidden = NO;
                 cell.prodImage.hidden = NO;
                 //预约页面首次进来  加载此项
-                DLog(@"%@",self.product_ids);
                 if ([DataService sharedService].ReservationFirst == YES) {
                     if (self.product_ids.count >0  && x<3) {
                         NSString *p_id = [prod objectForKey:@"id"];
