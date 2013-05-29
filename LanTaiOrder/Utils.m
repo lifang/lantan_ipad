@@ -7,12 +7,13 @@
 //
 
 #import "Utils.h"
+#import "pinyin.h"
 
 @implementation Utils
 
 //判断网络类型
 + (NSString *)isExistenceNetwork {
-    NSString *str = [NSString string];
+    NSString *str = nil;
 	Reachability *r = [Reachability reachabilityWithHostName:@"www.apple.com"];
     switch ([r currentReachabilityStatus]) {
         case NotReachable:
@@ -27,26 +28,20 @@
     }
     return str;
 }
-//+ (NSMutableArray *)fetchWorkingList{
-//    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kIndex]];
-//    [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id", nil]];
-//    [r setPostDataEncoding:NSUTF8StringEncoding];
-//    NSError *error = nil;
-//    NSString *result = [r startSynchronousWithError:&error];
-//    NSDictionary *jsonData = [result objectFromJSONString];
-//    DLog(@"%@",jsonData);
-//    if ([[jsonData objectForKey:@"status"] intValue] == 1) {
-//        if ([jsonData objectForKey:@"reservations"]!=nil) {
-//            NSMutableArray *arr = [NSMutableArray arrayWithArray:[jsonData objectForKey:@"reservations"]];
-//            [DataService sharedService].reserve_count = [NSString stringWithFormat:@"%d",[arr count]];
-//            [DataService sharedService].reserve_list = arr;
-//        }
-//        if ([jsonData objectForKey:@"orders"]!=nil) {
-//            [DataService sharedService].workingOrders = [NSMutableArray arrayWithArray:[jsonData objectForKey:@"orders"]];
-//        }
-//    }
-//    return nil;
-//}
++(NSMutableArray *)matchArray {
+    NSMutableArray *array = [NSMutableArray array];
+    for (int i = 0; i < 27; i++) [array addObject:[NSMutableArray array]];
+    NSString *nameSection = nil;
+    for (int m=0; m<[[DataService sharedService].matchArray count]; m++) {
+        
+        nameSection = [[NSString stringWithFormat:@"%c",pinyinFirstLetter([[[DataService sharedService].matchArray objectAtIndex:m] characterAtIndex:0])] uppercaseString];
+        NSUInteger firstLetterLoc = [ALPHA rangeOfString:[nameSection substringToIndex:1]].location;
+        if (firstLetterLoc != NSNotFound)
+            [[array objectAtIndex:firstLetterLoc] addObject:[[DataService sharedService].matchArray objectAtIndex:m]];
+    }
+    return array;
+}
+
 + (NSString *)orderStatus:(int)status{
     if (status==0) {
         return @"未施工";

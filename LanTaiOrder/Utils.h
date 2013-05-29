@@ -13,7 +13,7 @@
 
 + (NSString *)isExistenceNetwork;
 
-//+ (NSMutableArray *)fetchWorkingList;
++(NSMutableArray *)matchArray;
 
 + (NSString *)orderStatus:(int)status;
 + (NSString *)formateDate:(NSString *)date;

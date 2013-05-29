@@ -8,6 +8,7 @@
 
 #import "LoginViewController.h"
 #import "AppDelegate.h"
+#import "InitViewController.h"
 
 @interface LoginViewController ()
 
@@ -16,7 +17,7 @@
 @implementation LoginViewController
 
 @synthesize txtName,txtPwd,loginView;
-
+@synthesize btn_ip;
 
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
@@ -27,7 +28,31 @@
     }
     return self;
 }
+-(void)setIp {
+    [DataService sharedService].kDomain = nil;
+    [DataService sharedService].kHost = nil;
+    [DataService sharedService].str_ip = nil;
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    [defaults removeObjectForKey:@"IP"];
+    [defaults synchronize];
+    
+    [DataService sharedService].user_id = nil;
+    [DataService sharedService].reserve_list = nil;
+    [DataService sharedService].reserve_count = nil;
+    [DataService sharedService].store_id = nil;
+    [DataService sharedService].car_num = nil;
+    NSUserDefaults *defaultss = [NSUserDefaults standardUserDefaults];
+    [defaultss removeObjectForKey:@"userId"];
+    [defaultss removeObjectForKey:@"storeId"];
+    [defaultss synchronize];
+    
+    InitViewController *initView = [[InitViewController alloc]initWithNibName:@"InitViewController" bundle:nil];
+    [self presentViewController:initView animated:YES completion:nil];
 
+}
+-(void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+}
 - (void)viewDidLoad
 {
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"login_bg.jpg"]];
@@ -45,6 +70,10 @@
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyBoardWillHide:) name: UIKeyboardWillHideNotification object:nil];
     
    
+    self.btn_ip = [[UIButton alloc]initWithFrame:CGRectMake(495, 0, 40, 42)];
+    [self.btn_ip setImage:[UIImage imageNamed:@"ip"] forState:UIControlStateNormal];
+    [self.btn_ip addTarget:self action:@selector(setIp) forControlEvents:UIControlEventTouchUpInside];
+    [self.loginView addSubview:self.btn_ip];
 }
 
 - (void)didReceiveMemoryWarning
@@ -80,7 +109,7 @@
     return TRUE;
 }
 -(void)login {
-    STHTTPRequest *request = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kLogin]];
+    STHTTPRequest *request = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kLogin]];
     [request setPOSTDictionary:[NSMutableDictionary dictionaryWithObjectsAndKeys:self.txtName.text,@"user_name",self.txtPwd.text,@"user_password", nil]];
     [request setPostDataEncoding:NSUTF8StringEncoding];
     NSError *error = nil;

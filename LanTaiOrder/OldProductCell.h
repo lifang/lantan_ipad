@@ -13,5 +13,6 @@
 @property (nonatomic,strong) UILabel *lblCode,*lblDate,*lblTotal,*lblPay;
 @property (nonatomic,strong) UIButton *btnComplaint;
 
+
 - (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier items:(NSMutableArray *)items;
 @end

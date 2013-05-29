@@ -56,7 +56,7 @@
 }
 //提交
 -(void)submit {
-    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kComplaint]];
+    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kComplaint]];
     [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:self.reasonView.text,@"reason",self.requestView.text,@"request",[DataService sharedService].store_id,@"store_id",[info objectForKey:@"order_id"],@"order_id", nil]];
     [r setPostDataEncoding:NSUTF8StringEncoding];
     NSError *error = nil;

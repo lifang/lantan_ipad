@@ -9,6 +9,8 @@
 #import "AppDelegate.h"
 #import "LoginViewController.h"
 #import "MainViewController.h"
+#import "pinyin.h"
+
 
 @implementation AppDelegate
 @synthesize lantan_initView;
@@ -18,18 +20,17 @@
     return (AppDelegate *)([UIApplication sharedApplication].delegate);
 }
 
+-(void)getmatchArray {
+    NSString *Path = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0]; NSString *filename = [Path stringByAppendingPathComponent:@"match.plist"];
+    [DataService sharedService].matchArray = [NSKeyedUnarchiver unarchiveObjectWithFile: filename];
+    if ([DataService sharedService].matchArray.count == 0) {
+        [DataService sharedService].matchArray = [NSMutableArray array];
+    }else {
+        [DataService sharedService].sectionArray=[Utils matchArray];
+    }
+}
 - (void)showRootView{
     [self.lantan_initView.view removeFromSuperview];//initView消失
-//    if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
-//        [AHAlertView applyCustomAlertAppearance];
-//        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:kNoReachable];
-//        __block AHAlertView *alert = alertt;
-//        [alertt setCancelButtonTitle:@"确定" block:^{
-//            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
-//            alert = nil;
-//        }];
-//        [alertt show];
-//    }else {
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
         NSString *userInfo = [defaults objectForKey:@"userId"];
         if (userInfo != nil) {
@@ -47,9 +48,8 @@
             UINavigationController *navigationView = [[UINavigationController alloc] initWithRootViewController:loginView];
             self.window.rootViewController = navigationView;
         }
-
-//    }
 }
+
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
@@ -59,14 +59,15 @@
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
     
-//    //新版本链接
-//    //获取appstore中的应用版本信息
-//    //异步请求信息
-//    self.definitionData = [NSMutableData data];//数据缓存对象
-//    //实际上架后需要更改应用id 
-//    NSURL *url=[NSURL URLWithString:@"http://itunes.apple.com/lookup?id=584371753"];
-//    NSURLRequest *req = [NSURLRequest requestWithURL:url];
-//	[NSURLConnection connectionWithRequest:req delegate:self];
+    [self getmatchArray];
+    //新版本链接
+    //获取appstore中的应用版本信息
+    //异步请求信息
+    self.definitionData = [NSMutableData data];//数据缓存对象
+    //实际上架后需要更改应用id 
+    NSURL *url=[NSURL URLWithString:@"http://itunes.apple.com/lookup?id=651776250"];
+    NSURLRequest *req = [NSURLRequest requestWithURL:url];
+	[NSURLConnection connectionWithRequest:req delegate:self];
     
     return YES;
 }
@@ -118,8 +119,13 @@
 
 - (void)applicationDidEnterBackground:(UIApplication *)application
 {
-    // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later. 
-    // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+    NSFileManager *fileManage = [NSFileManager defaultManager];
+    NSString *Path = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) objectAtIndex:0];
+    NSString *filename = [Path stringByAppendingPathComponent:@"match.plist"];
+    if ([fileManage fileExistsAtPath:filename]) {
+        [fileManage removeItemAtPath:filename error:nil];
+    }
+    [NSKeyedArchiver archiveRootObject:[DataService sharedService].matchArray toFile:filename];
 }
 
 - (void)applicationWillEnterForeground:(UIApplication *)application

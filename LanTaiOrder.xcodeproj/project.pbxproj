@@ -8,6 +8,9 @@
 
 /* Begin PBXBuildFile section */
 		0E1705C11709676300146DAB /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0E1705C01709676300146DAB /* QuartzCore.framework */; };
+		0E2629E3174F04E2007DE7A9 /* ShaixuanView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0E2629E1174F04E2007DE7A9 /* ShaixuanView.m */; };
+		0E2629E4174F04E2007DE7A9 /* ShaixuanView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0E2629E2174F04E2007DE7A9 /* ShaixuanView.xib */; };
+		0E262A19174F407A007DE7A9 /* pinyin.c in Sources */ = {isa = PBXBuildFile; fileRef = 0E262A18174F4079007DE7A9 /* pinyin.c */; };
 		0E49BA971713C03000D4E60E /* custom-button-normal.png in Resources */ = {isa = PBXBuildFile; fileRef = 0E49BA8F1713C03000D4E60E /* custom-button-normal.png */; };
 		0E49BA981713C03000D4E60E /* custom-button-normal@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 0E49BA901713C03000D4E60E /* custom-button-normal@2x.png */; };
 		0E49BA991713C03000D4E60E /* custom-cancel-normal.png in Resources */ = {isa = PBXBuildFile; fileRef = 0E49BA911713C03000D4E60E /* custom-cancel-normal.png */; };
@@ -72,6 +75,7 @@
 		0EAE806E1709662900A5E4C4 /* Utils.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EAE80691709662700A5E4C4 /* Utils.m */; };
 		0EAE806F1709662900A5E4C4 /* NSDate+Additions.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EAE806B1709662800A5E4C4 /* NSDate+Additions.m */; };
 		0EAE80701709662900A5E4C4 /* UITextView+Border.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EAE806D1709662800A5E4C4 /* UITextView+Border.m */; };
+		0EC3495B174C58F800CD913F /* ip.png in Resources */ = {isa = PBXBuildFile; fileRef = 0EC3495A174C58F800CD913F /* ip.png */; };
 		0EE3F8FA172138CE000303E3 /* SVPullToRefresh.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 0EE3F8F7172138CE000303E3 /* SVPullToRefresh.bundle */; };
 		0EE3F8FB172138CE000303E3 /* SVPullToRefresh.m in Sources */ = {isa = PBXBuildFile; fileRef = 0EE3F8F9172138CE000303E3 /* SVPullToRefresh.m */; settings = {COMPILER_FLAGS = "-fno-objc-arc"; }; };
 		0EF0E782171140370043C81D /* btn_cancel_active.png in Resources */ = {isa = PBXBuildFile; fileRef = 0EF0E781171140360043C81D /* btn_cancel_active.png */; };
@@ -137,6 +141,11 @@
 
 /* Begin PBXFileReference section */
 		0E1705C01709676300146DAB /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		0E2629E0174F04E2007DE7A9 /* ShaixuanView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ShaixuanView.h; sourceTree = "<group>"; };
+		0E2629E1174F04E2007DE7A9 /* ShaixuanView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ShaixuanView.m; sourceTree = "<group>"; };
+		0E2629E2174F04E2007DE7A9 /* ShaixuanView.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ShaixuanView.xib; sourceTree = "<group>"; };
+		0E262A17174F4079007DE7A9 /* pinyin.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = pinyin.h; sourceTree = "<group>"; };
+		0E262A18174F4079007DE7A9 /* pinyin.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = pinyin.c; sourceTree = "<group>"; };
 		0E49BA8F1713C03000D4E60E /* custom-button-normal.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "custom-button-normal.png"; sourceTree = "<group>"; };
 		0E49BA901713C03000D4E60E /* custom-button-normal@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "custom-button-normal@2x.png"; sourceTree = "<group>"; };
 		0E49BA911713C03000D4E60E /* custom-cancel-normal.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "custom-cancel-normal.png"; sourceTree = "<group>"; };
@@ -227,6 +236,7 @@
 		0EAE806B1709662800A5E4C4 /* NSDate+Additions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSDate+Additions.m"; sourceTree = "<group>"; };
 		0EAE806C1709662800A5E4C4 /* UITextView+Border.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UITextView+Border.h"; sourceTree = "<group>"; };
 		0EAE806D1709662800A5E4C4 /* UITextView+Border.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UITextView+Border.m"; sourceTree = "<group>"; };
+		0EC3495A174C58F800CD913F /* ip.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ip.png; sourceTree = "<group>"; };
 		0EE3F8F7172138CE000303E3 /* SVPullToRefresh.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = SVPullToRefresh.bundle; sourceTree = "<group>"; };
 		0EE3F8F8172138CE000303E3 /* SVPullToRefresh.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SVPullToRefresh.h; sourceTree = "<group>"; };
 		0EE3F8F9172138CE000303E3 /* SVPullToRefresh.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SVPullToRefresh.m; sourceTree = "<group>"; };
@@ -609,6 +619,7 @@
 			children = (
 				0EAC068017267875002702A8 /* defualt.jpg */,
 				0EAC0678172632AB002702A8 /* close.png */,
+				0EC3495A174C58F800CD913F /* ip.png */,
 				0E92C08117156204003B293C /* sx.png */,
 				0E91E68E1713FEB000A847BE /* down.png */,
 				0E98DFD2170BB2F400325A9C /* cb_mono_off.png */,
@@ -698,6 +709,11 @@
 				70D8E14216AFABFB00BC8F16 /* MainViewController.h */,
 				70D8E14316AFABFB00BC8F16 /* MainViewController.m */,
 				70D8E14416AFABFB00BC8F16 /* MainViewController.xib */,
+				0E2629E0174F04E2007DE7A9 /* ShaixuanView.h */,
+				0E2629E1174F04E2007DE7A9 /* ShaixuanView.m */,
+				0E2629E2174F04E2007DE7A9 /* ShaixuanView.xib */,
+				0E262A17174F4079007DE7A9 /* pinyin.h */,
+				0E262A18174F4079007DE7A9 /* pinyin.c */,
 			);
 			name = Main;
 			sourceTree = "<group>";
@@ -835,6 +851,8 @@
 				0EAC068117267875002702A8 /* defualt.jpg in Resources */,
 				0EAC068317267A1F002702A8 /* Default-Landscape~ipad.png in Resources */,
 				0EAC068717267B37002702A8 /* Default-Landscape@2x~ipad.png in Resources */,
+				0EC3495B174C58F800CD913F /* ip.png in Resources */,
+				0E2629E4174F04E2007DE7A9 /* ShaixuanView.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -885,6 +903,8 @@
 				0EAE80701709662900A5E4C4 /* UITextView+Border.m in Sources */,
 				0E49BA9D1713C03000D4E60E /* AHAlertView.m in Sources */,
 				0EE3F8FB172138CE000303E3 /* SVPullToRefresh.m in Sources */,
+				0E2629E3174F04E2007DE7A9 /* ShaixuanView.m in Sources */,
+				0E262A19174F407A007DE7A9 /* pinyin.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -961,15 +981,15 @@
 		70A1CC2A16AFA763000B4C9F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iPhone Developer: Sen Ye (FE46ZS29LM)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Sen Ye (FE46ZS29LM)";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "LanTaiOrder/LanTaiOrder-Prefix.pch";
 				INFOPLIST_FILE = "LanTaiOrder/LanTaiOrder-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "";
-				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
+				PROVISIONING_PROFILE = "4C0320DE-0398-48E4-8AB2-BB3E6449FB8E";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "4C0320DE-0398-48E4-8AB2-BB3E6449FB8E";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Debug;
@@ -977,15 +997,15 @@
 		70A1CC2B16AFA763000B4C9F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iPhone Distribution: Sen Ye (63FVWL9TD6)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Distribution: Sen Ye (63FVWL9TD6)";
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "LanTaiOrder/LanTaiOrder-Prefix.pch";
 				INFOPLIST_FILE = "LanTaiOrder/LanTaiOrder-Info.plist";
 				IPHONEOS_DEPLOYMENT_TARGET = 6.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "";
-				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
+				PROVISIONING_PROFILE = "8526538A-D48E-4FA1-A17E-9474CC73E3B6";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "8526538A-D48E-4FA1-A17E-9474CC73E3B6";
 				WRAPPER_EXTENSION = app;
 			};
 			name = Release;

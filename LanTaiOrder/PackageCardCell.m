@@ -32,6 +32,7 @@
             UILabel *lblProd = [[UILabel alloc] initWithFrame:frame];
             lblProd.text = [NSString stringWithFormat:@"%@(%@)次",[[selectedArr objectAtIndex:i] objectForKey:@"name"],[[selectedArr objectAtIndex:i] objectForKey:@"num"]];
             lblProd.textAlignment = NSTextAlignmentRight;
+            lblProd.tag = CLOSE +i+CLOSE;
             [self addSubview:lblProd];
             if(cellType == 0){
                 frame.origin.x += 185;
@@ -39,7 +40,7 @@
                 frame.origin.y += 0;
                 
                 UIButton *btn = [UIButton buttonWithType:UIButtonTypeCustom];
-                btn = [[UIButton alloc]initWithFrame:frame];
+                btn.frame = frame;
                 [btn addTarget:self action:@selector(clickSwitch:) forControlEvents:UIControlEventTouchUpInside];
                 int num = [[[selectedArr objectAtIndex:i] objectForKey:@"num"]intValue];
                 if (num != 0) {
@@ -53,6 +54,7 @@
                     btn.tag = CLOSE +i;
                     [btn setImage:[UIImage imageNamed:@"cb_mono_off"] forState:UIControlStateNormal];
                 }
+                
                 frame.origin.x = 320;
             }else{
                 frame.origin.x = 400;
@@ -62,12 +64,13 @@
             frame.origin.y -= 10;
         }
 
-        frame = CGRectMake(20, 0, 260, self.frame.size.height);
+        frame = CGRectMake(20, 0, 250, self.frame.size.height);
         lblName = [[UILabel alloc] initWithFrame:frame];
         [self addSubview:lblName];
-        frame.origin.x = 280;
-        frame.size.width = 120;
+        frame.origin.x = 250;
+        frame.size.width = 110;
         lblPrice = [[UILabel alloc] initWithFrame:frame];
+        lblPrice.textAlignment = NSTextAlignmentCenter;
         [self addSubview:lblPrice];
     }
     return self;
@@ -92,9 +95,12 @@
     NSMutableDictionary *dic;
     CGFloat x = [self.lblPrice.text floatValue];
     CGFloat y = 0;
-//    DLog(@"dic = %@",[DataService sharedService].temp_dictionary);
-    NSArray *array = [[DataService sharedService].temp_dictionary allKeys];
+
+    
+    
+    NSArray *array = [[DataService sharedService].number_id allKeys];
     if (tagStr.length == 3) {
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"scardReloadTableView" object:nil];
         dic = [[selectedArr objectAtIndex:sender.tag - OPEN] mutableCopy];
         NSString * product_id = [dic objectForKey:@"product_id"];
         if ([array containsObject:product_id]) {//套餐卡包含此产品／服务
@@ -108,9 +114,7 @@
                 int i = 0;
                 while (i<[DataService sharedService].row_id_countArray.count) {
                     NSString *str = [[DataService sharedService].row_id_countArray objectAtIndex:i];
-//                    DLog(@"str = %@",str);
                     NSArray *arr = [str componentsSeparatedByString:@"_"];
-//                    DLog(@"arr = %@",arr);
                     int index_row = [[arr objectAtIndex:0]intValue];
                     
                     if (row == index_row) {//index.row相同
@@ -120,11 +124,10 @@
                             num_count = [[arr objectAtIndex:2]intValue];
                             y = y * num_count;
                             x =x + y ;
-                            //重置temp—dic数据
-                            int count_num = [[[DataService sharedService].temp_dictionary objectForKey:product_id]intValue];//剩余次数
-                            [[DataService sharedService].temp_dictionary removeObjectForKey:product_id];
-                            [[DataService sharedService].temp_dictionary setObject:[NSString stringWithFormat:@"%d", num_count+count_num] forKey:product_id];
-//                            DLog(@"dic = %@",[DataService sharedService].temp_dictionary);
+                            //重置number_id数据
+                            int count_num = [[[DataService sharedService].number_id objectForKey:product_id]intValue];//剩余次数
+                            [[DataService sharedService].number_id removeObjectForKey:product_id];
+                            [[DataService sharedService].number_id setObject:[NSString stringWithFormat:@"%d", num_count+count_num] forKey:product_id];
                             
                             [dic setObject:[NSString stringWithFormat:@"%d",num + num_count] forKey:@"num"];
                             
@@ -132,11 +135,15 @@
                             [selectedArr replaceObjectAtIndex:sender.tag - OPEN withObject:dic];
                             
                             int tag = btn.tag;
+                            
+                            UILabel *lab_prod = (UILabel *)[self viewWithTag:btn.tag+OPEN];
+                            lab_prod.text = [NSString stringWithFormat:@"%@(%@)次",[dic objectForKey:@"name"],[dic objectForKey:@"num"]];
+                            lab_prod.tag = btn.tag- OPEN + CLOSE+ CLOSE;
+                            
                             btn.tag = tag - OPEN + CLOSE;
                             [btn setImage:[UIImage imageNamed:@"cb_mono_off"] forState:UIControlStateNormal];
                             
                             NSString *price = [NSString stringWithFormat:@"%.2f",x];
-                            self.lblPrice.text = price;
                             [self.product setObject:selectedArr forKey:@"products"];
                             
                             [self.product setObject:price forKey:@"show_price"];
@@ -146,12 +153,21 @@
                             [[NSNotificationCenter defaultCenter] postNotificationName:@"update_total" object:dic1];
                             //删除
                             [[DataService sharedService].row_id_countArray removeObjectAtIndex:i];
-//                            DLog(@"arr = %@",[DataService sharedService].row_id_countArray);
+                            break;
                         }
-                        break;
+                        
                     }
                     i++;
                 }
+            }else {
+                int tag = btn.tag;
+                
+                UILabel *lab_prod = (UILabel *)[self viewWithTag:btn.tag+OPEN];
+                lab_prod.text = [NSString stringWithFormat:@"%@(%@)次",[dic objectForKey:@"name"],[dic objectForKey:@"num"]];
+                lab_prod.tag = btn.tag- OPEN + CLOSE+ CLOSE;
+                
+                btn.tag = tag - OPEN + CLOSE;
+                [btn setImage:[UIImage imageNamed:@"cb_mono_off"] forState:UIControlStateNormal];
             }
         }
         
@@ -159,10 +175,11 @@
         dic = [[selectedArr objectAtIndex:sender.tag - CLOSE] mutableCopy];
         NSString * product_id = [dic objectForKey:@"product_id"];
         if ([array containsObject:product_id]) {//套餐卡包含此产品／服务
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"scardReloadTableView" object:nil];
             [DataService sharedService].first = NO;
             int num = [[dic objectForKey:@"num"]intValue];//套餐卡里面的数目
             
-            int count_num = [[[DataService sharedService].temp_dictionary objectForKey:product_id]intValue];//用户选择的数目
+            int count_num = [[[DataService sharedService].number_id objectForKey:product_id]intValue];//用户选择的数目
             y =0- [[dic objectForKey:@"product_price"] floatValue];
             if (count_num == 0) {
                 [AHAlertView applyCustomAlertAppearance];
@@ -178,25 +195,21 @@
                     //初始count  --num
                     NSString *str = [self checkFormWithIndexRow:self.index.row andId:[product_id intValue] andNumber:num];
                     [[DataService sharedService].row_id_countArray addObject:str];
-//                    DLog(@"arr = %@",[DataService sharedService].row_id_countArray);
                     //用户选择的次数  －  消费的次数 （用户还需要消费的次数）>=0
                     y = y * num;
                     x = x + y;
                     //重置temp—dic数据
-                    [[DataService sharedService].temp_dictionary removeObjectForKey:product_id];
-                    [[DataService sharedService].temp_dictionary setObject:[NSString stringWithFormat:@"%d",count_num - num] forKey:product_id];
-                    //                    DLog(@"dic = %@",[DataService sharedService].temp_dictionary);
+                    [[DataService sharedService].number_id removeObjectForKey:product_id];
+                    [[DataService sharedService].number_id setObject:[NSString stringWithFormat:@"%d",count_num - num] forKey:product_id];
                     
                     [dic setObject:[NSString stringWithFormat:@"%d",num - num] forKey:@"num"];
                 }else {//用户次数小于套餐卡提供次数
                     //初始count  --count_num
                     NSString *str = [self checkFormWithIndexRow:self.index.row andId:[product_id intValue] andNumber:count_num];
                     [[DataService sharedService].row_id_countArray addObject:str];
-                    //                    DLog(@"arr = %@",[DataService sharedService].row_id_countArray);
                     //重置temp—dic数据
-                    [[DataService sharedService].temp_dictionary removeObjectForKey:product_id];
-                    [[DataService sharedService].temp_dictionary setObject:[NSString stringWithFormat:@"%d",count_num - count_num] forKey:product_id];
-                    //                    DLog(@"dic = %@",[DataService sharedService].temp_dictionary);
+                    [[DataService sharedService].number_id removeObjectForKey:product_id];
+                    [[DataService sharedService].number_id setObject:[NSString stringWithFormat:@"%d",count_num - count_num] forKey:product_id];
                     
                     y = y * count_num;
                     x =x + y ;
@@ -207,13 +220,16 @@
                 [dic setObject:[NSString stringWithFormat:@"%d",num] forKey:@"Total_num"];
                 [selectedArr replaceObjectAtIndex:sender.tag - CLOSE withObject:dic];
                 int tag = btn.tag;
+                
+                UILabel *lab_prod = (UILabel *)[self viewWithTag:btn.tag+CLOSE];
+                lab_prod.text = [NSString stringWithFormat:@"%@(%@)次",[dic objectForKey:@"name"],[dic objectForKey:@"num"]];
+                lab_prod.tag = btn.tag-CLOSE+ OPEN+ OPEN;
+                
                 btn.tag = tag - CLOSE + OPEN;
                 [btn setImage:[UIImage imageNamed:@"cb_mono_on"] forState:UIControlStateNormal];
                 
                 NSString *price = [NSString stringWithFormat:@"%.2f",x];
-                self.lblPrice.text = price;
                 [self.product setObject:selectedArr forKey:@"products"];
-                
                 [self.product setObject:price forKey:@"show_price"];
                 
                 NSString *p = [NSString stringWithFormat:@"%.2f",y];

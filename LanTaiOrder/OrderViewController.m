@@ -51,14 +51,14 @@
     if (car_num) {
         NSDictionary *result = nil;
         if (self.car_id) {
-            STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kShowCar]];
+            STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kShowCar]];
             [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id",car_num,@"car_num",car_id,@"car_id", nil]];
             [r setPostDataEncoding:NSUTF8StringEncoding];
             NSError *error = nil;
             NSString *str = [r startSynchronousWithError:&error];
             result = [str objectFromJSONString];
         }else {
-            STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kSearchCar]];
+            STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kSearchCar]];
             [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id",car_num,@"car_num", nil]];
             [r setPostDataEncoding:NSUTF8StringEncoding];
             NSError *error = nil;
@@ -91,6 +91,7 @@
                 [self.customer setObject:[[result objectForKey:@"customer"] objectForKey:@"year"] forKey:@"year"];
                 [self.customer setObject:[[result objectForKey:@"customer"] objectForKey:@"model_name"] forKey:@"model_name"];
                 [self.customer setObject:[[result objectForKey:@"customer"] objectForKey:@"brand_name"] forKey:@"brand_name"];
+                [self.customer setObject:[[result objectForKey:@"customer"] objectForKey:@"sex"] forKey:@"sex"];
                 
                 //正在进行中的订单
                 self.workingOrder = [result objectForKey:@"working"];
@@ -342,7 +343,8 @@
 
 //取消订单（未施工）
 -(void)cancleOrder {
-    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kPayOrder]];
+    
+    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kPayOrder]];
     [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[workingOrder objectForKey:@"id"],@"order_id",@"1",@"opt_type", nil]];
     [r setPostDataEncoding:NSUTF8StringEncoding];
     NSError *error = nil;
@@ -398,7 +400,7 @@
     [DataService sharedService].number = 0;
     self.addOrderView.step = @"3";
     //下单获取数据
-    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kBrandProduct]];
+    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kBrandProduct]];
     [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id", nil]];
     [r setPostDataEncoding:NSUTF8StringEncoding];
     NSError *error = nil;
@@ -418,7 +420,7 @@
     self.addOrderView.car_num = self.car_num;//车牌号
     [DataService sharedService].number = 0;
     //下单获取数据
-    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kBrandProduct]];
+    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kBrandProduct]];
     [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id", nil]];
     [r setPostDataEncoding:NSUTF8StringEncoding];
     NSError *error = nil;
@@ -485,7 +487,7 @@
 
 //付款
 -(void)pay {
-    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kPayOrder]];
+    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kPayOrder]];
     [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[workingOrder objectForKey:@"id"],@"order_id",@"0",@"opt_type", nil]];
     [r setPostDataEncoding:NSUTF8StringEncoding];
     NSError *error = nil;
@@ -541,7 +543,7 @@
     self.addOrderView.car_num = self.car_num;//车牌号
     [DataService sharedService].number = 1;
     //下单获取数据
-    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kBrandProduct]];
+    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kBrandProduct]];
     [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id", nil]];
     [r setPostDataEncoding:NSUTF8StringEncoding];
     NSError *error = nil;

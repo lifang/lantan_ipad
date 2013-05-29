@@ -10,15 +10,17 @@
 
 @implementation DataService
 
-@synthesize user_id,reserve_count,car_num,reserve_list;
+@synthesize user_id,reserve_count,car_num,reserve_list,kHost,kDomain,str_ip;
 @synthesize number,payNumber;
 @synthesize doneArray;
 @synthesize tagOfBtn;
-@synthesize temp_dictionary,first,row_id_countArray,productList,row_id_numArray,price_id,number_id;
-@synthesize ReservationFirst,refreshing;
+@synthesize first,row_id_countArray,productList,row_id_numArray,price_id,number_id;
+@synthesize ReservationFirst,refreshing,packageCard_dic,total_count,row,matchArray,sectionArray;
+@synthesize id_count_price,saleArray;
 
 - (id)init{
-    if (self == [super init]) {
+    self = [super init];
+    if (!self) {
         self.reserve_count = [NSString string];
         self.user_id = [NSString string];
         self.store_id = [NSString string];
@@ -27,15 +29,20 @@
         self.reserve_list = [NSMutableArray array];
         self.doneArray = [NSMutableArray array];
         self.tagOfBtn = 0;
-        self.temp_dictionary = [NSMutableDictionary dictionary];
-        first = YES;
-        ReservationFirst = YES;
-        refreshing = NO;
+        self.first = YES;
+        self.ReservationFirst = YES;
+        self.refreshing = NO;
         self.row_id_countArray = [NSMutableArray array];
         self.row_id_numArray = [NSMutableArray array];
         self.productList = [NSMutableArray array];
         self.price_id = [NSMutableDictionary dictionary];
         self.number_id = [NSMutableDictionary dictionary];
+        self.packageCard_dic = [NSMutableDictionary dictionary];
+        self.row = [NSMutableArray array];
+        self.matchArray = [NSMutableArray array];
+        self.sectionArray = [NSMutableArray array];
+        self.id_count_price = [NSMutableArray array];
+        self.saleArray = [NSMutableArray array];
     }
     return self;
 }

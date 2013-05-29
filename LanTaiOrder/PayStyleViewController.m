@@ -28,14 +28,14 @@
 
 //支付
 -(void)payWithType {
-    STHTTPRequest *r  = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kPay]];
+    STHTTPRequest *r  = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kPay]];
     NSString *billing = @"1";
     if (self.billingBtn.isOn) {
         billing = @"1";
     }else{
         billing = @"0";
     }
-    if (self.payType == 3) {
+    if (self.payType == 5) {
         [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[order objectForKey:@"order_id"],@"order_id",[order objectForKey:@"is_please"],@"please",[DataService sharedService].store_id,@"store_id",billing,@"billing",[NSNumber numberWithInt:self.payType],@"pay_type",self.txtCode.text,@"code",[NSNumber numberWithInt:1],@"is_free", nil]];
     }else {
         [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[order objectForKey:@"order_id"],@"order_id",[order objectForKey:@"is_please"],@"please",[DataService sharedService].store_id,@"store_id",billing,@"billing",[NSNumber numberWithInt:self.payType],@"pay_type",self.txtCode.text,@"code",[NSNumber numberWithInt:0],@"is_free", nil]];

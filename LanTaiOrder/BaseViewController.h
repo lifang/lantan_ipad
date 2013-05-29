@@ -12,5 +12,7 @@
 
 - (void)addLeftnaviItemWithImage:(NSString *)imageName;
 - (void)addRightnaviItemWithImage:(NSString *)imageName;
+- (void)addRightnaviItemsWithImage:(NSString *)imageName andImage:(NSString *)image;
 
+@property (strong, nonatomic) UIButton *btn_ip;
 @end

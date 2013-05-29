@@ -14,6 +14,8 @@
 
 #define PICTURE @"pic"
 #define kPickerAnimationDuration 0.40
+#define TagOff 100
+#define TagOn 1000
 
 @implementation AddViewController
 @synthesize stepView_0,stepView_1,stepView_2,stepView_3,stepView_4,step,btnDone,btnNext,btnPre;
@@ -24,9 +26,11 @@
 @synthesize picArray,dataArray,car_num;
 @synthesize pickerView,pickView,dateFormatter;
 @synthesize pickerBtn,refreshBtn;
-static bool refresh = NO;
 @synthesize label,product_ids;
+@synthesize manBtn,womanBtn;
 
+
+static bool refresh = NO;
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
@@ -39,7 +43,6 @@ static bool refresh = NO;
 - (BOOL)addSkipBackupAttributeToItemAtURL:(NSURL *)fileURL
 {
     if (![[NSFileManager defaultManager] fileExistsAtPath:[fileURL path]]) {
-//        NSLog(@"File %@ doesn't exist!",[fileURL path]);
         return NO;
     }
     NSString *currSysVer = [[UIDevice currentDevice] systemVersion];
@@ -48,18 +51,15 @@ static bool refresh = NO;
         const char* attrName = "com.apple.MobileBackup";
         u_int8_t attrValue = 1;
         int result = setxattr(filePath, attrName, &attrValue, sizeof(attrValue), 0, 0);
-//        NSLog(@"Excluded '%@' from backup",fileURL);
         return result == 0;
     }
     else if (&NSURLIsExcludedFromBackupKey) {
         NSError *error = nil;
         BOOL result = [fileURL setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:&error];
         if (result == NO) {
-//            NSLog(@"Error excluding '%@' from backup. Error: %@",fileURL, error);
             return NO;
         }
         else {
-//            NSLog(@"Excluded '%@' from backup",fileURL);
             return YES;
         }
     } else {
@@ -228,7 +228,7 @@ static bool refresh = NO;
     }
 }
 -(void)getData {
-    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kBrandProduct]];
+    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kBrandProduct]];
     [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id", nil]];
     [r setPostDataEncoding:NSUTF8StringEncoding];
     NSError *error = nil;
@@ -266,6 +266,7 @@ static bool refresh = NO;
     if ([DataService sharedService].number == 0) {
         self.picArray = [NSMutableArray array];
         [self getPci];
+    
         if (self.productList.count>0) {
             NSMutableArray *tempArray = [[NSMutableArray alloc]init];//临时数组
             for (int i=0; i<self.productList.count-1; i++) {
@@ -279,7 +280,7 @@ static bool refresh = NO;
                         UIImage *image = nil;
                        
                             if ((![pic isEqualToString:@""]) || (![pic isKindOfClass:[NSNull class]])) {
-                                NSString *urlstring = [NSString stringWithFormat:@"%@%@",kDomain,pic];//图片的路径
+                                NSString *urlstring = [NSString stringWithFormat:@"%@%@",[DataService sharedService].kDomain,pic];//图片的路径
                                 NSString *typeStr = [urlstring substringFromIndex:urlstring.length-4];//取图片的格式
                                 NSString *urlStringMd5 = [Utils MD5:urlstring];
                                 NSString *picName = [NSString stringWithFormat:@"%@%@",urlStringMd5,typeStr];//保存的图片名称
@@ -306,7 +307,7 @@ static bool refresh = NO;
                                     }
                                     //不在plist里面
                                     if (exit == NO) {
-                                        image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",kDomain,pic]]]];
+                                        image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kDomain,pic]]]];
                                         NSString *picDocument = [self getDoucmentFilePathLittleImageWithName:PICTURE];
                                         if ([self addSkipBackupAttributeToItemAtURL:[NSURL fileURLWithPath:picDocument]]) {
                                             [self savePhotoDataWithfile:picDocument andImage:image andName:picName];//保存图片
@@ -314,7 +315,7 @@ static bool refresh = NO;
                                         }
                                     }
                                 }else {//plist为空
-                                    image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",kDomain,pic]]]];
+                                    image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kDomain,pic]]]];
                                     NSString *picDocument = [self getDoucmentFilePathLittleImageWithName:PICTURE];
                                     if ([self addSkipBackupAttributeToItemAtURL:[NSURL fileURLWithPath:picDocument]]) {
                                         [self savePhotoDataWithfile:picDocument andImage:image andName:picName];//保存图片
@@ -412,13 +413,66 @@ static bool refresh = NO;
         if(![[customer objectForKey:@"year"]isKindOfClass:[NSNull class]]){
             self.txtCarYear.text = [NSString stringWithFormat:@"%@",[customer objectForKey:@"year"]];
         }
+        
+        if(![[customer objectForKey:@"sex"]isKindOfClass:[NSNull class]]) {
+            int sexNumber = [[customer objectForKey:@"sex"]intValue];
+            if (sexNumber == 0) {
+                self.manBtn.tag = TagOn;
+                [self.manBtn setImage:[UIImage imageNamed:@"cb_mono_on"] forState:UIControlStateNormal];
+                
+                self.womanBtn.tag = TagOff;
+                [self.womanBtn setImage:[UIImage imageNamed:@"cb_mono_off"] forState:UIControlStateNormal];
+            }else if (sexNumber == 1) {
+                self.womanBtn.tag = TagOn;
+                [self.womanBtn setImage:[UIImage imageNamed:@"cb_mono_on"] forState:UIControlStateNormal];
+                
+                self.manBtn.tag = TagOff;
+                [self.manBtn setImage:[UIImage imageNamed:@"cb_mono_off"] forState:UIControlStateNormal];
+            }
+        }else {
+            self.manBtn.tag = TagOff;
+            [self.manBtn setImage:[UIImage imageNamed:@"cb_mono_off"] forState:UIControlStateNormal];
+            
+            self.womanBtn.tag = TagOff;
+            [self.womanBtn setImage:[UIImage imageNamed:@"cb_mono_off"] forState:UIControlStateNormal];
+
+        }
+    }else {
+        self.manBtn.tag = TagOff;
+        [self.manBtn setImage:[UIImage imageNamed:@"cb_mono_off"] forState:UIControlStateNormal];
+        
+        self.womanBtn.tag = TagOff;
+        [self.womanBtn setImage:[UIImage imageNamed:@"cb_mono_off"] forState:UIControlStateNormal];
     }
     
     if (self.step) {
         [self.stepImg setImage:[UIImage imageNamed:[NSString stringWithFormat:@"step_%@",step]]];
     }
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"view_bg"]];
+    
+//    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(hideKeyBord)];
+//    [self.view addGestureRecognizer:tap];
 }
+//-(void)hideKeyBord {
+//    [self.txtName resignFirstResponder];
+//    [self.txtPhone resignFirstResponder];
+//    [self.txtEmail resignFirstResponder];
+//    [self.txtCarYear resignFirstResponder];
+//    [self.txtCarNum resignFirstResponder];
+//    [self.txtBirth resignFirstResponder];
+//    
+//    CGRect pickerFrame = self.pickView.frame;
+//    pickerFrame.origin.y = self.view.frame.size.height;
+//    [UIView beginAnimations:nil context:NULL];
+//    [UIView setAnimationDuration:kPickerAnimationDuration];
+//    [UIView setAnimationDelegate:self];
+//    [UIView setAnimationDidStopSelector:@selector(slideDownDidStop)];
+//    self.pickView.frame = pickerFrame;
+//    [UIView commitAnimations];
+//    [DataService sharedService].tagOfBtn = 0;
+//    
+//    [self.productsView becomeFirstResponder];
+//}
 
 -(IBAction)btnPressed:(id)sender {
     [self.txtName resignFirstResponder];
@@ -485,13 +539,13 @@ static bool refresh = NO;
         
         [UIView beginAnimations:nil context:nil];
         CGRect frame = self.stepView_2.frame;
-        if (frame.origin.y== 68) {
-            frame.origin.y = 100;
+        if (frame.origin.y== 44) {
+            frame.origin.y = 104;
         }
         self.stepView_2.frame = frame;
         
         CGRect frame2 = self.label.frame;
-        if (frame2.origin.y==38) {
+        if (frame2.origin.y==48) {
             frame2.origin.y = 6;
         }
         self.label.frame = frame2;
@@ -516,14 +570,14 @@ static bool refresh = NO;
     if ([textField isEqual:self.txtBirth] || [textField isEqual:self.txtName] || [textField isEqual:self.txtEmail] || [textField isEqual:self.txtPhone]) {
         [UIView beginAnimations:nil context:nil];
         CGRect frame = self.stepView_2.frame;
-        if (frame.origin.y==100) {
-            frame.origin.y = 68;
+        if (frame.origin.y==104) {
+            frame.origin.y = 44;
         }
         self.stepView_2.frame = frame;
         
         CGRect frame2 = self.label.frame;
         if (frame2.origin.y==6) {
-            frame2.origin.y = 38;
+            frame2.origin.y = 48;
         }
         self.label.frame = frame2;
         [UIView commitAnimations];
@@ -539,7 +593,7 @@ static bool refresh = NO;
 }
 //完成登记
 -(void)finishInfo {
-    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kcheckIn]];
+    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kcheckIn]];
     NSMutableDictionary *dic = [NSMutableDictionary dictionary];
     [dic setObject:txtCarNum.text forKey:@"carNum"];
     [dic setObject:txtName.text forKey:@"userName"];
@@ -550,6 +604,11 @@ static bool refresh = NO;
     }
     if (![self.txtEmail.text isEqualToString:@""])  {
         [dic setObject:txtEmail.text forKey:@"email"];
+    }
+    if ((self.manBtn.tag == TagOn) && (self.womanBtn.tag == TagOff)) {
+        [dic setObject:@"0" forKey:@"sex"];
+    }else if ((self.womanBtn.tag == TagOn) && (self.manBtn.tag == TagOff)) {
+        [dic setObject:@"1" forKey:@"sex"];
     }
     [dic setObject:[DataService sharedService].store_id forKey:@"store_id"];
     NSDictionary *brand  = [brandList objectAtIndex:[brandView selectedRowInComponent:0]];
@@ -593,7 +652,7 @@ static bool refresh = NO;
 //完成下单
 -(void)finishOrder {
     if (selectedIndexs && selectedIndexs.count > 0) {
-        STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kFinish]];
+        STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kFinish]];
         NSDictionary *brand  = [brandList objectAtIndex:[brandView selectedRowInComponent:0]];
         NSString *brandStr = [brand objectForKey:@"id"];
         NSString *modelStr = @"";
@@ -615,6 +674,11 @@ static bool refresh = NO;
         }
         if (![self.txtEmail.text isEqualToString:@""] && (![self.txtEmail.text isKindOfClass:[NSNull class]]))  {
             [dic setObject:txtEmail.text forKey:@"email"];
+        }
+        if ((self.manBtn.tag == TagOn) && (self.womanBtn.tag == TagOff)) {
+            [dic setObject:@"0" forKey:@"sex"];
+        }else if ((self.womanBtn.tag == TagOn) && (self.manBtn.tag == TagOff)) {
+            [dic setObject:@"1" forKey:@"sex"];
         }
         
         if ([modelStr intValue] == 0) {
@@ -660,6 +724,7 @@ static bool refresh = NO;
             }else {
                 confirmView.total_count = [[result objectForKey:@"total"] floatValue];
             }
+            [DataService sharedService].total_count = confirmView.total_count;//总价放到单例去
             [self.navigationController pushViewController:confirmView animated:YES];
         }else{
             [AHAlertView applyCustomAlertAppearance];
@@ -970,7 +1035,7 @@ static bool refresh = NO;
             int len = [[self.productList objectAtIndex:x] count];
             if (indexPath.section < len) {
                 NSDictionary *prod = [[self.productList objectAtIndex:x] objectAtIndex:indexPath.section];
-                cell.prodName.text = [prod objectForKey:@"name"];
+                cell.prodName.text = [NSString stringWithFormat:@"%@",[prod objectForKey:@"name"]];
                 cell.prodName.hidden = NO;
                 cell.prodImage.hidden = NO;
                 //预约页面首次进来  加载此项
@@ -1043,7 +1108,6 @@ static bool refresh = NO;
     }
     //***************刷新页面
     [self.productsView reloadData];
-    
 }
 
 - (BOOL)isSelected:(NSIndexPath *)indexPath{
@@ -1054,4 +1118,30 @@ static bool refresh = NO;
     return NO;
 }
 
+-(IBAction)manBtnPressed:(id)sender {
+    if (self.manBtn.tag == TagOn) {
+        self.manBtn.tag = TagOff;
+        [self.manBtn setImage:[UIImage imageNamed:@"cb_mono_off"] forState:UIControlStateNormal];
+    }else if (self.manBtn.tag == TagOff) {
+        self.manBtn.tag = TagOn;
+        [self.manBtn setImage:[UIImage imageNamed:@"cb_mono_on"] forState:UIControlStateNormal];
+        if (self.womanBtn.tag == TagOn) {
+            self.womanBtn.tag = TagOff;
+            [self.womanBtn setImage:[UIImage imageNamed:@"cb_mono_off"] forState:UIControlStateNormal];
+        }
+    }
+}
+-(IBAction)womanBtnPressed:(id)sender {
+    if (self.womanBtn.tag == TagOn) {
+        self.womanBtn.tag = TagOff;
+        [self.womanBtn setImage:[UIImage imageNamed:@"cb_mono_off"] forState:UIControlStateNormal];
+    }else if (self.womanBtn.tag == TagOff) {
+        self.womanBtn.tag = TagOn;
+        [self.womanBtn setImage:[UIImage imageNamed:@"cb_mono_on"] forState:UIControlStateNormal];
+        if (self.manBtn.tag == TagOn) {
+            self.manBtn.tag = TagOff;
+            [self.manBtn setImage:[UIImage imageNamed:@"cb_mono_off"] forState:UIControlStateNormal];
+        }
+    }
+}
 @end

@@ -50,7 +50,7 @@
 -(void)cancle {
     AppDelegate *delegate = [AppDelegate shareInstance];
     
-    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kConfirmReserv]];
+    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kConfirmReserv]];
     NSMutableDictionary *dic = [NSMutableDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id",self.reserv_id,@"r_id",@"1",@"status", nil];
     [r setPOSTDictionary:dic];
     [r setPostDataEncoding:NSUTF8StringEncoding];
@@ -80,7 +80,7 @@
 -(void)confirm {
     AppDelegate *delegate = [AppDelegate shareInstance];
     
-    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kConfirmReserv]];
+    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kConfirmReserv]];
     NSMutableDictionary *dic = [NSMutableDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id",self.reserv_id,@"r_id",@"0",@"status",self.txtReservAt.text,@"reserv_at", nil];
     [r setPOSTDictionary:dic];
     [r setPostDataEncoding:NSUTF8StringEncoding];

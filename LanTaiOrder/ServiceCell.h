@@ -8,7 +8,8 @@
 
 #import <UIKit/UIKit.h>
 
-@interface ServiceCell : UITableViewCell{
+@interface ServiceCell : UITableViewCell<UITextFieldDelegate>
+{
     IBOutlet UILabel *lblName,*lblPrice,*lblCount;
 }
 
@@ -16,6 +17,7 @@
 @property (nonatomic,strong) IBOutlet UIStepper *stepBtn;
 @property (nonatomic,strong) NSMutableDictionary *product;
 @property (nonatomic,strong) NSIndexPath *index;
+@property (nonatomic,strong) IBOutlet UITextField *txtPrice;
 
 - (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier with:(NSMutableDictionary *)prod indexPath:(NSIndexPath *)idx;
 - (IBAction)stepCount:(UIStepper *)sender;

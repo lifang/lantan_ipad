@@ -45,6 +45,8 @@
 @property (nonatomic, strong) IBOutlet UILabel *label;
 
 @property (nonatomic, strong) NSMutableArray *product_ids;
+//性别
+@property (nonatomic,strong) IBOutlet UIButton *manBtn,*womanBtn;
 - (IBAction)clickNext:(id)sender;
 - (IBAction)clickFinished:(id)sender;
 

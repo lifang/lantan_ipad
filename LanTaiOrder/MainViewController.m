@@ -12,11 +12,14 @@
 #import "AppDelegate.h"
 #import "SVPullToRefresh.h"
 
+
 @implementation MainViewController
 @synthesize txtCarNum,lblCount,orderTable = _orderTable,statusImg,mainView;
 @synthesize waitList;
 @synthesize orderView2;
 @synthesize hideView;
+@synthesize sxView;
+@synthesize letterArray;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -26,7 +29,6 @@
     }
     return self;
 }
-
 //返回按钮，到登录页面
 - (void)rightTapped:(id)sender{
     DLog(@"logout");
@@ -35,7 +37,7 @@
     [DataService sharedService].reserve_count = nil;
     [DataService sharedService].store_id = nil;
     [DataService sharedService].car_num = nil;
-    
+
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults removeObjectForKey:@"userId"];
     [defaults removeObjectForKey:@"storeId"];
@@ -46,7 +48,7 @@
 -(void)getData {
     NSMutableDictionary *params=[[NSMutableDictionary alloc] init];
     [params setObject:[DataService sharedService].store_id forKey:@"store_id"];
-    NSMutableURLRequest *request=[Utils getRequest:params string:[NSString stringWithFormat:@"%@%@",kHost,kIndex]];
+    NSMutableURLRequest *request=[Utils getRequest:params string:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kIndex]];
     NSOperationQueue *queue=[[NSOperationQueue alloc] init];
     [NSURLConnection sendAsynchronousRequest:request queue:queue completionHandler:^(NSURLResponse *respone,
                                                                                      NSData *data,
@@ -88,6 +90,8 @@
         }
     }
 }
+
+
 -(void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     if ([DataService sharedService].refreshing == YES) {
@@ -106,11 +110,14 @@
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"login_bg.jpg"]];
     [super viewDidLoad];
     if (![self.navigationItem rightBarButtonItem]) {
-        [self addRightnaviItemWithImage:@"back"];
+        [self addRightnaviItemsWithImage:@"back" andImage:@"ip"];
     }
     CGRect frame = self.txtCarNum.frame;
     frame.size.height = 48;
     self.txtCarNum.frame = frame;
+    
+    //字母数组
+    self.letterArray = [[NSMutableArray alloc]initWithObjects:@"A",@"B",@"C",@"D",@"E",@"F",@"G",@"H",@"I",@"J",@"K",@"L",@"M",@"N",@"O",@"P",@"Q",@"R",@"S",@"T",@"U",@"V",@"W",@"X",@"Y",@"Z", nil];
     
     //下拉刷新
     __block MainViewController *manView = self;
@@ -119,8 +126,34 @@
         [manView getData];
         [orderTable_temp.pullToRefreshView performSelector:@selector(stopAnimating) withObject:nil afterDelay:2];
     }];
+    
+    //监听键盘
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyBoardWillShow:) name:UIKeyboardWillShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyBoardWillHide:) name: UIKeyboardWillHideNotification object:nil];
+    
+    //输入框添加观察者
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(textFieldChanged:)
+                                                 name:UITextFieldTextDidChangeNotification
+                                               object:self.txtCarNum];
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(sure:) name:@"sure" object:nil];
+    
 }
-
+- (void)sure:(NSNotification *)notification {
+    NSDictionary *dic = [notification object];
+    NSString *str = [dic objectForKey:@"name"];
+    self.txtCarNum.text = str;
+    [UIView animateWithDuration:0.35 animations:^{
+        self.sxView.view.transform = CGAffineTransformMakeScale(1.3, 1.3);
+        self.sxView.view.alpha = 0.0;
+    } completion:^(BOOL finished) {
+        if (finished) {
+            [self.sxView.view removeFromSuperview];
+            self.sxView = nil;
+        }
+    }];
+}
 //刷新按钮
 - (IBAction)clickRefreshBtn:(id)sender{
     if ([DataService sharedService].store_id) {
@@ -138,7 +171,7 @@
             hud = [MBProgressHUD showHUDAddedTo:self.mainView animated:YES];
             hud.labelText = @"正在努力加载...";
             
-            STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kRefresh]];
+            STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kRefresh]];
             [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id", nil]];
             [r setPostDataEncoding:NSUTF8StringEncoding];
             r.completionBlock = ^(NSDictionary *headers,NSString *boby){
@@ -292,5 +325,100 @@
     //施工中的信息 
     
 }
+-(void)addDataWithString:(NSString *)string  {
+    NSMutableArray *tempArray = [NSMutableArray array];
+    if ([DataService sharedService].matchArray.count >0) {
+        int i=0;
+        BOOL exit = NO;
+        while (i<[DataService sharedService].matchArray.count) {
+            NSString *str = [[DataService sharedService].matchArray objectAtIndex:i];
+            if ([str isEqualToString:string]) {
+                NSLog(@"在数组里");
+                exit = YES;
+                break;
+            }
+            i++;
+        }
+        if (exit == NO) {
+            [tempArray addObject:string];
+        }
+    }else {
+        [tempArray addObject:string];
+    }
+    if (tempArray.count>0) {
+        [[DataService sharedService].matchArray addObjectsFromArray:tempArray];
+        [DataService sharedService].sectionArray = [Utils matchArray];
+    }
+}
+-(void)checkData {
+    NSString *car = [self.txtCarNum.text substringToIndex:2];
+    NSString *string = [self.txtCarNum.text substringToIndex:1];
+    NSString *regexCall = @"[\u4E00-\u9FFF]+$";
+    NSPredicate *predicateCall = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regexCall];
+    if ([predicateCall evaluateWithObject:string]) {
+        NSRange range = NSMakeRange (1, 2);
+        NSString *string2 = [self.txtCarNum.text substringWithRange:range];
+        NSString *regexCall2 = @"[a-z A-Z]+$";
+        NSPredicate *predicateCall2 = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regexCall2];
+        if ([predicateCall2 evaluateWithObject:string2]) {
+            [self addDataWithString:car];
+        }
+    }
+}
 
+- (void)keyBoardWillShow:(id)sender{
+    [UIView beginAnimations:nil context:nil];
+    CGRect frame = self.mainView.frame;
+    if (frame.origin.y==92) {
+        frame.origin.y = -70;
+    }
+    self.mainView.frame = frame;
+    
+    [UIView commitAnimations];
+}
+
+- (void)keyBoardWillHide:(id)sender{
+    [UIView beginAnimations:nil context:nil];
+    CGRect frame = self.mainView.frame;
+    if (frame.origin.y==-70) {
+        frame.origin.y = 92;
+    }
+    self.mainView.frame = frame;
+    if (self.txtCarNum.text.length >2) {
+        [self checkData];
+    }
+    [UIView commitAnimations];
+}
+-(void)textFieldChanged:(NSNotification *)sender {
+    UITextField *txtField = (UITextField *)sender.object;
+
+    if (txtField.text.length == 0) {
+        [UIView beginAnimations:nil context:nil];
+        [UIView setAnimationDuration:1];
+        [UIView setAnimationCurve:UIViewAnimationCurveEaseOut];
+        [self.sxView.view removeFromSuperview];
+        self.sxView = nil;
+        [UIView commitAnimations];
+
+    }else if (txtField.text.length == 1) {
+        for (int i=0; i<self.letterArray.count; i++) {
+            NSString *str = [self.letterArray objectAtIndex:i];
+            if ([str isEqualToString:txtField.text] || ([[str lowercaseString] isEqualToString:txtField.text])) {
+                NSArray *array = [[DataService sharedService].sectionArray objectAtIndex:i];
+                if (array.count>0 && self.sxView == nil) {
+                    self.sxView = [[ShaixuanView alloc]initWithNibName:@"ShaixuanView" bundle:nil];
+                    self.sxView.view.frame = CGRectMake(120, 210, 0, 0);
+                    self.sxView.dataArray = array;
+                    [UIView beginAnimations:nil context:nil];
+                    [UIView setAnimationDuration:1];
+                    [UIView setAnimationCurve:UIViewAnimationCurveEaseOut];
+                    self.sxView.view.frame = CGRectMake(120, 210, 200, 110);
+                    [self.mainView addSubview:self.sxView.view];
+                    [UIView commitAnimations];
+
+                }
+            }
+        }
+    }
+}
 @end

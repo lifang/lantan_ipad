@@ -43,7 +43,7 @@
 							<object class="IBUILabel" id="933747895">
 								<reference key="NSNextResponder" ref="224650754"/>
 								<int key="NSvFlags">292</int>
-								<string key="NSFrame">{{20, 11}, {214, 21}}</string>
+								<string key="NSFrame">{{20, 11}, {177, 21}}</string>
 								<reference key="NSSuperview" ref="224650754"/>
 								<reference key="NSNextKeyView" ref="167760862"/>
 								<string key="NSReuseIdentifierKey">_NS:9</string>
@@ -77,7 +77,7 @@
 							<object class="IBUILabel" id="167760862">
 								<reference key="NSNextResponder" ref="224650754"/>
 								<int key="NSvFlags">292</int>
-								<string key="NSFrame">{{236, 11}, {156, 21}}</string>
+								<string key="NSFrame">{{240, 11}, {120, 21}}</string>
 								<reference key="NSSuperview" ref="224650754"/>
 								<reference key="NSNextKeyView" ref="926590701"/>
 								<string key="NSReuseIdentifierKey">_NS:9</string>
@@ -107,7 +107,7 @@
 								<int key="IBUIContentMode">7</int>
 								<bool key="IBUIUserInteractionEnabled">NO</bool>
 								<string key="targetRuntimeIdentifier">IBIPadFramework</string>
-								<string key="IBUIText">--</string>
+								<string key="IBUIText"/>
 								<reference key="IBUITextColor" ref="453634056"/>
 								<reference key="IBUIHighlightedColor" ref="720596770"/>
 								<int key="IBUIBaselineAdjustment">0</int>
@@ -243,8 +243,8 @@
 						<array class="NSMutableArray" key="children">
 							<reference ref="926590701"/>
 							<reference ref="933747895"/>
-							<reference ref="167760862"/>
 							<reference ref="937190846"/>
+							<reference ref="167760862"/>
 						</array>
 						<reference key="parent" ref="0"/>
 					</object>
