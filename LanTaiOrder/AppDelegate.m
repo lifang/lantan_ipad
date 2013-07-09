@@ -15,6 +15,7 @@
 @implementation AppDelegate
 @synthesize lantan_initView;
 @synthesize versionUrlStr,definitionData;
+@synthesize navigationView;
 
 + (AppDelegate *)shareInstance {
     return (AppDelegate *)([UIApplication sharedApplication].delegate);
@@ -29,25 +30,28 @@
         [DataService sharedService].sectionArray=[Utils matchArray];
     }
 }
+-(void)showView {
+    self.window.rootViewController = self.navigationView;
+}
 - (void)showRootView{
-    [self.lantan_initView.view removeFromSuperview];//initView消失
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-        NSString *userInfo = [defaults objectForKey:@"userId"];
-        if (userInfo != nil) {
-            [DataService sharedService].store_id = [defaults objectForKey:@"storeId"];
-            [DataService sharedService].user_id = userInfo;
-            MainViewController *messageView = [[MainViewController alloc] initWithNibName:@"MainViewController" bundle:nil];
-            UINavigationController *navigationView = [[UINavigationController alloc] initWithRootViewController:messageView];
-            //设置导航条背景
-            if ([navigationView.navigationBar respondsToSelector:@selector(setBackgroundImage:forBarMetrics:)]) {
-                [navigationView.navigationBar setBackgroundImage:[UIImage imageNamed:@"nav_bg"] forBarMetrics:UIBarMetricsDefault];
-            }
-            self.window.rootViewController = navigationView;
-        }else{
-            LoginViewController *loginView = [[LoginViewController alloc] initWithNibName:@"LoginViewController" bundle:nil];
-            UINavigationController *navigationView = [[UINavigationController alloc] initWithRootViewController:loginView];
-            self.window.rootViewController = navigationView;
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    NSString *userInfo = [defaults objectForKey:@"userId"];
+    if (userInfo != nil) {
+        [DataService sharedService].store_id = [defaults objectForKey:@"storeId"];
+        [DataService sharedService].user_id = userInfo;
+        MainViewController *messageView = [[MainViewController alloc] initWithNibName:@"MainViewController" bundle:nil];
+        self.navigationView = [[UINavigationController alloc] initWithRootViewController:messageView];
+        //设置导航条背景
+        if ([self.navigationView.navigationBar respondsToSelector:@selector(setBackgroundImage:forBarMetrics:)]) {
+            [self.navigationView.navigationBar setBackgroundImage:[UIImage imageNamed:@"nav_bg"] forBarMetrics:UIBarMetricsDefault];
         }
+        [self performSelectorOnMainThread:@selector(showView) withObject:nil waitUntilDone:NO];
+        
+    }else{
+        LoginViewController *loginView = [[LoginViewController alloc] initWithNibName:@"LoginViewController" bundle:nil];
+        self.navigationView = [[UINavigationController alloc] initWithRootViewController:loginView];
+        [self performSelectorOnMainThread:@selector(showView) withObject:nil waitUntilDone:NO];
+    }
 }
 
 
@@ -59,7 +63,10 @@
     self.window.backgroundColor = [UIColor whiteColor];
     [self.window makeKeyAndVisible];
     
+    [DataService sharedService].doneArray = [NSMutableArray array];
+    
     [self getmatchArray];
+
     //新版本链接
     //获取appstore中的应用版本信息
     //异步请求信息
@@ -148,10 +155,10 @@
     NSArray *dic = [[params objectAtIndex:1] componentsSeparatedByString:@"&"];
     int x = 0;
     for (NSString *item in dic) {
-        if([item isEqualToString:[NSString stringWithFormat:@"appid=%@",kPosAppId]]){
+        if([item isEqualToString:[NSString stringWithFormat:@"appid=%@",[DataService sharedService].kPosAppId]]){
             x++;
         }
-        if ([item isEqualToString:[NSString stringWithFormat:@"resultmsg=success"]]) {
+        if ([item isEqualToString:[NSString stringWithFormat:@"result=0"]]) {
             x++;
         }
         if (x==2) {

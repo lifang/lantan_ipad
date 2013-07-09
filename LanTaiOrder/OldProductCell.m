@@ -126,9 +126,11 @@
         
         //付款方式
         frame.origin.x += 101;
+        
         lblPay = [[UILabel alloc] initWithFrame:frame];
         lblPay.font = [UIFont boldSystemFontOfSize:15];
         lblPay.textAlignment = NSTextAlignmentCenter;
+        [lblPay setNumberOfLines:0];
         [self addSubview:lblPay];
         
         //投诉下面得白色

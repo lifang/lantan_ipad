@@ -20,6 +20,7 @@
 #import "BaseViewController.h"
 #import "MBProgressHUD.h"
 #import "AHAlertView.h"
+#import "LanTaiOrderManager.h"
 #endif
 
 #ifdef DEBUG

@@ -7,28 +7,38 @@
 //
 
 #import "AddViewController.h"
+#import "Customer.h"
+#import <SDWebImage/UIImageView+WebCache.h>
+#import "DetailViewController.h"
+#import "UIViewController+MJPopupViewController.h"
+#import <QuartzCore/QuartzCore.h>
 
-@interface AddViewController ()
-
-@end
-
-#define PICTURE @"pic"
 #define kPickerAnimationDuration 0.40
 #define TagOff 100
 #define TagOn 1000
 
+@interface AddViewController ()<DetailViewDelegate>{
+    DetailViewController *detailView;
+}
+
+@end
+
 @implementation AddViewController
 @synthesize stepView_0,stepView_1,stepView_2,stepView_3,stepView_4,step,btnDone,btnNext,btnPre;
 @synthesize picView_0,picView_1,picView_2,picView_3,stepImg;
-@synthesize brandView,modelView,productsView;
+@synthesize brandView;
 @synthesize txtBirth,txtCarNum,txtCarYear,txtEmail,txtName,txtPhone;
-@synthesize getPic,brandList,brandResult,productList,selectedIndexs,customer;
-@synthesize picArray,dataArray,car_num;
-@synthesize pickerView,pickView,dateFormatter;
+@synthesize getPic,brandList,productList,customer;
+@synthesize car_num;
+@synthesize pickerView,pickView,dateFormatter,selectedIndexs;
 @synthesize pickerBtn,refreshBtn;
-@synthesize label,product_ids;
+@synthesize product_ids;
 @synthesize manBtn,womanBtn;
+@synthesize dataArray;
+@synthesize button_tag;
 
+@synthesize myPageControl,myScrollView,myTable;
+@synthesize firstArray,secondArray,thirdArray;
 
 static bool refresh = NO;
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
@@ -40,40 +50,13 @@ static bool refresh = NO;
     return self;
 }
 
-- (BOOL)addSkipBackupAttributeToItemAtURL:(NSURL *)fileURL
-{
-    if (![[NSFileManager defaultManager] fileExistsAtPath:[fileURL path]]) {
-        return NO;
-    }
-    NSString *currSysVer = [[UIDevice currentDevice] systemVersion];
-    if ([currSysVer isEqualToString:@"5.0.1"]) {
-        const char* filePath = [[fileURL path] fileSystemRepresentation];
-        const char* attrName = "com.apple.MobileBackup";
-        u_int8_t attrValue = 1;
-        int result = setxattr(filePath, attrName, &attrValue, sizeof(attrValue), 0, 0);
-        return result == 0;
-    }
-    else if (&NSURLIsExcludedFromBackupKey) {
-        NSError *error = nil;
-        BOOL result = [fileURL setResourceValue:[NSNumber numberWithBool:YES] forKey:NSURLIsExcludedFromBackupKey error:&error];
-        if (result == NO) {
-            return NO;
-        }
-        else {
-            return YES;
-        }
-    } else {
-        return YES;
-    }
-}
-
-
 - (void)initView{
     self.btnNext.hidden = NO;
     self.btnDone.hidden = YES;
     self.btnPre.hidden = NO;
     self.refreshBtn.hidden = YES;
     if ([step intValue]==0) {
+        self.refreshBtn.hidden = NO;
         self.btnPre.hidden = YES;
         stepView_0.hidden = NO;
         stepView_1.hidden = YES;
@@ -87,21 +70,11 @@ static bool refresh = NO;
         stepView_3.hidden = YES;
         stepView_4.hidden = YES;
     }else if ([step intValue]==2) {
-        if ([DataService sharedService].number == 1) {
-            stepView_0.hidden = YES;
-            stepView_1.hidden = YES;
-            stepView_2.hidden = NO;
-            stepView_3.hidden = YES;
-            stepView_4.hidden = YES;
-            self.btnNext.hidden = YES;
-            self.btnDone.hidden = NO;
-        }else {
-            stepView_0.hidden = YES;
-            stepView_1.hidden = YES;
-            stepView_2.hidden = NO;
-            stepView_3.hidden = YES;
-            stepView_4.hidden = YES;
-        }
+        stepView_0.hidden = YES;
+        stepView_1.hidden = YES;
+        stepView_2.hidden = NO;
+        stepView_3.hidden = YES;
+        stepView_4.hidden = YES;
     }else if ([step intValue]==3) {
         stepView_0.hidden = YES;
         stepView_1.hidden = YES;
@@ -109,7 +82,6 @@ static bool refresh = NO;
         stepView_3.hidden = NO;
         stepView_4.hidden = YES;
     }else if ([step intValue]==4) {
-        self.refreshBtn.hidden = NO;
         self.btnNext.hidden = YES;
         self.btnDone.hidden = NO;
         stepView_0.hidden = YES;
@@ -125,106 +97,56 @@ static bool refresh = NO;
     picView_1 = [[PictureCell alloc] initWithFrame:CGRectMake(520, 50, 172, 192) title:@"车后" delegate:self img:@"behind"];
     picView_2 = [[PictureCell alloc] initWithFrame:CGRectMake(250, 260, 172, 192) title:@"车左" delegate:self img:@"left"];
     picView_3 = [[PictureCell alloc] initWithFrame:CGRectMake(520, 260, 172, 192) title:@"车右" delegate:self img:@"right"];
-    [stepView_3 addSubview:picView_0];
-    [stepView_3 addSubview:picView_1];
-    [stepView_3 addSubview:picView_2];
-    [stepView_3 addSubview:picView_3];
+    [stepView_4 addSubview:picView_0];
+    [stepView_4 addSubview:picView_1];
+    [stepView_4 addSubview:picView_2];
+    [stepView_4 addSubview:picView_3];
 }
 
 - (void)initBrandView{
-    CGRect frame = self.brandView.frame;
-    frame.size.height = 162.0;
-    self.brandView.frame = frame;
-    frame = self.modelView.frame;
-    frame.size.height = 162.0;
-    self.modelView.frame = frame;
-    
-    if ((brandList.count>0) && (![[customer objectForKey:@"brand_name"] isKindOfClass:[NSNull class]])) {
+    if ((brandList.count>0) && (![[customer objectForKey:@"brand_name"] isKindOfClass:[NSNull class]]) && customer) {
         for (int i = 0; i<brandList.count; i++) {
             NSDictionary *brand_dic = [brandList objectAtIndex:i];
-            NSString *name_brand = [brand_dic objectForKey:@"name"];
-
-            if ([name_brand isEqualToString:[customer objectForKey:@"brand_name"]]) {
-                [self.brandView selectRow:i inComponent:0 animated:YES];
-                
-                NSArray *models_array = [brand_dic objectForKey:@"models"];
-                if ((models_array.count >0)&& (![[customer objectForKey:@"model_name"] isKindOfClass:[NSNull class]])) {
-                    for (int j=0; j<models_array.count; j++) {
-                        NSDictionary *model_dic = [models_array objectAtIndex:j];
-                        NSString *name_model = [model_dic objectForKey:@"name"];
-                        if ([name_model isEqualToString:[customer objectForKey:@"model_name"]]) {
-                            [self.modelView selectRow:j inComponent:0 animated:YES];
+            NSArray *array = [brand_dic objectForKey:@"brands"];
+            BOOL out = NO;
+            if (array.count >0) {
+                for (int j=0; j<array.count; j++) {
+                    NSDictionary *dic = [array objectAtIndex:j];
+                    NSString *name_brand = [NSString stringWithFormat:@"%@",[dic objectForKey:@"name"]];
+                    NSString *nameBrand = [NSString stringWithFormat:@"%@",[customer objectForKey:@"brand_name"]];
+                    if ([name_brand isEqualToString:nameBrand]) {
+                        self.firstArray = [NSMutableArray arrayWithArray:self.brandList];
+                        self.secondArray = [NSMutableArray arrayWithArray:[[self.firstArray objectAtIndex:i] objectForKey:@"brands"]];
+                        self.thirdArray = [NSMutableArray arrayWithArray:[[self.secondArray objectAtIndex:j] objectForKey:@"models"]];
+                        [self.brandView selectRow:i inComponent:0 animated:YES];
+                        [self.brandView selectRow:j inComponent:1 animated:YES];
+                        
+                        NSArray *models_array = [dic objectForKey:@"models"];
+                        if ((models_array.count >0)&& (![[customer objectForKey:@"model_name"] isKindOfClass:[NSNull class]])) {
+                            for (int k=0; k<models_array.count; k++) {
+                                NSDictionary *model_dic = [models_array objectAtIndex:k];
+                                NSString *name_model = [NSString stringWithFormat:@"%@",[model_dic objectForKey:@"name"]];
+                                NSString *modelName = [NSString stringWithFormat:@"%@",[customer objectForKey:@"model_name"]];
+                                if ([name_model isEqualToString:modelName]) {
+                                    out = YES;
+                                    [self.brandView selectRow:k inComponent:2 animated:YES];
+                                    break;
+                                }
+                            }
                         }
                     }
                 }
             }
+            if (out) {
+                break;
+            }
         }
-    }
-    
-}
--(NSString *)getDoucmentFilePathLittleImageWithName:(NSString *)theName {
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask, YES);
-    NSString *documentsDirectory=[paths    objectAtIndex:0];
-    NSString *savePath=[documentsDirectory stringByAppendingPathComponent:theName];
-    //创建文件管理器
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    //判断temp文件夹是否存在
-    BOOL fileExists = [fileManager fileExistsAtPath:savePath];
-    if (!fileExists) {
-        [fileManager createDirectoryAtPath:savePath
-               withIntermediateDirectories:YES
-                                attributes:nil
-                                     error:nil];
-    }
-    return savePath;
-}
-//读取plist文件
--(void)getPci {
-    NSFileManager *fileManage = [NSFileManager defaultManager];
-    NSArray *paths=NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask,YES);
-    NSString *path=[paths    objectAtIndex:0];
-    NSString *filename=[path stringByAppendingPathComponent:@"pic.plist"];
-    if ([fileManage fileExistsAtPath:filename]) {
-        NSMutableArray *array = [[NSMutableArray alloc]initWithContentsOfFile:filename];
-        self.dataArray = array;
-        [fileManage removeItemAtPath:filename error:nil];
-        
-	}else {
-        NSMutableArray *array = [[NSMutableArray alloc ]initWithContentsOfFile:[[NSBundle mainBundle] pathForResource:@"pic" ofType:@"plist"]];
-        self.dataArray = array;
-    }
-    
-    if (self.dataArray.count == 0) {
-        self.dataArray = [NSMutableArray array];
-    }
-}
-
-//把图片保存至沙盒
--(void)savePhotoDataWithfile:(NSString *)theFile andImage:(UIImage *)theImage andName:(NSString *)theName {
-    //创建文件管理器
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    //判断temp文件夹是否存在
-    BOOL fileExists = [fileManager fileExistsAtPath:theFile];
-    if (!fileExists) {
-        [fileManager createDirectoryAtPath:theFile
-               withIntermediateDirectories:YES
-                                attributes:nil
-                                     error:nil];
-    }
-    NSString *uniquePath=[theFile stringByAppendingPathComponent:theName];
-    [UIImagePNGRepresentation(theImage) writeToFile: uniquePath    atomically:YES];
-}
-//删除原图文件夹
--(void)deleteImageWithName:(NSString *)name {
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask, YES);
-    NSString *documentsDirectory=[paths objectAtIndex:0];
-    NSString *savePath=[documentsDirectory stringByAppendingPathComponent:name];
-    //创建文件管理器
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    //判断temp文件夹是否存在
-    BOOL fileExists = [fileManager fileExistsAtPath:savePath];
-    if (fileExists) {
-        [fileManager removeItemAtPath:savePath error:nil];
+    }else {
+        if (self.brandList.count > 0) {
+            self.firstArray = [NSMutableArray arrayWithArray:self.brandList];
+            self.secondArray = [NSMutableArray arrayWithArray:[[self.firstArray objectAtIndex:0] objectForKey:@"brands"]];
+            self.thirdArray = [NSMutableArray arrayWithArray:[[self.secondArray objectAtIndex:0] objectForKey:@"models"]];
+        }
     }
 }
 -(void)getData {
@@ -234,27 +156,25 @@ static bool refresh = NO;
     NSError *error = nil;
     NSString *str = [r startSynchronousWithError:&error];
     NSDictionary *result = [str objectFromJSONString];
-    self.brandResult = [NSMutableDictionary dictionaryWithDictionary:result];
     if ([[result objectForKey:@"status"] intValue]==1) {
         self.brandList = [NSMutableArray arrayWithArray:[result objectForKey:@"brands"]];
         self.productList = [NSMutableArray arrayWithArray:[result objectForKey:@"products"]];
+        
+        if (refresh == YES) {
+            [MBProgressHUD hideHUDForView:self.view animated:YES];
+            self.dataArray = [self.productList objectAtIndex:self.button_tag];
+            [self displayNewView];
+            refresh = NO;
+        }
     }
     
-    [self initData];
 }
 //刷新
 -(IBAction)refreshBtnPressed:(id)sender {
     refresh = YES;
-    //删除plist
-    NSFileManager *fileManage = [NSFileManager defaultManager];
-    NSArray *paths=NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask,YES);
-    NSString *path=[paths    objectAtIndex:0];
-    NSString *filename=[path stringByAppendingPathComponent:@"pic.plist"];
-    if ([fileManage fileExistsAtPath:filename]) {
-        [fileManage removeItemAtPath:filename error:nil];
-    }
-    //删除图片文件夹
-    [self deleteImageWithName:PICTURE];
+    [SDWebImageManager.sharedManager.imageCache clearMemory];
+    [SDWebImageManager.sharedManager.imageCache clearDisk];
+    [self.selectedIndexs removeAllObjects];
 
     MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
     hud.dimBackground = NO;
@@ -262,139 +182,27 @@ static bool refresh = NO;
     hud.labelText = @"正在努力加载...";
     [self.view addSubview:hud];
 }
-- (void)initData{
-    if ([DataService sharedService].number == 0) {
-        self.picArray = [NSMutableArray array];
-        [self getPci];
-    
-        if (self.productList.count>0) {
-            NSMutableArray *tempArray = [[NSMutableArray alloc]init];//临时数组
-            for (int i=0; i<self.productList.count-1; i++) {
-                NSMutableArray *arrayPic = [self.productList objectAtIndex:i];
-                NSMutableArray *array = [[NSMutableArray alloc]init];
-                if (arrayPic.count>0) {
-                    for (int j=0; j<arrayPic.count; j++) {
-                        NSDictionary *picDic = [[NSDictionary alloc]initWithDictionary:[arrayPic objectAtIndex:j]];
-                        NSString *pic = [NSString stringWithFormat:@"%@",[picDic objectForKey:@"img"]];
-                        
-                        UIImage *image = nil;
-                       
-                            if ((![pic isEqualToString:@""]) || (![pic isKindOfClass:[NSNull class]])) {
-                                NSString *urlstring = [NSString stringWithFormat:@"%@%@",[DataService sharedService].kDomain,pic];//图片的路径
-                                NSString *typeStr = [urlstring substringFromIndex:urlstring.length-4];//取图片的格式
-                                NSString *urlStringMd5 = [Utils MD5:urlstring];
-                                NSString *picName = [NSString stringWithFormat:@"%@%@",urlStringMd5,typeStr];//保存的图片名称
-                                NSDictionary *picDictionary = [NSDictionary dictionaryWithObjectsAndKeys:urlstring,picName, nil];//保存到plist的字典
-                                //遍历plist数组，查看本地是否有保存
-                                if (self.dataArray.count > 0) {
-                                    BOOL exit = NO;
-                                    int i=0;
-                                    while (i<self.dataArray.count) {
-                                        NSDictionary *dictionary = [self.dataArray objectAtIndex:i];
-                                        if ([dictionary isEqualToDictionary:picDictionary]) {
-                                            exit = YES;
-                                            
-                                            NSString *picDocument = [self getDoucmentFilePathLittleImageWithName:PICTURE];//保存图片的文件夹
-                                            if ([self addSkipBackupAttributeToItemAtURL:[NSURL fileURLWithPath:picDocument]]) {
-                                                NSString *picture = [picDocument stringByAppendingPathComponent:picName];//保存图片的路径
-                                                //直接从沙盒读取图片
-                                                NSData *imageData=[[NSData alloc ]initWithContentsOfFile:picture];
-                                                image = [UIImage imageWithData:imageData];
-                                                break;
-                                            }
-                                        }
-                                        i++;
-                                    }
-                                    //不在plist里面
-                                    if (exit == NO) {
-                                        image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kDomain,pic]]]];
-                                        NSString *picDocument = [self getDoucmentFilePathLittleImageWithName:PICTURE];
-                                        if ([self addSkipBackupAttributeToItemAtURL:[NSURL fileURLWithPath:picDocument]]) {
-                                            [self savePhotoDataWithfile:picDocument andImage:image andName:picName];//保存图片
-                                            [tempArray addObject:picDictionary];
-                                        }
-                                    }
-                                }else {//plist为空
-                                    image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kDomain,pic]]]];
-                                    NSString *picDocument = [self getDoucmentFilePathLittleImageWithName:PICTURE];
-                                    if ([self addSkipBackupAttributeToItemAtURL:[NSURL fileURLWithPath:picDocument]]) {
-                                        [self savePhotoDataWithfile:picDocument andImage:image andName:picName];//保存图片
-                                        [tempArray addObject:picDictionary];
-                                    }
-                                }
-                                if (image == nil) {
-                                    image = [UIImage imageNamed:@"defualt.jpg"];
-                                    [array addObject:image];
-                                }else {
-                                    [array addObject:image];
-                                }
-                                
-                            }else {
-                                image = [UIImage imageNamed:@"defualt.jpg"];
-                                [array addObject:image];
-                            }
-                    }
-                }
-                [self.picArray addObject:array];
-            }
-            if (tempArray.count>0) {
-                [self.dataArray addObjectsFromArray:tempArray];
-            }
-            //保存到plist
-            NSString *filename=[self getHistoryPath];
-            NSMutableArray *arraySave =[[NSMutableArray alloc]initWithContentsOfFile:filename];
-            [arraySave addObjectsFromArray:self.dataArray];
-            [arraySave writeToFile:filename atomically:YES];
-        }
-    }
-    if (refresh == YES) {
-        [MBProgressHUD hideHUDForView:self.view animated:YES];
-        [self.productsView reloadData];
-        refresh = NO;
-    }
-}
-//保存到plist文件
--(NSString*)getHistoryPath {
-    NSArray *paths=NSSearchPathForDirectoriesInDomains(NSDocumentDirectory,NSUserDomainMask,YES);
-    NSString *path=[paths    objectAtIndex:0];
-    NSString *filename=[path stringByAppendingPathComponent:@"pic.plist"];
-    if ([[NSFileManager defaultManager] fileExistsAtPath:filename])//判断文件是否已存在
-    {
-        
-    }
-    else
-    {
-        NSMutableArray *array=[NSMutableArray array];
-        [array writeToFile:filename atomically:YES];
-    }
-    return filename;
-    
-}
-- (void)initProdView{
-   [self.productsView registerClass:[CollectionCell class] forCellWithReuseIdentifier:@"CollectionCell"];
-    [self.productsView registerClass:[CollectionHeader class] forSupplementaryViewOfKind:@"CollectionHeader" withReuseIdentifier:@"CollectionHeader"];
-    CollectionViewLayout *layout = [[CollectionViewLayout alloc] init];
-    [self.productsView setCollectionViewLayout:layout];
-    self.selectedIndexs = [NSMutableArray array];
-}
 
+-(void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    [DataService sharedService].ReservationFirst = NO;
+    self.product_ids = nil;
+}
 - (void)viewDidLoad
 {
-    self.picArray = [NSMutableArray array];
+    [super viewDidLoad];
     
     //日期得pickerView
     self.dateFormatter = [[NSDateFormatter alloc] init];
     [self.dateFormatter setDateFormat:@"yyyy-MM-dd"];
-    [self initData];
+    self.selectedIndexs = [NSMutableArray array];
     
-    [super viewDidLoad];
     [self initView];
     [self initPicView];
     [self initBrandView];
-    [self initProdView];
 
     if (![self.navigationItem rightBarButtonItem]) {
-        [self addRightnaviItemWithImage:@"back"];
+        [self addRightnaviItemsWithImage:@"back" andImage:nil andImage:nil];
     }
     //登记车牌号
     if (self.car_num) {
@@ -449,30 +257,209 @@ static bool refresh = NO;
         [self.stepImg setImage:[UIImage imageNamed:[NSString stringWithFormat:@"step_%@",step]]];
     }
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"view_bg"]];
+
+    self.dataArray = [NSMutableArray array];
+    self.button_tag = 0;
+    self.dataArray = [self.productList objectAtIndex:self.button_tag];
+    [self displayNewView];
     
-//    UITapGestureRecognizer *tap = [[UITapGestureRecognizer alloc]initWithTarget:self action:@selector(hideKeyBord)];
-//    [self.view addGestureRecognizer:tap];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyBoardWillShowing:) name:UIKeyboardWillShowNotification object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyBoardWillHideing:) name: UIKeyboardWillHideNotification object:nil];
 }
-//-(void)hideKeyBord {
-//    [self.txtName resignFirstResponder];
-//    [self.txtPhone resignFirstResponder];
-//    [self.txtEmail resignFirstResponder];
-//    [self.txtCarYear resignFirstResponder];
-//    [self.txtCarNum resignFirstResponder];
-//    [self.txtBirth resignFirstResponder];
-//    
-//    CGRect pickerFrame = self.pickView.frame;
-//    pickerFrame.origin.y = self.view.frame.size.height;
-//    [UIView beginAnimations:nil context:NULL];
-//    [UIView setAnimationDuration:kPickerAnimationDuration];
-//    [UIView setAnimationDelegate:self];
-//    [UIView setAnimationDidStopSelector:@selector(slideDownDidStop)];
-//    self.pickView.frame = pickerFrame;
-//    [UIView commitAnimations];
-//    [DataService sharedService].tagOfBtn = 0;
-//    
-//    [self.productsView becomeFirstResponder];
-//}
+//根据分页控制跳转页面
+-(void)changePage:(UIPageControl *)aPageControl{
+    int whichPage = aPageControl.currentPage;
+    [UIView beginAnimations:nil context:NULL];
+    [UIView setAnimationDuration:0.3f];
+    [UIView setAnimationCurve:UIViewAnimationCurveEaseInOut];
+    [self.myScrollView setContentOffset:CGPointMake(804.0f * whichPage, 0.0f) animated:YES];
+    [UIView commitAnimations];
+	
+}
+//控制滑动的时候分页按钮对应去显示
+-(void)scrollViewDidScroll:(UIScrollView *)sender
+{
+	if (sender == self.myScrollView) {
+		CGFloat pageWidth = sender.frame.size.width;
+		int page = floor((sender.contentOffset.x - pageWidth/2)/pageWidth)+1;
+		self.myPageControl.currentPage = page;
+	}
+}
+
+-(void)displayNewView {
+    //清空
+    [self.myScrollView removeFromSuperview];
+    [self.myPageControl removeFromSuperview];
+    NSInteger count = ([self.dataArray count]-1)/8+1;
+    
+    self.myScrollView = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 74, 804, 400)];
+    self.myPageControl = [[UIPageControl alloc] initWithFrame:CGRectMake(0, 464, 804, 12)];
+    self.myPageControl.center = CGPointMake(402, 464);
+    
+    self.myScrollView.delegate = self;
+    self.myScrollView.contentSize = CGSizeMake(804*count, self.myScrollView.frame.size.height);
+    self.myScrollView.pagingEnabled = YES;
+	self.myScrollView.showsVerticalScrollIndicator = NO;
+	self.myScrollView.showsHorizontalScrollIndicator = NO;
+    [self.stepView_0 addSubview:self.myScrollView];
+    
+    for (int i=0; i<count; i++) {
+        self.myTable = [[UITableView alloc] initWithFrame:CGRectMake(0+804*i, 0, 804, self.myScrollView.frame.size.height)];
+        self.myTable.tag = i;
+        self.myTable.delegate = self;
+        self.myTable.dataSource = self;
+        self.myTable.scrollEnabled = NO;
+        self.myTable.backgroundColor = [UIColor clearColor];
+        [self.myScrollView addSubview:self.myTable];
+    }
+    self.myPageControl.backgroundColor = [UIColor colorWithRed:0.5765 green:0.0078 blue:0.0196 alpha:1.0];
+	self.myPageControl.numberOfPages = count;
+	[self.myPageControl addTarget:self action:@selector(changePage:) forControlEvents:UIControlEventValueChanged];
+	[self.stepView_0 addSubview:self.myPageControl];
+    
+    CGRect frame = [self.stepView_0 bounds];
+    frame.origin.y = 0;
+    frame.origin.x = 0;
+    [self.myScrollView setContentOffset:CGPointMake(frame.origin.x, frame.origin.y)];
+}
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
+    return 1;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section {
+	return 2;
+}
+- (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
+    return 200;
+}
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
+    NSInteger count = ([self.dataArray count]-1)/8+1;
+    
+    static NSString *CellIdentifier = @"Cell";
+    tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+	UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+    
+	if (cell == nil) {
+        cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        for (int i = 0; i<count; i++) {
+            if (tableView.tag==i) {
+                [self drawTableViewCell:cell index:[indexPath row] category:i];
+            }
+        }
+	}
+    
+    return cell;
+}
+
+//绘制tableview的cell
+-(void)drawTableViewCell:(UITableViewCell *)cell index:(int)row category:(int)category{
+    int maxIndex = (row*4+3);
+    int number = [self.dataArray count]-8*category;
+	if(maxIndex < number) {
+		for (int i=0; i<4; i++) {
+			[self displayPhotoes:cell row:row col:i category:category];
+		}
+		return;
+	}
+	else if(maxIndex-1 < number) {
+		for (int i=0; i<3; i++) {
+			[self displayPhotoes:cell row:row col:i category:category];
+		}
+		return;
+	}
+	else if(maxIndex-2 < number) {
+		for (int i=0; i<2; i++) {
+			[self displayPhotoes:cell row:row col:i category:category];
+		}
+		return;
+	}
+	else if(maxIndex-3 < number) {
+		[self displayPhotoes:cell row:row col:0 category:category];
+		return;
+	}
+}
+-(void)displayPhotoes:(UITableViewCell *)cell row:(int)row col:(int)col category:(int)category
+{
+    NSInteger currentTag = 4*row+col+category*8;
+    
+    NSDictionary *prod = [self.dataArray objectAtIndex:currentTag];
+    
+    //自定义view
+    UIView *myView = [[UIView alloc] initWithFrame:CGRectMake(0+col*201, 0, 201, 200)];
+    //图片
+    UIImageView *imageView = [[UIImageView alloc]initWithFrame:CGRectMake(10, 0, 150, 150)];
+    [imageView setImageWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kDomain,[prod objectForKey:@"img"]]] placeholderImage:[UIImage imageNamed:@"defualt.jpg"]];
+    imageView.tag = currentTag;
+    UIButton  *imageBtn = [UIButton buttonWithType:UIButtonTypeCustom];
+    imageBtn.frame = CGRectMake(0, 0, 160, 200);
+    imageBtn.tag = imageView.tag;
+    [imageBtn addTarget:self action:@selector(imageButtonClick:) forControlEvents:UIControlEventTouchUpInside];
+    [myView addSubview:imageBtn];
+    
+    //名称
+    UIFont *font = [UIFont systemFontOfSize:14];
+    UILabel *lab = [[UILabel alloc] initWithFrame:CGRectMake(10, 150, 160, 40)];
+    lab.text = [NSString stringWithFormat:@"%@:%.2f",[prod objectForKey:@"name"],[[prod objectForKey:@"price"]floatValue]];
+    lab.textColor = [UIColor blackColor];
+    lab.textAlignment = NSTextAlignmentLeft;
+    lab.backgroundColor = [UIColor clearColor];
+    lab.font = font;
+
+    //checkBox
+    UIButton  *button = [UIButton buttonWithType:UIButtonTypeCustom];
+    button.frame = CGRectMake(160, 55, 40, 40);
+    button.tag = currentTag;
+    NSString *str_index = [NSString stringWithFormat:@"%d_%d",self.button_tag,button.tag];
+    if ([self isSelected:str_index]) {
+        [button setImage:[UIImage imageNamed:@"cb_mono_on"] forState:UIControlStateNormal];//选择
+    }else {
+        [button setImage:[UIImage imageNamed:@"cb_mono_off"] forState:UIControlStateNormal];//不选择
+    }
+    [button addTarget:self action:@selector(buttonClick:) forControlEvents:UIControlEventTouchUpInside];
+    
+    
+    [myView addSubview:imageView];
+    [myView addSubview:lab];
+    [myView addSubview:button];
+    
+    [cell.contentView addSubview:myView];
+}
+
+- (BOOL)isSelected:(NSString *)str_indexPath{
+    //*****************判断是否选中行已添加进数组
+    if ([self.selectedIndexs containsObject:str_indexPath]) {
+        return YES;
+    }
+    return NO;
+}
+
+- (void)buttonClick:(id)sender{
+    UIButton *button = sender;
+    
+    NSString *str_index = [NSString stringWithFormat:@"%d_%d",self.button_tag,button.tag];
+    if ([self isSelected:str_index]) {
+        [selectedIndexs removeObject:str_index];
+        [button setImage:[UIImage imageNamed:@"cb_mono_off"] forState:UIControlStateNormal];//不选择
+    }else {
+        [selectedIndexs addObject:str_index];
+        [button setImage:[UIImage imageNamed:@"cb_mono_on"] forState:UIControlStateNormal];//选择
+    }
+
+}
+
+-(void)imageButtonClick:(id)sender {
+    UIButton *button = sender;
+
+    detailView = nil;
+    detailView = [[DetailViewController alloc]initWithNibName:@"DetailViewController" bundle:nil];
+    detailView.delegate = self;
+    detailView.number = self.button_tag;
+    detailView.productDic = [NSDictionary dictionaryWithDictionary:[self.dataArray objectAtIndex:button.tag]];
+    [self presentPopupViewController:detailView animationType:MJPopupViewAnimationSlideBottomBottom];
+}
+
+
 
 -(IBAction)btnPressed:(id)sender {
     [self.txtName resignFirstResponder];
@@ -534,55 +521,40 @@ static bool refresh = NO;
         [DataService sharedService].tagOfBtn = 1;
     }
 }
-- (void)textFieldDidEndEditing:(UITextField *)textField {
-    if ([textField isEqual:self.txtBirth] || [textField isEqual:self.txtName] || [textField isEqual:self.txtEmail] || [textField isEqual:self.txtPhone]) {
-        
-        [UIView beginAnimations:nil context:nil];
-        CGRect frame = self.stepView_2.frame;
-        if (frame.origin.y== 44) {
-            frame.origin.y = 104;
-        }
-        self.stepView_2.frame = frame;
-        
-        CGRect frame2 = self.label.frame;
-        if (frame2.origin.y==48) {
-            frame2.origin.y = 6;
-        }
-        self.label.frame = frame2;
-        [UIView commitAnimations];
+#pragma mark - keyBoard
+
+- (void)keyBoardWillShowing:(id)sender{
+    [UIView beginAnimations:nil context:nil];
+    CGRect frame = self.stepView_3.frame;
+    if (frame.origin.y==104) {
+        frame.origin.y = 44;
     }
+    self.stepView_3.frame = frame;
+    [UIView commitAnimations];
+    
+    CGRect pickerFrame = self.pickView.frame;
+    pickerFrame.origin.y = self.view.frame.size.height;
+    
+    [UIView beginAnimations:nil context:NULL];
+    [UIView setAnimationDuration:kPickerAnimationDuration];
+    [UIView setAnimationDelegate:self];
+    [UIView setAnimationDidStopSelector:@selector(slideDownDidStop)];
+    self.pickView.frame = pickerFrame;
+    [UIView commitAnimations];
+    
+    [DataService sharedService].tagOfBtn = 0;
 }
-- (void)textFieldDidBeginEditing:(UITextField *)textField {
-    if (textField.tag == 102) {
-    }else {
-        CGRect pickerFrame = self.pickView.frame;
-        pickerFrame.origin.y = self.view.frame.size.height;
-        
-        [UIView beginAnimations:nil context:NULL];
-        [UIView setAnimationDuration:kPickerAnimationDuration];
-        [UIView setAnimationDelegate:self];
-        [UIView setAnimationDidStopSelector:@selector(slideDownDidStop)];
-        self.pickView.frame = pickerFrame;
-        [UIView commitAnimations];
-        
-        [DataService sharedService].tagOfBtn = 0;
+
+- (void)keyBoardWillHideing:(id)sender{
+    [UIView beginAnimations:nil context:nil];
+    CGRect frame = self.stepView_3.frame;
+    if (frame.origin.y==44) {
+        frame.origin.y = 104;
     }
-    if ([textField isEqual:self.txtBirth] || [textField isEqual:self.txtName] || [textField isEqual:self.txtEmail] || [textField isEqual:self.txtPhone]) {
-        [UIView beginAnimations:nil context:nil];
-        CGRect frame = self.stepView_2.frame;
-        if (frame.origin.y==104) {
-            frame.origin.y = 44;
-        }
-        self.stepView_2.frame = frame;
-        
-        CGRect frame2 = self.label.frame;
-        if (frame2.origin.y==6) {
-            frame2.origin.y = 48;
-        }
-        self.label.frame = frame2;
-        [UIView commitAnimations];
-    }
+    self.stepView_3.frame = frame;
+    [UIView commitAnimations];
 }
+
 - (IBAction)dateAction:(id)sender
 {
 	self.txtBirth.text = [self.dateFormatter stringFromDate:self.pickerView.date];
@@ -591,7 +563,7 @@ static bool refresh = NO;
 {
 	[self.pickView removeFromSuperview];
 }
-//完成登记
+#pragma mark - 完成登记
 -(void)finishInfo {
     STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kcheckIn]];
     NSMutableDictionary *dic = [NSMutableDictionary dictionary];
@@ -611,11 +583,12 @@ static bool refresh = NO;
         [dic setObject:@"1" forKey:@"sex"];
     }
     [dic setObject:[DataService sharedService].store_id forKey:@"store_id"];
-    NSDictionary *brand  = [brandList objectAtIndex:[brandView selectedRowInComponent:0]];
+    
+    NSDictionary *brand  = [self.secondArray objectAtIndex:[brandView selectedRowInComponent:1]];
     NSString *brandStr = [brand objectForKey:@"id"];
     NSString *modelStr = @"";
     if ([[brand objectForKey:@"models"] count]>0) {
-        modelStr = [[[brand objectForKey:@"models"] objectAtIndex:[modelView selectedRowInComponent:0]] objectForKey:@"id"];
+        modelStr = [[[brand objectForKey:@"models"] objectAtIndex:[brandView selectedRowInComponent:2]] objectForKey:@"id"];
     }
     [dic setObject:[NSString stringWithFormat:@"%@_%@",brandStr,modelStr] forKey:@"brand"];
     [r setPostDataEncoding:NSUTF8StringEncoding];
@@ -637,32 +610,35 @@ static bool refresh = NO;
         [alertt show];
         
     }else {
-        [AHAlertView applyCustomAlertAppearance];
-        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:[result objectForKey:@"content"]];
-        __block AHAlertView *alert = alertt;
-        [alertt setCancelButtonTitle:@"确定" block:^{
-            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
-            alert = nil;
-        }];
-        [alertt show];
+        [self errorAlert:[result objectForKey:@"content"]];
     }
     [MBProgressHUD hideHUDForView:self.view animated:YES];
 
 }
-//完成下单
+#pragma mark - 完成下单
 -(void)finishOrder {
-    if (selectedIndexs && selectedIndexs.count > 0) {
+    if (self.selectedIndexs && self.selectedIndexs.count > 0) {
         STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kFinish]];
-        NSDictionary *brand  = [brandList objectAtIndex:[brandView selectedRowInComponent:0]];
+        
+        NSDictionary *brand  = [self.secondArray objectAtIndex:[brandView selectedRowInComponent:1]];
         NSString *brandStr = [brand objectForKey:@"id"];
         NSString *modelStr = @"";
-        if (![[brand objectForKey:@"models"] isKindOfClass:[NSNull class]]) {
-            modelStr = [[[brand objectForKey:@"models"] objectAtIndex:[modelView selectedRowInComponent:0]] objectForKey:@"id"];
+        if ([[brand objectForKey:@"models"] count]>0) {
+            modelStr = [[[brand objectForKey:@"models"] objectAtIndex:[brandView selectedRowInComponent:2]] objectForKey:@"id"];
         }
+        
         NSMutableString *prod_ids = [NSMutableString string];
-        for (NSIndexPath *idx in selectedIndexs) {
-            NSDictionary *prod = [[self.productList objectAtIndex:idx.row] objectAtIndex:idx.section];
-            [prod_ids appendFormat:@"%@_%d,",[prod objectForKey:@"id"],idx.row];
+        for (NSString *str_idx in self.selectedIndexs) {
+            NSArray *array = [str_idx componentsSeparatedByString:@"_"];
+            int num = [[array objectAtIndex:0]intValue];
+            int idx = [[array objectAtIndex:1]intValue];
+            
+            NSDictionary *prod = [[self.productList objectAtIndex:num] objectAtIndex:idx];
+            if (num  == 3) {
+                [prod_ids appendFormat:@"%@_%d_%d,",[prod objectForKey:@"id"],num,[[prod objectForKey:@"type"]intValue]];
+            }else {
+                [prod_ids appendFormat:@"%@_%d,",[prod objectForKey:@"id"],num];
+            }
         }
         NSMutableDictionary *dic = [NSMutableDictionary dictionary];
         [dic setObject:txtCarNum.text forKey:@"carNum"];
@@ -727,41 +703,67 @@ static bool refresh = NO;
             [DataService sharedService].total_count = confirmView.total_count;//总价放到单例去
             [self.navigationController pushViewController:confirmView animated:YES];
         }else{
-            [AHAlertView applyCustomAlertAppearance];
-            AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:[result objectForKey:@"content"]];
-            __block AHAlertView *alert = alertt;
-            [alertt setCancelButtonTitle:@"确定" block:^{
-                alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
-                alert = nil;
-            }];
-            [alertt show];
+            [self errorAlert:[result objectForKey:@"content"]];
         }
         
     }else{
-        [AHAlertView applyCustomAlertAppearance];
-        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"请选择所需的产品、服务"];
-        __block AHAlertView *alert = alertt;
-        [alertt setCancelButtonTitle:@"确定" block:^{
-            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
-            alert = nil;
-        }];
-        [alertt show];
+        [self errorAlert:@"请选择所需的产品、服务"];
     }
     [MBProgressHUD hideHUDForView:self.view animated:YES];
 }
+
+#pragma mark - 保存客户信息到数据库
+
+static bool success = NO;//登记成功？
+-(void)addCustomerData {
+    success = NO;
+    //brand
+    NSDictionary *brand  = [self.secondArray objectAtIndex:[brandView selectedRowInComponent:1]];
+    NSString *brandStr = [brand objectForKey:@"id"];
+    NSString *name_brand = [brand objectForKey:@"name"];
+    NSString *modelStr = @"";
+    NSString *name_model = @"";
+    if ([[brand objectForKey:@"models"] count]>0) {
+        modelStr = [[[brand objectForKey:@"models"] objectAtIndex:[brandView selectedRowInComponent:2]] objectForKey:@"id"];
+        name_model = [[[brand objectForKey:@"models"] objectAtIndex:[brandView selectedRowInComponent:2]] objectForKey:@"name"];
+    }
+    //sex
+    NSString *sex = @"";
+    if ((self.manBtn.tag == TagOn) && (self.womanBtn.tag == TagOff)) {
+        sex = @"0";
+    }else if ((self.womanBtn.tag == TagOn) && (self.manBtn.tag == TagOff)) {
+        sex = @"1";
+    }
+    NSArray *array = [[LanTaiOrderManager sharedInstance] loadDataFromTableName:@"customer" WithName:nil andPassWord:nil andCarNum:self.txtCarNum.text andBrand_id:nil andCar_brand_id:nil andProduct_id:nil andClassify_id:nil andCar_capital_id:nil];
+    if (array.count == 0) {
+        NSArray *paramarray = [[NSArray alloc] initWithObjects:[NSString stringWithFormat:@"%@",self.txtCarNum.text],[NSString stringWithFormat:@"%@",self.txtName.text],[NSString stringWithFormat:@"%@",self.txtPhone.text],[NSString stringWithFormat:@"%@_%@",brandStr,modelStr],[NSString stringWithFormat:@"%@",self.txtEmail.text],[NSString stringWithFormat:@"%@",self.txtBirth.text],[NSString stringWithFormat:@"%@",self.txtCarYear.text],[NSString stringWithFormat:@"%@",name_brand],[NSString stringWithFormat:@"%@",name_model],[NSString stringWithFormat:@"%@",sex],nil];
+        success = [[LanTaiOrderManager sharedInstance]addDataToTable:@"customer" WithArray:paramarray];
+        
+        //判断同步按钮，避免访问数据库
+        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        [defaults setObject:@"1" forKey:@"sync"];
+        [defaults synchronize];
+    }else {//数据改动
+        for (Customer *ctomer in array) {
+            if (![ctomer.name isEqualToString:self.txtName.text] || ![ctomer.phone isEqualToString:self.txtPhone.text] ||  ![ctomer.brand isEqualToString:[NSString stringWithFormat:@"%@_%@",brandStr,modelStr]] || ![ctomer.email isEqualToString:self.txtEmail.text] || ![ctomer.birth isEqualToString:self.txtBirth.text] || ![ctomer.year isEqualToString:self.txtCarYear.text] || ![ctomer.brand_name isEqualToString:name_brand] || ![ctomer.model_name isEqualToString:name_model] || ![ctomer.sex isEqualToString:sex]) {
+                [[LanTaiOrderManager sharedInstance]deleteTable:@"customer" WithName:nil andPassWord:nil andCarNum:self.txtCarNum.text andProduct_id:nil andCodeID:nil];
+                
+                NSArray *paramarray = [[NSArray alloc] initWithObjects:[NSString stringWithFormat:@"%@",self.txtCarNum.text],[NSString stringWithFormat:@"%@",self.txtName.text],[NSString stringWithFormat:@"%@",self.txtPhone.text],[NSString stringWithFormat:@"%@_%@",brandStr,modelStr],[NSString stringWithFormat:@"%@",self.txtEmail.text],[NSString stringWithFormat:@"%@",self.txtBirth.text],[NSString stringWithFormat:@"%@",self.txtCarYear.text],[NSString stringWithFormat:@"%@",name_brand],[NSString stringWithFormat:@"%@",name_model],[NSString stringWithFormat:@"%@",sex],nil];
+                success = [[LanTaiOrderManager sharedInstance]addDataToTable:@"customer" WithArray:paramarray];
+                
+                //判断同步按钮，避免访问数据库
+                NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                [defaults setObject:@"1" forKey:@"sync"];
+                [defaults synchronize];
+            }
+            success = YES;
+        }
+    }
+}
+#pragma mark -  点击完成
+
 - (IBAction)clickFinished:(id)sender{
     if ([DataService sharedService].number == 1) {
-        if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
-            [AHAlertView applyCustomAlertAppearance];
-            AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:kNoReachable];
-            __block AHAlertView *alert = alertt;
-            [alertt setCancelButtonTitle:@"确定" block:^{
-                alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
-                alert = nil;
-            }];
-            [alertt show];
-        }else {
-           
             NSString *str = @"";
             if(txtName.text.length==0){
                 str = @"请输入您的名称";
@@ -780,7 +782,6 @@ static bool refresh = NO;
                 }
                 //判断生日
                 if (txtBirth.text.length == 0) {
-//                    str = @"请输入出生年月日";
                 }else {
                     
                     NSString *regexCall =@"((19[0-9]{2})|(2[0-9]{3})）-((1[0-2])|(0[1-9]))-((0[1-9])|([1-2][0-9])|3[0-1])";
@@ -811,18 +812,27 @@ static bool refresh = NO;
                 }
                 //判断邮箱
                 if (self.txtEmail.text.length == 0) {
-//                    str = @"请输入QQ/微信/邮箱地址";
                 }
             }
             if (self.txtName.text.length==0 || self.txtPhone.text.length==0 || ![str isEqualToString:@""]) {
-                [AHAlertView applyCustomAlertAppearance];
-                AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:str];
-                __block AHAlertView *alert = alertt;
-                [alertt setCancelButtonTitle:@"确定" block:^{
-                    alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
-                    alert = nil;
-                }];
-                [alertt show];
+                [self errorAlert:str];
+            }else if ([[Utils connectToInternet] isEqualToString:@"locahost"]) {
+                //保存客户信息到数据库
+                [self addCustomerData];
+                if (success == YES) {
+                    [AHAlertView applyCustomAlertAppearance];
+                    AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"登记信息成功"];
+                    __block AHAlertView *alert = alertt;
+                    [alertt setCancelButtonTitle:@"确定" block:^{
+                        alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+                        alert = nil;
+                        [self.navigationController popToRootViewControllerAnimated:YES];
+                    }];
+                    [alertt show];
+                }else {
+                    [self errorAlert:@"登记失败"];
+                }
+                
             }else {
                 MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
                 hud.dimBackground = NO;
@@ -830,17 +840,126 @@ static bool refresh = NO;
                 hud.labelText = @"正在努力加载...";
                 [self.view addSubview:hud];
             }
-        }
     }else {
-        if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
-            [AHAlertView applyCustomAlertAppearance];
-            AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:kNoReachable];
-            __block AHAlertView *alert = alertt;
-            [alertt setCancelButtonTitle:@"确定" block:^{
-                alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
-                alert = nil;
-            }];
-            [alertt show];
+        if ([[Utils connectToInternet] isEqualToString:@"locahost"]) {
+            if (self.selectedIndexs && self.selectedIndexs.count > 0) {
+                //保存员工信息到数据库
+                [DataService sharedService].netWorking = NO;
+                [self addCustomerData];
+                ConfirmViewController *confirmView = [[ConfirmViewController alloc] initWithNibName:@"ConfirmViewController" bundle:nil];
+                confirmView.productList = [NSMutableArray array];
+                
+                NSMutableArray *array_idx = [NSMutableArray array];
+                NSMutableArray *array_idxx = [NSMutableArray array];
+                ///排序
+                for (NSString *str_idx in self.selectedIndexs) {
+                    NSArray *array = [str_idx componentsSeparatedByString:@"_"];
+                    int num = [[array objectAtIndex:0]intValue];
+                    if (num <3) {
+                        [array_idx addObject:str_idx];
+                    }else {
+                        [array_idxx addObject:str_idx];
+                    }
+                }
+                if (array_idxx.count >0) {
+                    [array_idx addObjectsFromArray:array_idxx];
+                }
+                for (NSString *str_idx in array_idx) {
+                    NSArray *array = [str_idx componentsSeparatedByString:@"_"];
+                    int num = [[array objectAtIndex:0]intValue];
+                    int section = [[array objectAtIndex:1]intValue];
+                    
+                    NSDictionary *prod = [[self.productList objectAtIndex:num] objectAtIndex:section];
+                    DLog(@"%@",prod);
+                    if (num < 3) {//产品，服务
+                        NSMutableDictionary *tempDic = [NSMutableDictionary dictionary];
+                        if (![[prod objectForKey:@"type"] isKindOfClass:[NSNull class]] && [prod objectForKey:@"type"] != nil) {
+                            [tempDic setObject:[prod objectForKey:@"type"] forKey:@"type"];
+                        }else {
+                            [tempDic setObject:[NSString stringWithFormat:@"%d",0] forKey:@"type"];
+                        }
+                        [tempDic setObject:@"1" forKey:@"count"];
+                        [tempDic setObject:[prod objectForKey:@"id"] forKey:@"id"];
+                        [tempDic setObject:[prod objectForKey:@"name"] forKey:@"name"];
+                        [tempDic setObject:[prod objectForKey:@"price"] forKey:@"price"];
+                        if ([prod objectForKey:@"classify_id"]!= nil && ![[prod objectForKey:@"classify_id"] isKindOfClass:[NSNull class]]) {
+                            [tempDic setObject:[prod objectForKey:@"classify_id"] forKey:@"classify_id"];
+                        }else {
+                            [tempDic setObject:[NSString stringWithFormat:@"%d",num] forKey:@"classify_id"];
+                        }
+                        
+                        [confirmView.productList addObject:tempDic];
+                        
+                        confirmView.total_count = confirmView.total_count + [[prod objectForKey:@"price"]floatValue];
+                    }else if(num == 3 && [[prod objectForKey:@"type"]intValue] == 0){//套餐卡
+                        NSMutableDictionary *tempDic = [NSMutableDictionary dictionary];
+                        NSMutableArray *arr = [NSMutableArray arrayWithCapacity:1];
+                        if (![[prod objectForKey:@"type"] isKindOfClass:[NSNull class]] && [prod objectForKey:@"type"] != nil) {
+                            [tempDic setObject:[prod objectForKey:@"type"] forKey:@"type"];
+                        }else {
+                            [tempDic setObject:[NSString stringWithFormat:@"%d",0] forKey:@"type"];
+                        }
+                        [tempDic setObject:@"0 " forKey:@"has_p_card"];
+                        [tempDic setObject:[prod objectForKey:@"id"] forKey:@"id"];
+                        [tempDic setObject:[prod objectForKey:@"name"] forKey:@"name"];
+                        [tempDic setObject:[prod objectForKey:@"price"] forKey:@"price"];
+                        [tempDic setObject:[prod objectForKey:@"price"] forKey:@"show_price"];
+                        if ([prod objectForKey:@"classify_id"]!= nil && ![[prod objectForKey:@"classify_id"] isKindOfClass:[NSNull class]]) {
+                            [tempDic setObject:[prod objectForKey:@"classify_id"] forKey:@"classify_id"];
+                        }else {
+                            [tempDic setObject:[NSString stringWithFormat:@"%d",num] forKey:@"classify_id"];
+                        }
+                        [tempDic setObject:arr forKey:@"products"];
+                        [confirmView.productList addObject:tempDic];
+                        
+                        confirmView.total_count = confirmView.total_count + [[prod objectForKey:@"price"]floatValue];
+                    }else if(num == 3 && [[prod objectForKey:@"type"]intValue] == 1) {//打折卡,储值卡
+                        NSMutableDictionary *tempDic = [NSMutableDictionary dictionary];
+                        if (![[prod objectForKey:@"type"] isKindOfClass:[NSNull class]] && [prod objectForKey:@"type"] != nil) {
+                            [tempDic setObject:[prod objectForKey:@"type"] forKey:@"type"];
+                        }else {
+                            [tempDic setObject:[NSString stringWithFormat:@"%d",0] forKey:@"type"];
+                        }
+                        [tempDic setObject:@"0 " forKey:@"has_p_card"];
+                        [tempDic setObject:@"1 " forKey:@"is_new"];
+                        [tempDic setObject:@"1 " forKey:@"card_type"];
+                        [tempDic setObject:[prod objectForKey:@"id"] forKey:@"scard_id"];
+                        [tempDic setObject:[prod objectForKey:@"name"] forKey:@"scard_name"];
+                        [tempDic setObject:[prod objectForKey:@"price"] forKey:@"price"];
+                        [tempDic setObject:[prod objectForKey:@"price"] forKey:@"show_price"];
+                        if ([prod objectForKey:@"classify_id"]!= nil && ![[prod objectForKey:@"classify_id"] isKindOfClass:[NSNull class]]) {
+                            [tempDic setObject:[prod objectForKey:@"classify_id"] forKey:@"classify_id"];
+                        }else {
+                            [tempDic setObject:[NSString stringWithFormat:@"%d",num] forKey:@"classify_id"];
+                        }
+                        [confirmView.productList addObject:tempDic];
+                        
+                        confirmView.total_count = confirmView.total_count + [[prod objectForKey:@"price"]floatValue];
+                    }
+                }
+                
+                //brand
+                NSDictionary *brand  = [self.secondArray objectAtIndex:[brandView selectedRowInComponent:1]];
+                NSString *name_brand = [brand objectForKey:@"name"];
+                NSString *name_model = @"";
+                if ([[brand objectForKey:@"models"] count]>0) {
+                    name_model = [[[brand objectForKey:@"models"] objectAtIndex:[brandView selectedRowInComponent:2]] objectForKey:@"name"];
+                }
+                NSMutableDictionary *order_dic = [NSMutableDictionary dictionary];
+                [order_dic setObject:[NSString stringWithFormat:@"%@-%@",name_brand,name_model] forKey:@"car_brand"];
+                [order_dic setObject:self.txtCarNum.text forKey:@"car_num"];
+                [order_dic setObject:self.txtPhone.text forKey:@"phone"];
+                [order_dic setObject:self.txtName.text forKey:@"c_name"];
+                [order_dic setObject:@"" forKey:@"start"];
+                [order_dic setObject:@"" forKey:@"end"];
+                confirmView.orderInfo = [NSMutableDictionary dictionaryWithDictionary:order_dic];
+                
+                [DataService sharedService].total_count = confirmView.total_count;//总价放到单例去
+                [self.navigationController pushViewController:confirmView animated:YES];
+            }else {
+                [self errorAlert:@"请选择所需的产品、服务"];
+            }
+            
         }else {
             MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
             hud.dimBackground = NO;
@@ -860,11 +979,25 @@ static bool refresh = NO;
         x -= 1;
     }else{
         NSString *str = @"";
-        if (x==0 && txtCarNum.text.length==0) {
-            str = @"请输入你的车牌号";
+        if (x==0 ) {//第一步  选择产品
+            if (self.selectedIndexs && self.selectedIndexs.count > 0) {
+                //已选择产品
+            }else {
+                str = @"请选择所需的产品、服务";
+            }
         }
-        //判断购车时间
-        else if(x==1){
+        
+        if (x==1) {//第二步  车牌号
+            if (txtCarNum.text.length==0) {
+                str = @"请输入你的车牌号";
+            }
+            if (self.secondArray.count == 0) {
+                str = @"请选择汽车品牌";
+            }
+            
+        }
+        
+        if(x==2){//第三步 购车时间
             //获取年份
             NSDate *now = [NSDate date];
             NSCalendar *calendar = [NSCalendar currentCalendar];
@@ -888,7 +1021,7 @@ static bool refresh = NO;
                 }
             }
         }
-        else if(x==2){
+         if(x==3){//第四步 用户信息
             if(txtName.text.length==0){
                 str = @"请输入您的名称";
             }else {
@@ -906,7 +1039,6 @@ static bool refresh = NO;
                 }
                 //判断生日
                 if (txtBirth.text.length == 0) {
-//                    str = @"请输入出生年月日";
                 }else {
                     NSString *regexCall =@"((19[0-9]{2})|(2[0-9]{3})）-((1[0-2])|(0[1-9]))-((0[1-9])|([1-2][0-9])|3[0-1])";
                     NSPredicate *predicateCall = [NSPredicate predicateWithFormat:@"SELF MATCHES %@",regexCall];
@@ -936,21 +1068,13 @@ static bool refresh = NO;
                 }
                 //判断邮箱
                 if (self.txtEmail.text.length == 0) {
-//                    str = @"请输入邮箱地址";
                 }
             }
         }
         if (str.length==0) {
            x += 1; 
         }else{
-            [AHAlertView applyCustomAlertAppearance];
-            AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:str];
-            __block AHAlertView *alert = alertt;
-            [alertt setCancelButtonTitle:@"确定" block:^{
-                alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
-                alert = nil;
-            }];
-            [alertt show];
+            [self errorAlert:str];
         }
         
     }
@@ -973,149 +1097,141 @@ static bool refresh = NO;
     PictureCell *cell = (PictureCell *)self.getPic.picCell;
     cell.carImageView.image = [UIImage imageWithData:[getFile fileData]];
 }
+#pragma mark - picker
 
 - (NSInteger)numberOfComponentsInPickerView:(UIPickerView *)pickerView{
-    return 1;
+    return 3;
 }
 
-// returns the # of rows in each component..
-- (NSInteger)pickerView:(UIPickerView *)pickerVieww numberOfRowsInComponent:(NSInteger)component{
-    
-    if ([pickerVieww isEqual:modelView]) {
-        NSDictionary *brand  = [brandList objectAtIndex:[brandView selectedRowInComponent:0]];
-        if ([[brand objectForKey:@"models"] isKindOfClass:[NSNull class]]) {
+- (CGFloat)pickerView:(UIPickerView *)pickerView widthForComponent:(NSInteger)component {
+    switch (component) {
+        case 0:
+            return 40;
+            break;
+            
+        case 1:
+            return 150;
+            break;
+            
+        case 2:
+            return 150;
+            break;
+            
+        default:
             return 0;
-        }else {
-            return [[brand objectForKey:@"models"] count];
-        }
+            break;
     }
-    return self.brandList.count;
+}
+
+- (NSInteger)pickerView:(UIPickerView *)pickerVieww numberOfRowsInComponent:(NSInteger)component{
+    switch (component) {
+        case 0:
+            if (self.firstArray.count == 0) {
+                return 1;
+            }
+            return self.firstArray.count;
+            break;
+            
+        case 1:
+            if (self.secondArray.count == 0) {
+                return 1;
+            }
+            return self.secondArray.count;
+            break;
+            
+        case 2:
+            if (self.thirdArray.count == 0) {
+                return 1;
+            }
+            return self.thirdArray.count;
+            break;
+            
+        default:
+            return 1;
+            break;
+    }
 }
 
 - (NSString *)pickerView:(UIPickerView *)pickerVieww titleForRow:(NSInteger)row forComponent:(NSInteger)component{
-    
-    if ([pickerVieww isEqual:modelView]) {
-        NSDictionary *brand  = [brandList objectAtIndex:[brandView selectedRowInComponent:0]];
-        if ([[brand objectForKey:@"models"] count]>0) {
-            return [[[brand objectForKey:@"models"] objectAtIndex:row] objectForKey:@"name"];
-        }else{
+    switch (component) {
+        case 0:
+            if (self.firstArray.count>0) {
+                return [[self.firstArray objectAtIndex:row]objectForKey:@"name"];
+            }
             return @"";
-        }
-        
-    }else{
-        NSDictionary *brand  = [brandList objectAtIndex:row];
-        return [brand objectForKey:@"name"];
+            break;
+            
+        case 1:
+            if (self.secondArray.count>0) {
+                return [[self.secondArray objectAtIndex:row]objectForKey:@"name"];
+            }
+            return @"";
+            break;
+            
+        case 2:
+            if (self.thirdArray.count>0) {
+                return [[self.thirdArray objectAtIndex:row]objectForKey:@"name"];
+            }
+            return @"";
+            break;
+            
+        default:
+            return @"";
+            break;
     }
 }
 
 - (void)pickerView:(UIPickerView *)pickerVieww didSelectRow:(NSInteger)row inComponent:(NSInteger)component{
-    if ([pickerVieww isEqual:brandView]) {
-        [modelView reloadAllComponents];
+    switch (component) {
+        case 0:
+            self.secondArray = [NSMutableArray arrayWithArray:[[self.firstArray objectAtIndex:row]objectForKey:@"brands"]];
+            [self.brandView reloadComponent:1];
+            [self.brandView selectRow:0 inComponent:1 animated:YES];
+            if (self.secondArray.count > 0) {
+                self.thirdArray = [NSMutableArray arrayWithArray:[[self.secondArray objectAtIndex:0] objectForKey:@"models"]];
+            }else {
+                self.thirdArray = nil;
+            }
+            [self.brandView reloadComponent:2];
+            [self.brandView selectRow:0 inComponent:2 animated:YES];
+            break;
+            
+        case 1:
+            if (self.secondArray.count>0) {
+                self.thirdArray = [NSMutableArray arrayWithArray:[[self.secondArray objectAtIndex:row] objectForKey:@"models"]];
+                [self.brandView reloadComponent:2];
+                [self.brandView selectRow:0 inComponent:2 animated:YES];
+            }
+            break;
+            
+        case 2:
+            break;
+        
+        default:
+            break;
+        
     }
 }
-
-- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section{
-    return 4;
-}
-
-- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView{
-    return [[self.brandResult objectForKey:@"count"] integerValue];
-}
-
-//产品，服务的单元格
-- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath{
-    static NSString *CellIdentifier = @"CollectionCell";
-    CollectionCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:CellIdentifier forIndexPath:indexPath];
-    cell.prodName.hidden = YES;
-    cell.prodImage.hidden = YES;
-    cell.contentView.backgroundColor = [UIColor clearColor];
-    for (int x=0; x<4; x++) {
-        if (indexPath.row == x) {
-            
-            int len = [[self.productList objectAtIndex:x] count];
-            if (indexPath.section < len) {
-                NSDictionary *prod = [[self.productList objectAtIndex:x] objectAtIndex:indexPath.section];
-                cell.prodName.text = [NSString stringWithFormat:@"%@",[prod objectForKey:@"name"]];
-                cell.prodName.hidden = NO;
-                cell.prodImage.hidden = NO;
-                //预约页面首次进来  加载此项
-                if ([DataService sharedService].ReservationFirst == YES) {
-                    if (self.product_ids.count >0  && x<3) {
-                        NSString *p_id = [prod objectForKey:@"id"];
-                        if ([product_ids containsObject:p_id]) {
-                            cell.contentView.backgroundColor = [UIColor redColor];
-                            [selectedIndexs addObject:indexPath];
-                        }
-                    }
-                }
-                /////////////////
-                if ([self isSelected:indexPath]) {
-                    cell.contentView.backgroundColor = [UIColor redColor];
-                }else{
-                    cell.contentView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"collectioncell_bg"]];
+#pragma mark - collectionview
+-(IBAction)buttonPressed:(id)sender {
+    UIButton *btn = (UIButton *)sender;
+    self.button_tag = btn.tag;
+    self.dataArray = [NSMutableArray array];
+    self.dataArray = [self.productList objectAtIndex:self.button_tag];
+    if (self.dataArray.count != 0) {
+        NSArray *subViews = [self.stepView_0 subviews];
+        for (UIView *v in subViews) {
+            if ([v isKindOfClass:[UIButton class]]) {
+                UIButton *v_button = (UIButton *)v;
+                if (v_button.tag != btn.tag) {
+                    [v_button setBackgroundImage:[UIImage imageNamed:@"button_gray"] forState:UIControlStateNormal];
                 }
                 
-                if ([DataService sharedService].number == 0){
-                    cell.prodImage.image = [[self.picArray objectAtIndex:x]objectAtIndex:indexPath.section];
-                }
-            }else{
-                cell.prodName.hidden = YES;
-                cell.prodImage.hidden = YES;
-                cell.contentView.backgroundColor = [UIColor clearColor];
             }
         }
+        [btn setBackgroundImage:[UIImage imageNamed:@"button_red"] forState:UIControlStateNormal];
+        [self displayNewView];
     }
-    
-    //****************判断cell是否已被选中
-    if ([self.selectedIndexs containsObject:indexPath]) {
-        cell.backgroundColor = [UIColor redColor];
-    }else{
-        cell.backgroundColor = [UIColor clearColor];
-    }
-
-    
-    return cell;
-
-}
-
-- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout *)collectionViewLayout referenceSizeForHeaderInSection:(NSInteger)section{
-    if (section==0) {
-        return CGSizeZero;
-    }
-    return CGSizeZero;
-}
-
-- (BOOL)collectionView:(UICollectionView *)collectionView shouldSelectItemAtIndexPath:(NSIndexPath *)indexPath{
-    return TRUE;
-}
-
-//设置选中效果
-- (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath{
-    CollectionCell *cell = (CollectionCell *)[collectionView cellForItemAtIndexPath:indexPath];
-    [DataService sharedService].ReservationFirst = NO;
-    if (cell.prodName.hidden == NO) {
-        if (cell.backgroundColor == [UIColor redColor]) {
-            cell.backgroundColor = [UIColor whiteColor];
-            if ([self isSelected:indexPath]) {
-                [selectedIndexs removeObject:indexPath];
-            }
-        }else{
-            cell.backgroundColor = [UIColor redColor];
-            if (![self isSelected:indexPath]) {
-                [selectedIndexs addObject:indexPath];
-            }
-        }
-    }
-    //***************刷新页面
-    [self.productsView reloadData];
-}
-
-- (BOOL)isSelected:(NSIndexPath *)indexPath{
-    //*****************判断是否选中行已添加进数组
-    if ([self.selectedIndexs containsObject:indexPath]) {
-        return YES;
-    }
-    return NO;
 }
 
 -(IBAction)manBtnPressed:(id)sender {
@@ -1144,4 +1260,12 @@ static bool refresh = NO;
         }
     }
 }
+
+//关闭弹出框
+- (void)closePopView:(DetailViewController *)detailViewController{
+    [self dismissPopupViewControllerWithanimationType:MJPopupViewAnimationFade];
+    detailView = nil;
+}
+
+
 @end

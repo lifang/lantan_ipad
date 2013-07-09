@@ -16,12 +16,15 @@
 @property (nonatomic,strong) NSMutableDictionary *order;
 @property (nonatomic,strong) IBOutlet UISwitch *billingBtn;
 @property (nonatomic,assign) BOOL isSuccess;
-@property (nonatomic,strong) IBOutlet UIView *payStyle,*phoneView,*codeView;
-@property (nonatomic,strong) IBOutlet UITextField *txtPhone,*txtCode;
+@property (nonatomic,strong) IBOutlet UIView *payStyle,*phoneView,*codeView,*posView;
+@property (nonatomic,strong) IBOutlet UITextField *txtPhone,*txtCode,*txtPos;
 @property (nonatomic,strong) IBOutlet UISegmentedControl *segBtn;
 @property (nonatomic,strong) NSString *codeStr;
 @property (nonatomic,assign) int payType;
 
+@property (nonatomic,strong) IBOutlet UISegmentedControl *segBtn2;
+@property (nonatomic,strong) IBOutlet UILabel *posLab;
+@property (nonatomic,strong) IBOutlet UIButton *posBtn,*sureBtn;
 - (IBAction)clickSendCode:(id)sender;
 - (IBAction)clickCodeBtn:(id)sender;
 
@@ -30,5 +33,4 @@
 @protocol PayStyleViewDelegate <NSObject>
 @optional
 - (void)closePopView:(PayStyleViewController *)payStyleViewController;
-
 @end

@@ -13,6 +13,7 @@
 
 @property (nonatomic,strong) NSString *kHost;
 @property (nonatomic,strong) NSString *kDomain;
+@property (nonatomic,strong) NSString *kPosAppId;
 @property (nonatomic,strong) NSString *str_ip;
 @property (nonatomic,strong) NSString *user_id,*reserve_count,*store_id,*car_num;
 @property (nonatomic,strong) NSMutableArray *workingOrders,*reserve_list;
@@ -23,7 +24,6 @@
 @property (nonatomic,assign) int tagOfBtn;//判断生日按钮
 
 @property (nonatomic,assign) BOOL first;//判断 number_id 是否加载数据；
-
 @property (nonatomic,strong) NSMutableArray *row_id_countArray;//套餐卡
 @property (nonatomic,strong) NSMutableArray *row_id_numArray;//活动打折卡
 @property (nonatomic,strong) NSMutableDictionary *price_id;//选择产品价格／服务的id 
@@ -45,6 +45,7 @@
 @property (nonatomic,strong) NSMutableArray *id_count_price;
 //活动
 @property (nonatomic,strong) NSMutableArray *saleArray;
+@property (nonatomic,assign) BOOL netWorking;//判定网络
 
 + (DataService *)sharedService;
 

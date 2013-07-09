@@ -106,7 +106,7 @@
 								</object>
 								<bool key="IBUIClipsSubviews">YES</bool>
 								<bool key="IBUIMultipleTouchEnabled">YES</bool>
-								<int key="IBUITag">888</int>
+								<int key="IBUITag">1888</int>
 								<string key="targetRuntimeIdentifier">IBIPadFramework</string>
 								<bool key="IBUIShowsHorizontalScrollIndicator">NO</bool>
 								<string key="IBUIText"/>
@@ -187,6 +187,7 @@
 								<int key="NSvFlags">292</int>
 								<string key="NSFrame">{{442, 436}, {60, 30}}</string>
 								<reference key="NSSuperview" ref="342547768"/>
+								<reference key="NSNextKeyView"/>
 								<string key="NSReuseIdentifierKey">_NS:9</string>
 								<bool key="IBUIOpaque">NO</bool>
 								<string key="targetRuntimeIdentifier">IBIPadFramework</string>

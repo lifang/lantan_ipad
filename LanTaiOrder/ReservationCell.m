@@ -87,20 +87,20 @@
     NSError *error = nil;
     NSString *str = [r startSynchronousWithError:&error];
     NSDictionary *result = [str objectFromJSONString];
-    DLog(@"%@",result);
+//    DLog(@"%@",result);
     
     if ([[result objectForKey:@"status"] intValue]==1) {
         [DataService sharedService].reserve_list = [result objectForKey:@"reservation"];
         [DataService sharedService].ReservationFirst = YES;
         [[NSNotificationCenter defaultCenter] postNotificationName:@"updateReservation" object:nil];
         AddViewController *addOrder = [[AddViewController alloc] initWithNibName:@"AddViewController" bundle:nil];
-        addOrder.brandResult = [NSMutableDictionary dictionaryWithDictionary:result];
         addOrder.customer = [NSMutableDictionary dictionaryWithDictionary:[result objectForKey:@"customer"]];
         addOrder.brandList = [NSMutableArray arrayWithArray:[result objectForKey:@"brands"]];
         addOrder.productList = [NSMutableArray arrayWithArray:[result objectForKey:@"products"]];
         addOrder.product_ids = [NSMutableArray arrayWithArray:[result objectForKey:@"product_ids"]];
+        DLog(@"!!!!!= %@",addOrder.product_ids);
         [DataService sharedService].number = 0;
-        addOrder.step = @"0";
+        addOrder.step = @"4";
         [viewController pushViewController:addOrder animated:YES];
     }
 

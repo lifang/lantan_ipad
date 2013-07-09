@@ -10,6 +10,7 @@
 #import "ShaixuanView.h"
 
 @class OrderViewController;
+@class AddViewController;
 @interface MainViewController : BaseViewController<UITableViewDataSource,UITableViewDelegate,UITextFieldDelegate>
 
 @property (nonatomic,strong) NSMutableArray *waitList;
@@ -20,8 +21,12 @@
 @property (nonatomic,strong) IBOutlet UIButton *statusImg;
 @property (nonatomic,strong) IBOutlet UIView *mainView;
 @property (nonatomic,strong) IBOutlet UIView *hideView;
-
+@property (nonatomic,strong) NSTimer *timer;
 @property (nonatomic,strong) NSMutableArray *letterArray;
+@property (nonatomic,strong) NSString *postString;
+
+@property (nonatomic,strong) IBOutlet UIButton *addViewBtn;
+@property (nonatomic,strong)AddViewController *addOrderView;
 
 - (IBAction)clickSearchBtn:(id)sender;
 - (IBAction)clickShowBtn:(id)sender;

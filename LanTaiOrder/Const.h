@@ -6,15 +6,9 @@
 //  Copyright (c) 2013年 LanTai. All rights reserved.
 //
 
-//#define kDomain @"http://116.255.135.175:3001"
-//#define kHost @"http://116.255.135.175:3001/api"
-//#define kSendMeg @"http://116.255.135.175:3003/apis/get_user_svcard"
-//#define kSendVerifyCode @"http://116.255.135.175:3003/apis/use_svcard"
 
-//#define kDomain @"http://bam.gankao.co"
-//#define kHost @"http://bam.gankao.co/api"
-#define kSendMeg @"http://official.gankao.co/apis/get_user_svcard"
-#define kSendVerifyCode @"http://official.gankao.co/apis/use_svcard"
+#define kSendMeg @"/orders/get_user_svcard"
+#define kSendVerifyCode @"/orders/use_svcard"
 
 #define kLogin @"/orders/login"
 #define kIndex @"/orders/index_list"
@@ -31,8 +25,10 @@
 #define kPayOrder @"/orders/pay_order"
 #define kcheckIn @"/orders/checkin"
 
+#define ksync @"/orders/sync_orders_and_customer"
+
 #define kTip @"澜泰提示"
 #define kNoReachable @"无网络连接"
 
 //钱方appid
-#define kPosAppId @"15295652460"
+//#define kPosAppId @"15295652460"

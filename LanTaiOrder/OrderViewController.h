@@ -28,6 +28,8 @@
 @property (nonatomic,strong) NSMutableDictionary *customer,*workingOrder;
 
 @property (nonatomic,strong)AddViewController *addOrderView;
+
+
 - (IBAction)clickDone:(id)sender;
 - (IBAction)clickReg:(id)sender;
 - (IBAction)clickCancel:(id)sender;

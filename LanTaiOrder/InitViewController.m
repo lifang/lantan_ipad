@@ -63,7 +63,17 @@
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyBoardWillShoww:) name:UIKeyboardWillShowNotification object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyBoardWillHidee:) name: UIKeyboardWillHideNotification object:nil];
 }
-
+- (void)errorAlert:(NSString *)message
+{
+    [AHAlertView applyCustomAlertAppearance];
+    AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:message];
+    __block AHAlertView *alert = alertt;
+    [alertt setCancelButtonTitle:@"确定" block:^{
+        alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+        alert = nil;
+    }];
+    [alertt show];
+}
 -(IBAction)btnPressed:(id)sender {
     [self.txt resignFirstResponder];
     NSString *str = @"";
@@ -92,14 +102,7 @@
         
         [self performSelector:@selector(showMainView) withObject:nil afterDelay:1];
     }else {
-        [AHAlertView applyCustomAlertAppearance];
-        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:str];
-        __block AHAlertView *alert = alertt;
-        [alertt setCancelButtonTitle:@"确定" block:^{
-            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
-            alert = nil;
-        }];
-        [alertt show];
+        [self errorAlert:str];
     }
 }
 - (void)didReceiveMemoryWarning
@@ -109,7 +112,7 @@
 }
 
 -(void)showMainView {
-    [[AppDelegate shareInstance] showRootView];
+    [(AppDelegate *)[UIApplication sharedApplication].delegate showRootView];
 }
 
 - (void)keyBoardWillShoww:(id)sender{

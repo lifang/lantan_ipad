@@ -2,10 +2,10 @@
 <archive type="com.apple.InterfaceBuilder3.CocoaTouch.iPad.XIB" version="8.00">
 	<data>
 		<int key="IBDocument.SystemTarget">1552</int>
-		<string key="IBDocument.SystemVersion">12B2080</string>
+		<string key="IBDocument.SystemVersion">12E55</string>
 		<string key="IBDocument.InterfaceBuilderVersion">3084</string>
-		<string key="IBDocument.AppKitVersion">1187</string>
-		<string key="IBDocument.HIToolboxVersion">624.00</string>
+		<string key="IBDocument.AppKitVersion">1187.39</string>
+		<string key="IBDocument.HIToolboxVersion">626.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.IBCocoaTouchPlugin</string>
 			<string key="NS.object.0">2083</string>
@@ -129,21 +129,23 @@
 									<object class="IBUISegmentedControl" id="236921373">
 										<reference key="NSNextResponder" ref="820577985"/>
 										<int key="NSvFlags">292</int>
-										<string key="NSFrame">{{128, 36}, {344, 44}}</string>
+										<string key="NSFrame">{{100, 35}, {400, 44}}</string>
 										<reference key="NSSuperview" ref="820577985"/>
 										<reference key="NSNextKeyView" ref="1027078281"/>
 										<string key="NSReuseIdentifierKey">_NS:9</string>
 										<bool key="IBUIOpaque">NO</bool>
 										<string key="targetRuntimeIdentifier">IBIPadFramework</string>
 										<int key="IBSegmentControlStyle">1</int>
-										<int key="IBNumberOfSegments">4</int>
+										<int key="IBNumberOfSegments">5</int>
 										<array key="IBSegmentTitles">
 											<string>不满意</string>
 											<string>一般</string>
 											<string>好</string>
 											<string>很好</string>
+											<string>取消订单</string>
 										</array>
 										<array class="NSMutableArray" key="IBSegmentWidths">
+											<real value="0.0"/>
 											<real value="0.0"/>
 											<real value="0.0"/>
 											<real value="0.0"/>
@@ -154,8 +156,10 @@
 											<boolean value="YES"/>
 											<boolean value="YES"/>
 											<boolean value="YES"/>
+											<boolean value="YES"/>
 										</array>
 										<array class="NSMutableArray" key="IBSegmentContentOffsets">
+											<string>{0, 0}</string>
 											<string>{0, 0}</string>
 											<string>{0, 0}</string>
 											<string>{0, 0}</string>
@@ -163,6 +167,7 @@
 										</array>
 										<array class="NSMutableArray" key="IBSegmentImages">
 											<object class="NSNull" id="4"/>
+											<reference ref="4"/>
 											<reference ref="4"/>
 											<reference ref="4"/>
 											<reference ref="4"/>
@@ -190,7 +195,7 @@
 								<string key="targetRuntimeIdentifier">IBIPadFramework</string>
 								<object class="NSCustomResource" key="IBUIImage">
 									<string key="NSClassName">NSImage</string>
-									<string key="NSResourceName">p_head_1.png</string>
+									<string key="NSResourceName">p_head.png</string>
 								</object>
 							</object>
 							<object class="IBUIView" id="163726174">
@@ -650,12 +655,12 @@
 							<reference ref="21163113"/>
 							<reference ref="18499612"/>
 							<reference ref="817671372"/>
-							<reference ref="1042692449"/>
 							<reference ref="351163651"/>
 							<reference ref="464432513"/>
 							<reference ref="890600676"/>
 							<reference ref="691352994"/>
 							<reference ref="670379496"/>
+							<reference ref="1042692449"/>
 						</array>
 						<reference key="parent" ref="585694622"/>
 					</object>
@@ -758,7 +763,7 @@
 				<string key="10.IBPluginDependency">com.apple.InterfaceBuilder.IBCocoaTouchPlugin</string>
 				<string key="11.IBPluginDependency">com.apple.InterfaceBuilder.IBCocoaTouchPlugin</string>
 				<string key="12.IBPluginDependency">com.apple.InterfaceBuilder.IBCocoaTouchPlugin</string>
-				<integer value="0" key="12.IUISegmentedControlInspectorSelectedSegmentMetadataKey"/>
+				<integer value="4" key="12.IUISegmentedControlInspectorSelectedSegmentMetadataKey"/>
 				<string key="13.IBPluginDependency">com.apple.InterfaceBuilder.IBCocoaTouchPlugin</string>
 				<string key="14.IBPluginDependency">com.apple.InterfaceBuilder.IBCocoaTouchPlugin</string>
 				<string key="15.IBPluginDependency">com.apple.InterfaceBuilder.IBCocoaTouchPlugin</string>
@@ -790,7 +795,7 @@
 		<int key="IBDocument.defaultPropertyAccessControl">3</int>
 		<dictionary class="NSMutableDictionary" key="IBDocument.LastKnownImageSizes">
 			<string key="lbl_bg.png">{150, 29}</string>
-			<string key="p_head_1.png">{600, 44}</string>
+			<string key="p_head.png">{600, 44}</string>
 		</dictionary>
 		<string key="IBCocoaTouchPluginVersion">2083</string>
 	</data>

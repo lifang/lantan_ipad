@@ -75,7 +75,7 @@
             DLog(@"优惠金额444 ＋ %@",[DataService sharedService].saleArray);
             //活动对应的产品
             if (self.selectedArr.count>0) {
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"scardReloadTableView" object:nil];
+//                [[NSNotificationCenter defaultCenter] postNotificationName:@"scardReloadTableView" object:nil];
                 for (int j=0; j<self.selectedArr.count; j++) {
                     NSMutableDictionary *dic = [NSMutableDictionary dictionaryWithDictionary:[self.selectedArr objectAtIndex:j]];
                     NSString * product_id = [dic objectForKey:@"product_id"];
@@ -117,6 +117,10 @@
                         }
                     }
                 }
+                
+                NSDictionary *saleDic = [NSDictionary dictionaryWithObjectsAndKeys:self.selectedArr,@"product", nil];
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"packageCardreloadTableView" object:saleDic];
+                
                 CGFloat lbl_price = [self.lblPrice.text floatValue];
                 if ((lbl_price+discount_y) <0.0001f ) {
                     self.lblPrice.text = @"0";
@@ -144,7 +148,7 @@
         }else {
             //活动对应的产品
             if (self.selectedArr.count>0) {
-                [[NSNotificationCenter defaultCenter] postNotificationName:@"scardReloadTableView" object:nil];
+//                [[NSNotificationCenter defaultCenter] postNotificationName:@"scardReloadTableView" object:nil];
                 for (int i=0; i<self.selectedArr.count; i++) {
                     NSMutableDictionary *dic = [NSMutableDictionary dictionaryWithDictionary:[self.selectedArr objectAtIndex:i]];
                     NSString * product_id = [dic objectForKey:@"product_id"];
@@ -166,7 +170,7 @@
                                 
                                 discount_y = discount_y +discount_x * num*sale_discount;
                                 //纪录
-                                [string appendFormat:@"_%@=%.2f",product_id,discount_x * num*sale_discount];
+                                [string appendFormat:@"_%@=%.2f",product_id,0-discount_x * num*sale_discount];
                                 //重置number_id数据
                                 [[DataService sharedService].number_id removeObjectForKey:product_id];
                                 [[DataService sharedService].number_id setObject:[NSString stringWithFormat:@"%d",count_num - num] forKey:product_id];
@@ -180,7 +184,7 @@
                                 [[DataService sharedService].row_id_numArray addObject:str];
                                 discount_y = discount_y+ discount_x * count_num  *sale_discount;
                                 //纪录
-                                [string appendFormat:@"_%@=%.2f",product_id,discount_x * count_num  *sale_discount];
+                                [string appendFormat:@"_%@=%.2f",product_id,0-discount_x * count_num  *sale_discount];
  
                                 //重置number_id数据
                                 [[DataService sharedService].number_id removeObjectForKey:product_id];
@@ -205,6 +209,7 @@
                 btn.tag = tag - CLOSE + OPEN;
                 [btn setImage:[UIImage imageNamed:@"cb_mono_on"] forState:UIControlStateNormal];
                 
+                [string appendFormat:@"_%.2f",0-discount_y];
                 [[DataService sharedService].saleArray addObject:string];
                 DLog(@"优惠金额333 ＋ %@",[DataService sharedService].saleArray);
             }else {//打折卡
@@ -287,6 +292,10 @@
                         }
                     }
                 }
+                
+                NSDictionary *saleDic = [NSDictionary dictionaryWithObjectsAndKeys:self.selectedArr,@"product", nil];
+                [[NSNotificationCenter defaultCenter] postNotificationName:@"packageCardreloadTableView" object:saleDic];
+                
                 CGFloat lbl_price = [self.lblPrice.text floatValue];
                 if ((lbl_price+discount_y) <0.0001f ) {
                     self.lblPrice.text = @"0";
@@ -321,7 +330,7 @@
                                 NSString *str = [self checkFormWithIndexRow:self.index.row andId:[product_id intValue] andNumber:num];
                                 [[DataService sharedService].row_id_numArray addObject:str];
                                 //纪录
-                                [string appendFormat:@"_%@=%.2f",product_id,discount_x * num];
+                                [string appendFormat:@"_%@=%.2f",product_id,0-discount_x * num];
                                 
                                 discount_y = discount_y +discount_x * num;
                                 //重置number_id数据
@@ -338,7 +347,7 @@
                                 [[DataService sharedService].row_id_numArray addObject:str];
                                 
                                 //纪录
-                                [string appendFormat:@"_%@=%.2f",product_id,discount_x * count_num];
+                                [string appendFormat:@"_%@=%.2f",product_id,0-discount_x * count_num];
                                 
                                 discount_y = discount_y+ discount_x * count_num;
                                 //重置number_id数据
@@ -368,6 +377,7 @@
                 btn.tag = tag - CLOSE + OPEN;
                 [btn setImage:[UIImage imageNamed:@"cb_mono_on"] forState:UIControlStateNormal];
                 
+                [string appendFormat:@"_%.2f",0-price_customer];
                 [[DataService sharedService].saleArray addObject:string];
                 DLog(@"优惠金额111 ＋ %@",[DataService sharedService].saleArray);
             }

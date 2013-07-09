@@ -10,7 +10,7 @@
 
 @implementation ServiceCell
 
-@synthesize lblPrice,lblName,lblCount,stepBtn,product,txtPrice;
+@synthesize lblPrice,lblName,lblCount,stepBtn,product,txtPrice,total;
 
 static float p_price = 0;
 
@@ -20,7 +20,7 @@ static float p_price = 0;
     return prod_count;
 }
 
-- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier with:(NSMutableDictionary *)prod indexPath:(NSIndexPath *)idx
+- (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier with:(NSMutableDictionary *)prod indexPath:(NSIndexPath *)idx type:(NSInteger)type
 {
     self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
     if (self) {
@@ -32,8 +32,40 @@ static float p_price = 0;
         self = [arrayOfViews objectAtIndex:0];
         self.product = [prod mutableCopy];
         self.index = idx;
-        self.txtPrice.text = [NSString stringWithFormat:@"%.2f",[[product objectForKey:@"price"]floatValue]];
-        p_price = [self.txtPrice.text floatValue];
+    
+        if (type == 0) {
+            self.total.hidden = YES;
+            self.txtPrice.hidden = NO;
+            self.lblCount.frame = CGRectMake(350, 11, 44, 21);
+            self.txtPrice.frame  =CGRectMake(402, 9, 80, 26);
+            if ([DataService sharedService].id_count_price.count >0) {
+                for (int i =0; i<[DataService sharedService].id_count_price.count; i++) {
+                    NSString *str = [[DataService sharedService].id_count_price objectAtIndex:i];
+                    NSArray *arr = [str componentsSeparatedByString:@"_"];
+                    NSString *p_id = [arr objectAtIndex:0];
+                    if ([p_id intValue] == [[product objectForKey:@"id"] intValue]) {
+                        self.txtPrice.text = [NSString stringWithFormat:@"%.2f",[[arr objectAtIndex:2]floatValue]];
+                    }
+                }
+            }
+            p_price = [self.txtPrice.text floatValue];
+        }else {
+            self.total.hidden = NO;
+            self.txtPrice.hidden = YES;
+            self.lblCount.frame = CGRectMake(420, 11, 55, 21);
+            self.total.frame  =CGRectMake(482, 9, 80, 26);
+            
+            if ([DataService sharedService].id_count_price.count>0) {
+                for (int i=0; i<[DataService sharedService].id_count_price.count; i++) {
+                    NSMutableString *str = [[DataService sharedService].id_count_price objectAtIndex:i];
+                    NSArray *arr = [str componentsSeparatedByString:@"_"];
+                    NSString *p_id = [arr objectAtIndex:0];//产品id
+                    if ([p_id intValue] == [[self.product objectForKey:@"id"]intValue]) {
+                        self.total.text = [NSString stringWithFormat:@"%.2f",[[arr objectAtIndex:2]floatValue]];
+                    }
+                }
+            }
+        }
     }
     return self;
 }
@@ -67,7 +99,6 @@ static float p_price = 0;
     //数量的增加与减少
     double val = [sender value];
     self.txtPrice.text = [NSString stringWithFormat:@"%.2f",[[product objectForKey:@"price"]floatValue]*val];
-    p_price = [self.txtPrice.text floatValue];
     
     if (val == old) {
         DLog(@"没变化");
@@ -93,7 +124,6 @@ static float p_price = 0;
         if ([DataService sharedService].id_count_price.count>0) {
             for (int i=0; i<[DataService sharedService].id_count_price.count; i++) {
                 NSMutableString *str = [[DataService sharedService].id_count_price objectAtIndex:i];
-                str = [NSMutableString stringWithString:[str substringToIndex:str.length-1]];
                 NSArray *arr = [str componentsSeparatedByString:@"_"];
                 NSString *p_id = [arr objectAtIndex:0];//产品id
                 
@@ -101,7 +131,6 @@ static float p_price = 0;
                     NSString *string = [self checkFormWithID:[product_id intValue] andCount:[[self.product objectForKey:@"count"]intValue] andPrice:[self.txtPrice.text floatValue]];
                     
                     [[DataService sharedService].id_count_price replaceObjectAtIndex:i withObject:string];
-                    DLog(@"111= %@",[DataService sharedService].id_count_price);
                 }
             }
         }
@@ -118,6 +147,7 @@ static float p_price = 0;
     
 }
 - (void)textFieldDidBeginEditing:(UITextField *)textField{
+    [DataService sharedService].first = NO;
     p_price = [self.txtPrice.text floatValue];
 }
 - (void)textFieldDidEndEditing:(UITextField *)textField {
@@ -133,7 +163,6 @@ static float p_price = 0;
             if ([DataService sharedService].id_count_price.count>0) {
                 for (int i=0; i<[DataService sharedService].id_count_price.count; i++) {
                     NSMutableString *str = [[DataService sharedService].id_count_price objectAtIndex:i];
-                    str = [NSMutableString stringWithString:[str substringToIndex:str.length-1]];
                     NSArray *arr = [str componentsSeparatedByString:@"_"];
                     NSString *p_id = [arr objectAtIndex:0];//产品id
                     
@@ -141,7 +170,6 @@ static float p_price = 0;
                         NSString *string = [self checkFormWithID:[[self.product objectForKey:@"id"]intValue]  andCount:[[self.product objectForKey:@"count"]intValue] andPrice:[self.txtPrice.text floatValue]];
                         
                         [[DataService sharedService].id_count_price replaceObjectAtIndex:i withObject:string];
-                        DLog(@"333= %@",[DataService sharedService].id_count_price);
                     }
                 }
             }

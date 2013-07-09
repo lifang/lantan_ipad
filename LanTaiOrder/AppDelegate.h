@@ -18,7 +18,7 @@
 @property(nonatomic, strong) NSString *versionUrlStr;
 @property(nonatomic, strong) NSMutableData *definitionData;//请求到应用id的数据信息
 
-
+@property(nonatomic, strong) UINavigationController *navigationView;
 - (void)showRootView;
 + (AppDelegate *)shareInstance;
 @end

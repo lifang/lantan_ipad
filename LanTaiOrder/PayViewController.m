@@ -10,6 +10,7 @@
 #import "UIViewController+MJPopupViewController.h"
 #import "ComplaintViewController.h"
 #import "PayStyleViewController.h"
+#import "Order.h"
 
 @interface PayViewController ()<PayStyleViewDelegate>{
     PayStyleViewController *payStyleView;
@@ -38,6 +39,8 @@
 - (void)viewDidLoad
 {
     self.segBtn.momentary = YES;
+    //生成订单，插入正在进行中的订单
+    [DataService sharedService].refreshing = YES;
     if (orderInfo) {
         DLog(@"%@",orderInfo);
         lblBrand.text = [orderInfo objectForKey:@"code"];
@@ -65,7 +68,7 @@
             [productList addObject:[orderInfo objectForKey:@"sale"]];
         }
         if ([orderInfo objectForKey:@"c_svc_relation"]) {
-            [productList addObject:[orderInfo objectForKey:@"c_svc_relation"]];
+            [productList addObjectsFromArray:[orderInfo objectForKey:@"c_svc_relation"]];
         }
         if ([orderInfo objectForKey:@"c_pcard_relation"]) {
             [productList addObjectsFromArray:[orderInfo objectForKey:@"c_pcard_relation"]];
@@ -74,7 +77,7 @@
     DLog(@"%@",productList);
     [super viewDidLoad];
     if (![self.navigationItem rightBarButtonItem]) {
-        [self addRightnaviItemWithImage:@"back"];
+        [self addRightnaviItemsWithImage:@"back" andImage:nil andImage:nil];
     }
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"view_bg"]];
     self.orderBgView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"confirm_bg"]];
@@ -101,11 +104,14 @@
         static NSString *CellIdentifier = @"ServiceCell";
         ServiceCell *cell = (ServiceCell *)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
         if (cell == nil) {
-            cell = [[ServiceCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier with:product indexPath:indexPath];
+            cell = [[ServiceCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier with:product indexPath:indexPath type:1];
         }
         cell.lblName.text = [product objectForKey:@"name"];
         cell.lblPrice.text = [NSString stringWithFormat:@"%@",[product objectForKey:@"price"]];
-        cell.lblCount.text = [NSString stringWithFormat:@"%@",[product objectForKey:@"num"]];
+        if ([product objectForKey:@"num"] != nil && ![[product objectForKey:@"num"] isKindOfClass:[NSNull class]]) {
+            cell.lblCount.text = [NSString stringWithFormat:@"%@",[product objectForKey:@"num"]];
+        }
+        
         cell.stepBtn.hidden = YES;
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
         return cell;
@@ -117,7 +123,7 @@
         }
 
         cell.lblName.text = [product objectForKey:@"name"];
-        cell.lblPrice.text = [NSString stringWithFormat:@"-%@",[product objectForKey:@"price"]];
+        cell.lblPrice.text = [NSString stringWithFormat:@"-%.2f",[[product objectForKey:@"price"]floatValue]];
         cell.switchBtn.hidden = YES;
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
         return cell;
@@ -127,8 +133,14 @@
         if (cell == nil) {
             cell = [[SVCardCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier with:product indexPath:indexPath];
         }
-        cell.lblName.text = [NSString stringWithFormat:@"%@(%@)折",[product objectForKey:@"name"],[product objectForKey:@"discount"]];
-        cell.lblPrice.text = [NSString stringWithFormat:@"-%@",[product objectForKey:@"price"]];
+        if ([[product objectForKey:@"card_type"]intValue] == 0 && [[product objectForKey:@"is_new"]intValue] == 0){
+            cell.lblName.text = [NSString stringWithFormat:@"%@(%@)折",[product objectForKey:@"name"],[product objectForKey:@"discount"]];
+            cell.lblPrice.text = [NSString stringWithFormat:@"-%.2f",[[product objectForKey:@"price"]floatValue]];
+            
+        }else {
+            cell.lblName.text = [NSString stringWithFormat:@"%@",[product objectForKey:@"name"]];
+            cell.lblPrice.text = [NSString stringWithFormat:@"%.2f",[[product objectForKey:@"price"]floatValue]];
+        }
         cell.switchBtn.hidden = YES;
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
         return cell;
@@ -138,8 +150,15 @@
         if (cell == nil) {
             cell = [[PackageCardCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier with:product indexPath:indexPath type:1];
         }
-        cell.lblName.text = [NSString stringWithFormat:@"%@(成本价:%.2f)",[product objectForKey:@"name"],[[product objectForKey:@"price"] floatValue]];
+        CGFloat pp = [[product objectForKey:@"price"] floatValue];
+        if (pp <0 ) {
+            cell.lblName.text = [NSString stringWithFormat:@"%@(优惠:%.2f)",[product objectForKey:@"name"],[[product objectForKey:@"price"] floatValue]];
             cell.lblPrice.text = [NSString stringWithFormat:@"%.2f",[[product objectForKey:@"price"] floatValue]];
+        }else {
+            cell.lblName.text = [NSString stringWithFormat:@"%@",[product objectForKey:@"name"]];
+            cell.lblPrice.text = [NSString stringWithFormat:@"%.2f",[[product objectForKey:@"price"] floatValue]];
+        }
+        
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
         return cell;
     }
@@ -148,10 +167,7 @@
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
-    NSDictionary *product = [productList objectAtIndex:indexPath.row];
-    int count = [[product objectForKey:@"products"] count];
-    count = count == 0 ? 1 : count;
-    return count * 44;
+    return 44;
 }
 
 - (IBAction)clickSegBtn:(UISegmentedControl *)sender{
@@ -163,7 +179,9 @@
         [dic setObject:self.lblUsername.text forKey:@"name"];
         [dic setObject:self.lblCarNum.text forKey:@"carNum"];
         [dic setObject:[orderInfo objectForKey:@"code"] forKey:@"code"];
-        [dic setObject:[orderInfo objectForKey:@"id"] forKey:@"order_id"];
+        if (![[orderInfo objectForKey:@"id"] isKindOfClass:[NSNull class]] && [orderInfo objectForKey:@"id"]!= nil){
+            [dic setObject:[orderInfo objectForKey:@"id"] forKey:@"order_id"];
+        }
         [dic setObject:@"0" forKey:@"from"];
         NSMutableString *prods = [NSMutableString string];
         for (NSDictionary *prod in productList) {
@@ -177,21 +195,113 @@
         
         complaint.info = [NSMutableDictionary dictionaryWithDictionary:dic];
         [self.navigationController pushViewController:complaint animated:YES];
-    }else{
+    }else if (sender.selectedSegmentIndex == 1 || sender.selectedSegmentIndex == 2 || sender.selectedSegmentIndex == 3){
         //评价，弹出框
         payStyleView = nil;
         payStyleView = [[PayStyleViewController alloc] initWithNibName:@"PayStyleViewController" bundle:nil];
         payStyleView.delegate = self;
         NSMutableDictionary *dic = [NSMutableDictionary dictionary];
-        [dic setObject:[orderInfo objectForKey:@"id"] forKey:@"order_id"];
+        if (![[orderInfo objectForKey:@"id"] isKindOfClass:[NSNull class]] && [orderInfo objectForKey:@"id"]!= nil){
+            [dic setObject:[orderInfo objectForKey:@"id"] forKey:@"order_id"];
+        }else {
+            [dic setObject:self.lblCarNum.text forKey:@"carNum"];
+            [dic setObject:[orderInfo objectForKey:@"code"] forKey:@"code"];
+        }
         [dic setObject:[NSNumber numberWithInt:sender.selectedSegmentIndex] forKey:@"is_please"];
         [dic setObject:[orderInfo objectForKey:@"total"] forKey:@"price"];
-        [dic setObject:[orderInfo objectForKey:@"content"] forKey:@"content"];
+        if (![[orderInfo objectForKey:@"content"] isKindOfClass:[NSNull class]] && [orderInfo objectForKey:@"content"]!= nil) {
+            [dic setObject:[orderInfo objectForKey:@"content"] forKey:@"content"];
+        }
         payStyleView.order = [NSMutableDictionary dictionaryWithDictionary:dic];
         
         [self presentPopupViewController:payStyleView animationType:MJPopupViewAnimationSlideBottomBottom];
+    }else {
+        //取消订单
+        if ([[Utils connectToInternet] isEqualToString:@"locahost"] || [DataService sharedService].netWorking == NO) {
+            NSArray *array = [[LanTaiOrderManager sharedInstance]loadDataFromTableName:@"orderInfo" CarNum:nil andCodeID:[orderInfo objectForKey:@"code"]];
+            if (array.count >0) {
+                for (Order *order in array) {
+                    BOOL successful = NO;
+                    NSString *code = order.codeID;
+                    NSArray *code_arr = [code componentsSeparatedByString:@"-"];
+                    if (code_arr.count == 1) {//原有订单=====修改
+                        successful = [[LanTaiOrderManager sharedInstance]updatetable:@"orderInfo" WithBilling:@"" WithRequest:nil WithReason:nil WithIs_please:@"" WithPayType:@"" WithStatus:[NSString stringWithFormat:@"%d",5] ByCarNum:[NSString stringWithFormat:@"%@",order.carNum] andCodeID:[NSString stringWithFormat:@"%@",order.codeID]];
+                        
+                    }else {//删除
+                        successful = [[LanTaiOrderManager sharedInstance]deleteTable:@"orderInfo" WithName:nil andPassWord:nil andCarNum:nil andProduct_id:nil andCodeID:code];
+                    }
+                    
+                    if (successful) {
+                        [DataService sharedService].refreshing = YES;
+                        [AHAlertView applyCustomAlertAppearance];
+                        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"订单已取消"];
+                        __block AHAlertView *alert = alertt;
+                        [alertt setCancelButtonTitle:@"确定" block:^{
+                            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+                            alert = nil;
+                            [self.navigationController popToRootViewControllerAnimated:YES];
+                        }];
+                        [alertt show];
+                    }else {
+                        [self errorAlert:@"订单取消失败"];
+                    }
+                }
+            }else {//本地无相关数据
+                NSString *code = self.lblBrand.text;
+                NSArray *code_arr = [code componentsSeparatedByString:@"-"];
+                if (code_arr.count == 1) {
+                    NSArray *paramarray = [[NSArray alloc] initWithObjects:@"",@"",@"",@"",@"",@"",@"",@"",@"",@"",@"",code,[NSString stringWithFormat:@"%d",5],nil];
+                    BOOL success = [[LanTaiOrderManager sharedInstance]addDataToTable:@"orderInfo" WithArray:paramarray];
+                    if (success) {
+                        [DataService sharedService].refreshing = YES;
+                        [AHAlertView applyCustomAlertAppearance];
+                        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"订单已取消"];
+                        __block AHAlertView *alert = alertt;
+                        [alertt setCancelButtonTitle:@"确定" block:^{
+                            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+                            alert = nil;
+                            [self.navigationController popToRootViewControllerAnimated:YES];
+                        }];
+                        [alertt show];
+                    }else {
+                        [self errorAlert:@"订单取消失败"];
+                    }
+                }
+            }
+        }else {//有网
+            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+            hud.dimBackground = NO;
+            [hud showWhileExecuting:@selector(cancleOrderr) onTarget:self withObject:nil animated:YES];
+            hud.labelText = @"正在努力加载...";
+            [self.view addSubview:hud];
+        }
     }
 }
+#pragma mark -取消订单（未施工）
+-(void)cancleOrderr {
+    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kPayOrder]];
+    [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[orderInfo objectForKey:@"id"],@"order_id",@"1",@"opt_type", nil]];
+    [r setPostDataEncoding:NSUTF8StringEncoding];
+    NSError *error = nil;
+    NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
+    if ([[result objectForKey:@"status"] intValue]==1) {
+        [AHAlertView applyCustomAlertAppearance];
+        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"订单已取消"];
+        __block AHAlertView *alert = alertt;
+        [alertt setCancelButtonTitle:@"确定" block:^{
+            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+            alert = nil;
+            [self.navigationController popToRootViewControllerAnimated:YES];
+        }];
+        [alertt show];
+        
+    }else{
+        [self errorAlert:@"订单取消失败"];
+    }
+    [MBProgressHUD hideHUDForView:self.view animated:YES];
+}
+
+
 -(void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     if ([DataService sharedService].payNumber == 1) {
@@ -200,10 +310,19 @@
         payStyleView = [[PayStyleViewController alloc] initWithNibName:@"PayStyleViewController" bundle:nil];
         payStyleView.delegate = self;
         NSMutableDictionary *dic = [NSMutableDictionary dictionary];
-        [dic setObject:[orderInfo objectForKey:@"id"] forKey:@"order_id"];
+        if (![[orderInfo objectForKey:@"id"] isKindOfClass:[NSNull class]] && [orderInfo objectForKey:@"id"]!= nil) {
+            [dic setObject:[orderInfo objectForKey:@"id"] forKey:@"order_id"];
+        }else {
+            [dic setObject:self.lblCarNum.text forKey:@"carNum"];
+            [dic setObject:[orderInfo objectForKey:@"code"] forKey:@"code"];
+        }
+        [dic setObject:[orderInfo objectForKey:@"code"] forKey:@"code"];
         [dic setObject:[NSNumber numberWithInt:0] forKey:@"is_please"];
         [dic setObject:[orderInfo objectForKey:@"total"] forKey:@"price"];
-        [dic setObject:[orderInfo objectForKey:@"content"] forKey:@"content"];
+        if (![[orderInfo objectForKey:@"content"] isKindOfClass:[NSNull class]] && [orderInfo objectForKey:@"content"]!= nil) {
+            [dic setObject:[orderInfo objectForKey:@"content"] forKey:@"content"];
+        }
+        
         payStyleView.order = [NSMutableDictionary dictionaryWithDictionary:dic];
         [self presentPopupViewController:payStyleView animationType:MJPopupViewAnimationSlideBottomBottom];
         

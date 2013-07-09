@@ -11,8 +11,7 @@
 @interface BaseViewController : UIViewController
 
 - (void)addLeftnaviItemWithImage:(NSString *)imageName;
-- (void)addRightnaviItemWithImage:(NSString *)imageName;
-- (void)addRightnaviItemsWithImage:(NSString *)imageName andImage:(NSString *)image;
-
-@property (strong, nonatomic) UIButton *btn_ip;
+- (void)addRightnaviItemsWithImage:(NSString *)imageName andImage:(NSString *)image1 andImage:(NSString *)image2;
+- (void)errorAlert:(NSString *)message;
+- (void)errorAlertWithbtns:(NSString *)message;
 @end

@@ -36,7 +36,7 @@
 {
     [super viewDidLoad];
     if (![self.navigationItem rightBarButtonItem]) {
-        [self addRightnaviItemWithImage:@"back"];
+        [self addRightnaviItemsWithImage:@"back" andImage:nil andImage:nil];
     }
     if (info) {
         self.lblCarNum.text = [info objectForKey:@"carNum"];
@@ -44,16 +44,10 @@
         self.lblName.text = [info objectForKey:@"name"];
         self.lblProduct.text = [info objectForKey:@"prods"];
     }
-//    [self.reasonView becomeFirstResponder];
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"view_bg"]];
      self.infoBgView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"dot_1_bg"]];
 }
 
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
-}
 //提交
 -(void)submit {
     STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kComplaint]];
@@ -65,6 +59,32 @@
     if ([[result objectForKey:@"status"] intValue] == 1) {
         if([[info objectForKey:@"from"] intValue]==1){
             [DataService sharedService].payNumber = 1;
+            
+            NSString *btnTag = [NSString stringWithFormat:@"%@",[info objectForKey:@"tag"]];
+            NSMutableArray *array = [NSMutableArray arrayWithArray:[DataService sharedService].doneArray];
+            NSMutableArray *tempArray = [[NSMutableArray alloc]init];//临时数组
+            if (array.count > 0) {
+                int i = 0;
+                BOOL exit = NO;
+                while (i<array.count) {
+                    NSString *str = [array objectAtIndex:i];
+                    if ([str isEqualToString:btnTag]) {
+                        exit = YES;
+                        break;
+                    }
+                    i++;
+                }
+                if (exit == NO) {
+                    [tempArray addObject:btnTag];
+                }
+            }else {
+                [tempArray addObject:btnTag];
+            }
+            
+            if (tempArray.count>0) {
+                [[DataService sharedService].doneArray addObjectsFromArray:tempArray];
+            }
+            
             [self.navigationController popViewControllerAnimated:YES];
             
         }else{
@@ -78,24 +98,48 @@
     [reasonView resignFirstResponder];
     [requestView resignFirstResponder];
     if (self.reasonView.text.length==0 || self.requestView.text.length==0) {
-        [AHAlertView applyCustomAlertAppearance];
-        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"请输入投诉理由和要求"];
-        __block AHAlertView *alert = alertt;
-        [alertt setCancelButtonTitle:@"确定" block:^{
-            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
-            alert = nil;
-        }];
-        [alertt show];
+        [self errorAlert:@"请输入投诉理由和要求"];
     }else{
-        if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
-            [AHAlertView applyCustomAlertAppearance];
-            AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:kNoReachable];
-            __block AHAlertView *alert = alertt;
-            [alertt setCancelButtonTitle:@"确定" block:^{
-                alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
-                alert = nil;
-            }];
-            [alertt show];
+        if ([[Utils connectToInternet] isEqualToString:@"locahost"] || [DataService sharedService].netWorking == NO) {
+            
+            NSArray *arr = [[LanTaiOrderManager sharedInstance]loadDataFromTableName:@"orderInfo" CarNum:nil andCodeID:[NSString stringWithFormat:@"%@",self.lblCode.text]];
+            if (arr.count != 0) {
+                BOOL success = [[LanTaiOrderManager sharedInstance]updatetable:@"orderInfo" WithBilling:nil WithRequest:[NSString stringWithFormat:@"%@",self.requestView.text] WithReason:[NSString stringWithFormat:@"%@",self.reasonView.text] WithIs_please:[NSString stringWithFormat:@"%d",0] WithPayType:nil WithStatus:nil ByCarNum:[NSString stringWithFormat:@"%@",self.lblCarNum.text] andCodeID:[NSString stringWithFormat:@"%@",self.lblCode.text]];
+                if (success) {
+                    [DataService sharedService].payNumber = 1;
+                    if([[info objectForKey:@"from"] intValue]==1) {
+                        NSString *btnTag = [NSString stringWithFormat:@"%@",[info objectForKey:@"tag"]];
+                        NSMutableArray *array = [NSMutableArray arrayWithArray:[DataService sharedService].doneArray];
+                        NSMutableArray *tempArray = [[NSMutableArray alloc]init];//临时数组
+                        if (array.count > 0) {
+                            int i = 0;
+                            BOOL exit = NO;
+                            while (i<array.count) {
+                                NSString *str = [array objectAtIndex:i];
+                                if ([str isEqualToString:btnTag]) {
+                                    exit = YES;
+                                    break;
+                                }
+                                i++;
+                            }
+                            if (exit == NO) {
+                                [tempArray addObject:btnTag];
+                            }
+                        }else {
+                            [tempArray addObject:btnTag];
+                        }
+                        
+                        if (tempArray.count>0) {
+                            [[DataService sharedService].doneArray addObjectsFromArray:tempArray];
+                        }
+                    }
+                    
+                    [self.navigationController popViewControllerAnimated:YES];
+                }else {
+                    [self errorAlert:@"投诉失败"];
+                }
+            }
+            
         }else {
             MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
             hud.dimBackground = NO;
@@ -109,7 +153,7 @@
 - (void)textViewDidBeginEditing:(UITextView *)textView {
     [self.scView setScrollEnabled:YES];
     
-    if (textView.tag == 888) {
+    if (textView.tag == 1888) {
         [self.scView setContentOffset:CGPointMake(0, 0)];
     }else {
         [self.scView setContentOffset:CGPointMake(0, 236)];

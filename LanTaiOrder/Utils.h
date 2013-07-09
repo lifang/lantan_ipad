@@ -8,15 +8,19 @@
 
 #import <Foundation/Foundation.h>
 #import <CommonCrypto/CommonCrypto.h>
-
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <net/if.h>
+#include <ifaddrs.h>
+#import <dlfcn.h>
+#import <SystemConfiguration/SystemConfiguration.h>
 @interface Utils : NSObject
++ (NSString *) localWiFiIPAddress;
 
-+ (NSString *)isExistenceNetwork;
-
-+(NSMutableArray *)matchArray;
-
++ (NSMutableArray *)matchArray;
++ (NSString *)connectToInternet;
 + (NSString *)orderStatus:(int)status;
 + (NSString *)formateDate:(NSString *)date;
 + (NSString *)MD5:(NSString *)str;
-+(NSMutableURLRequest *)getRequest:(NSMutableDictionary *)params string:(NSString *)theStr;
++ (NSMutableURLRequest *)getRequest:(NSMutableDictionary *)params string:(NSString *)theStr;
 @end

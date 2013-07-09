@@ -32,7 +32,7 @@
 //    self.navigationController.navigationBar.hidden = NO;
     [super viewDidLoad];
     if (![self.navigationItem rightBarButtonItem]) {
-        [self addRightnaviItemWithImage:@"back"];
+        [self addRightnaviItemsWithImage:@"back" andImage:nil andImage:nil];
     }
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refreshData:) name:@"updateReservation" object:nil];
     

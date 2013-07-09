@@ -30,6 +30,8 @@
         for (int i=0; i<len; i++) {
             frame.origin.y = 44 * i;
             UILabel *lblProd = [[UILabel alloc] initWithFrame:frame];
+            lblProd.lineBreakMode = NSLineBreakByCharWrapping;
+            lblProd.numberOfLines = 0;
             lblProd.text = [NSString stringWithFormat:@"%@(%@)次",[[selectedArr objectAtIndex:i] objectForKey:@"name"],[[selectedArr objectAtIndex:i] objectForKey:@"num"]];
             lblProd.textAlignment = NSTextAlignmentRight;
             lblProd.tag = CLOSE +i+CLOSE;
@@ -96,11 +98,9 @@
     CGFloat x = [self.lblPrice.text floatValue];
     CGFloat y = 0;
 
-    
-    
     NSArray *array = [[DataService sharedService].number_id allKeys];
     if (tagStr.length == 3) {
-        [[NSNotificationCenter defaultCenter] postNotificationName:@"scardReloadTableView" object:nil];
+//        [[NSNotificationCenter defaultCenter] postNotificationName:@"scardReloadTableView" object:nil];
         dic = [[selectedArr objectAtIndex:sender.tag - OPEN] mutableCopy];
         NSString * product_id = [dic objectForKey:@"product_id"];
         if ([array containsObject:product_id]) {//套餐卡包含此产品／服务
@@ -134,8 +134,12 @@
                             [dic setValue:@"1" forKey:@"selected"];
                             [selectedArr replaceObjectAtIndex:sender.tag - OPEN withObject:dic];
                             
-                            int tag = btn.tag;
+                            //活动通知
+                            NSDictionary *productDic = [NSDictionary dictionaryWithObjectsAndKeys:[NSString stringWithFormat:@"%d", num_count+count_num],@"count",product_id,@"id",[dic objectForKey:@"name"],@"name",[dic objectForKey:@"product_price"],@"price", nil];
+                            [[NSNotificationCenter defaultCenter] postNotificationName:@"saleReload" object:productDic];
                             
+
+                            int tag = btn.tag;
                             UILabel *lab_prod = (UILabel *)[self viewWithTag:btn.tag+OPEN];
                             lab_prod.text = [NSString stringWithFormat:@"%@(%@)次",[dic objectForKey:@"name"],[dic objectForKey:@"num"]];
                             lab_prod.tag = btn.tag- OPEN + CLOSE+ CLOSE;
@@ -175,8 +179,7 @@
         dic = [[selectedArr objectAtIndex:sender.tag - CLOSE] mutableCopy];
         NSString * product_id = [dic objectForKey:@"product_id"];
         if ([array containsObject:product_id]) {//套餐卡包含此产品／服务
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"scardReloadTableView" object:nil];
-            [DataService sharedService].first = NO;
+//            [[NSNotificationCenter defaultCenter] postNotificationName:@"scardReloadTableView" object:nil];
             int num = [[dic objectForKey:@"num"]intValue];//套餐卡里面的数目
             
             int count_num = [[[DataService sharedService].number_id objectForKey:product_id]intValue];//用户选择的数目

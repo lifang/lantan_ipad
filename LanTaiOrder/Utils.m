@@ -9,25 +9,46 @@
 #import "Utils.h"
 #import "pinyin.h"
 
+
 @implementation Utils
 
-//判断网络类型
-+ (NSString *)isExistenceNetwork {
-    NSString *str = nil;
-	Reachability *r = [Reachability reachabilityWithHostName:@"www.apple.com"];
-    switch ([r currentReachabilityStatus]) {
-        case NotReachable:
-			str = @"NotReachable";
-            break;
-        case ReachableViaWWAN:
-			str = @"ReachableViaWWAN";
-            break;
-        case ReachableViaWiFi:
-			str = @"ReachableViaWiFi";
-            break;
++ (NSString *) localWiFiIPAddress
+{
+    BOOL success;
+    struct ifaddrs * addrs;
+    const struct ifaddrs * cursor;
+    
+    success = getifaddrs(&addrs) == 0;
+    if (success) {
+        cursor = addrs;
+        while (cursor != NULL) {
+            // the second test keeps from picking up the loopback address
+            if (cursor->ifa_addr->sa_family == AF_INET && (cursor->ifa_flags & IFF_LOOPBACK) == 0)
+            {
+                NSString *name = [NSString stringWithUTF8String:cursor->ifa_name];
+                if ([name isEqualToString:@"en0"])  // Wi-Fi adapter
+                    return [NSString stringWithUTF8String:inet_ntoa(((struct sockaddr_in *)cursor->ifa_addr)->sin_addr)];
+            }
+            cursor = cursor->ifa_next;
+        }
+        freeifaddrs(addrs);
     }
+    return nil;
+}
+
++ (NSString *)connectToInternet {
+    NSString *str = nil;
+    NSString *ipAddress = [self localWiFiIPAddress];
+//    DLog(@"ip = %@",ipAddress);
+    if (ipAddress == nil) {
+        str = @"locahost";
+    }else {
+        str = @"internet";
+    }
+    
     return str;
 }
+
 +(NSMutableArray *)matchArray {
     NSMutableArray *array = [NSMutableArray array];
     for (int i = 0; i < 27; i++) [array addObject:[NSMutableArray array]];

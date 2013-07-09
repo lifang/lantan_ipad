@@ -9,10 +9,8 @@
 #import "LoginViewController.h"
 #import "AppDelegate.h"
 #import "InitViewController.h"
-
-@interface LoginViewController ()
-
-@end
+#import "EmployeeInfo.h"
+#import "MainViewController.h"
 
 @implementation LoginViewController
 
@@ -97,17 +95,13 @@
     if (msgStr.length > 0){
         [AHAlertView applyCustomAlertAppearance];
         AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:msgStr];
-//        __block AHAlertView *alert = alertt;
-//        [alertt setCancelButtonTitle:@"确定" block:^{
-//            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
-//            alert = nil;
-//        }];
         [alertt show];
         [NSTimer scheduledTimerWithTimeInterval:1.0f target:self selector:@selector(closeAlert:) userInfo:alertt repeats:NO];
         return FALSE;
     }
     return TRUE;
 }
+
 -(void)login {
     STHTTPRequest *request = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kLogin]];
     [request setPOSTDictionary:[NSMutableDictionary dictionaryWithObjectsAndKeys:self.txtName.text,@"user_name",self.txtPwd.text,@"user_password", nil]];
@@ -127,8 +121,24 @@
             
             [DataService sharedService].user_id = [NSString stringWithFormat:@"%@",[staff objectForKey:@"id"]];
             [DataService sharedService].store_id = [NSString stringWithFormat:@"%@",[staff objectForKey:@"store_id"]];
+            //保存员工信息到数据库
+            NSArray *array = [[LanTaiOrderManager sharedInstance] loadDataFromTableName:@"employee" WithName:self.txtName.text andPassWord:self.txtPwd.text andCarNum:nil andBrand_id:nil andCar_brand_id:nil andProduct_id:nil andClassify_id:nil andCar_capital_id:nil];
+            if (array.count == 0) {
+                NSArray *paramarray = [[NSArray alloc] initWithObjects:self.txtName.text,self.txtPwd.text,[NSString stringWithFormat:@"%@",[staff objectForKey:@"store_id"]],[NSString stringWithFormat:@"%@",[staff objectForKey:@"id"]],nil];
+                [[LanTaiOrderManager sharedInstance]addDataToTable:@"employee" WithArray:paramarray];
+            }else {
+                //数据改动
+                for (EmployeeInfo *employee in array) {
+                    if (![employee.store_id isEqualToString:[NSString stringWithFormat:@"%@",[staff objectForKey:@"store_id"]]] || ![employee.user_id isEqualToString:[NSString stringWithFormat:@"%@",[staff objectForKey:@"id"]]]) {
+                       BOOL success = [[LanTaiOrderManager sharedInstance]deleteTable:@"employee" WithName:self.txtName.text andPassWord:self.txtPwd.text andCarNum:nil andProduct_id:nil andCodeID:nil];
+                        if (success) {
+                            NSArray *paramarray = [[NSArray alloc] initWithObjects:self.txtName.text,self.txtPwd.text,[NSString stringWithFormat:@"%@",[staff objectForKey:@"store_id"]],[NSString stringWithFormat:@"%@",[staff objectForKey:@"id"]],nil];
+                            [[LanTaiOrderManager sharedInstance]addDataToTable:@"employee" WithArray:paramarray];
+                        }
+                    }
+                }
+            }
             [(AppDelegate *)[UIApplication sharedApplication].delegate showRootView];
-            
         }else{
             [AHAlertView applyCustomAlertAppearance];
             AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:text];
@@ -158,15 +168,23 @@
     [self.txtName resignFirstResponder];
     [self.txtPwd resignFirstResponder];
     if ([self checkForm]) {
-        if ([[Utils isExistenceNetwork] isEqualToString:@"NotReachable"]) {
-            [AHAlertView applyCustomAlertAppearance];
-            AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:kNoReachable];
-            __block AHAlertView *alert = alertt;
-            [alertt setCancelButtonTitle:@"确定" block:^{
-                alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
-                alert = nil;
-            }];
-            [alertt show];
+        if ([[Utils connectToInternet] isEqualToString:@"locahost"]) {
+            NSArray *array = [[LanTaiOrderManager sharedInstance] loadDataFromTableName:@"employee" WithName:self.txtName.text andPassWord:self.txtPwd.text andCarNum:nil andBrand_id:nil andCar_brand_id:nil andProduct_id:nil andClassify_id:nil andCar_capital_id:nil];
+            if (array.count != 0) {
+                for (EmployeeInfo *employee in array) {
+                    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                    [defaults setObject:[NSString stringWithFormat:@"%@",employee.user_id] forKey:@"userId"];
+                    [defaults setObject:[NSString stringWithFormat:@"%@",employee.store_id] forKey:@"storeId"];
+                    [defaults synchronize];
+                    
+                    [DataService sharedService].user_id = [NSString stringWithFormat:@"%@",employee.user_id];
+                    [DataService sharedService].store_id = [NSString stringWithFormat:@"%@",employee.store_id];
+                    
+                    [(AppDelegate *)[UIApplication sharedApplication].delegate showRootView];
+                }
+            }else {
+                //本地数据库没有此用户
+            }
         }else{
             MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
             hud.dimBackground = NO;
