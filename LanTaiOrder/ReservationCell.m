@@ -50,7 +50,7 @@
 -(void)cancle {
     AppDelegate *delegate = [AppDelegate shareInstance];
     
-    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kConfirmReserv]];
+    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kConfirmReserv]];
     NSMutableDictionary *dic = [NSMutableDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id",self.reserv_id,@"r_id",@"1",@"status", nil];
     [r setPOSTDictionary:dic];
     [r setPostDataEncoding:NSUTF8StringEncoding];
@@ -70,17 +70,28 @@
     [self.txtReservAt becomeFirstResponder];
     [self.txtReservAt resignFirstResponder];
     
-    AppDelegate *delegate = [AppDelegate shareInstance];
-    MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:delegate.window];
-    [hud showWhileExecuting:@selector(cancle) onTarget:self withObject:nil animated:YES];
-    hud.labelText = @"正在努力加载...";
-    [delegate.window addSubview:hud];
+    if ([[Utils connectToInternet] isEqualToString:@"locahost"]) {
+        [AHAlertView applyCustomAlertAppearance];
+        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:kNoReachable];
+        __block AHAlertView *alert = alertt;
+        [alertt setCancelButtonTitle:@"确定" block:^{
+            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+            alert = nil;
+        }];
+        [alertt show];
+    }else {
+        AppDelegate *delegate = [AppDelegate shareInstance];
+        MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:delegate.window];
+        [hud showWhileExecuting:@selector(cancle) onTarget:self withObject:nil animated:YES];
+        hud.labelText = @"正在努力加载...";
+        [delegate.window addSubview:hud];
+    }
 }
 
 -(void)confirm {
     AppDelegate *delegate = [AppDelegate shareInstance];
     
-    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kConfirmReserv]];
+    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kConfirmReserv]];
     NSMutableDictionary *dic = [NSMutableDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id",self.reserv_id,@"r_id",@"0",@"status",self.txtReservAt.text,@"reserv_at", nil];
     [r setPOSTDictionary:dic];
     [r setPostDataEncoding:NSUTF8StringEncoding];
@@ -94,13 +105,16 @@
         [DataService sharedService].ReservationFirst = YES;
         [[NSNotificationCenter defaultCenter] postNotificationName:@"updateReservation" object:nil];
         AddViewController *addOrder = [[AddViewController alloc] initWithNibName:@"AddViewController" bundle:nil];
-        addOrder.customer = [NSMutableDictionary dictionaryWithDictionary:[result objectForKey:@"customer"]];
-        addOrder.brandList = [NSMutableArray arrayWithArray:[result objectForKey:@"brands"]];
-        addOrder.productList = [NSMutableArray arrayWithArray:[result objectForKey:@"products"]];
+         addOrder.customer = [NSMutableDictionary dictionaryWithDictionary:[result objectForKey:@"customer"]];
+        NSMutableDictionary *dictionary = [NSMutableDictionary dictionaryWithDictionary:[result objectForKey:@"all_infos"]];
+        addOrder.brandList = [NSMutableArray arrayWithArray:[dictionary objectForKey:@"car_info"]];
+        addOrder.productList = [NSMutableDictionary dictionaryWithDictionary:[dictionary objectForKey:@"products"]];
+        addOrder.titleArray = [NSMutableArray arrayWithArray:[dictionary objectForKey:@"p_titles_order"]];
+        
         addOrder.product_ids = [NSMutableArray arrayWithArray:[result objectForKey:@"product_ids"]];
         DLog(@"!!!!!= %@",addOrder.product_ids);
         [DataService sharedService].number = 0;
-        addOrder.step = @"4";
+        addOrder.step = @"0";
         [viewController pushViewController:addOrder animated:YES];
     }
 
@@ -110,12 +124,22 @@
 - (IBAction)clickConfirm:(id)sender{
     [self.txtReservAt becomeFirstResponder];
     [self.txtReservAt resignFirstResponder];
-    
-    AppDelegate *delegate = [AppDelegate shareInstance];
-    MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:delegate.window];
-    [hud showWhileExecuting:@selector(confirm) onTarget:self withObject:nil animated:YES];
-    hud.labelText = @"正在努力加载...";
-    [delegate.window addSubview:hud];
+    if ([[Utils connectToInternet] isEqualToString:@"locahost"]) {
+        [AHAlertView applyCustomAlertAppearance];
+        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:kNoReachable];
+        __block AHAlertView *alert = alertt;
+        [alertt setCancelButtonTitle:@"确定" block:^{
+            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+            alert = nil;
+        }];
+        [alertt show];
+    }else {
+        AppDelegate *delegate = [AppDelegate shareInstance];
+        MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:delegate.window];
+        [hud showWhileExecuting:@selector(confirm) onTarget:self withObject:nil animated:YES];
+        hud.labelText = @"正在努力加载...";
+        [delegate.window addSubview:hud];
+    }
 }
 
 @end

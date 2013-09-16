@@ -84,16 +84,23 @@
     
     // Make the Background Clickable
     UIButton * dismissButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    dismissButton.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
     dismissButton.backgroundColor = [UIColor clearColor];
-    dismissButton.frame = CGRectMake(popupView.frame.size.width-40, 10,30 , 30);
-    [dismissButton setImage:[UIImage imageNamed:@"close"] forState:UIControlStateNormal];
-    [popupView addSubview:dismissButton];
+    dismissButton.frame = sourceView.bounds;
+    [overlayView addSubview:dismissButton];
+    
+//    UIButton * dismissButton = [UIButton buttonWithType:UIButtonTypeCustom];
+//    dismissButton.backgroundColor = [UIColor clearColor];
+//    dismissButton.frame = CGRectMake(popupView.frame.size.width-40, 10,30 , 30);
+//    [dismissButton setImage:[UIImage imageNamed:@"close"] forState:UIControlStateNormal];
+//    [popupView addSubview:dismissButton];
     
     popupView.alpha = 0.0f;
     [overlayView addSubview:popupView];
     [sourceView addSubview:overlayView];
     
     if(animationType == MJPopupViewAnimationSlideBottomTop) {
+//        [dismissButton addTarget:self action:@selector(dismissPopupViewControllerWithanimationTypeSlideBottomTop) forControlEvents:UIControlEventTouchUpInside];
         [dismissButton addTarget:self action:@selector(dismissPopupViewControllerWithanimationTypeSlideBottomTop) forControlEvents:UIControlEventTouchUpInside];
         [self slideViewIn:popupView sourceView:sourceView overlayView:overlayView withAnimationType:animationType];
     } else if (animationType == MJPopupViewAnimationSlideRightLeft) {
@@ -208,6 +215,9 @@
         backgroundView.alpha = 0.0f;
     } completion:^(BOOL finished) {
         [popupView removeFromSuperview];
+        if ([DataService sharedService].clean == YES) {
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"timeCancleWhenDismiss" object:nil];
+        }
         [overlayView removeFromSuperview];
     }];
 }

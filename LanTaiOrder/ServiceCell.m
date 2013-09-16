@@ -119,7 +119,7 @@ static float p_price = 0;
         NSString *price = [NSString stringWithFormat:@"%.2f",(val - old) * [self.lblPrice.text floatValue] + p_change];
         [self.product setValue:[NSNumber numberWithDouble:val] forKey:@"count"];
         [DataService sharedService].total_count = [DataService sharedService].total_count + [[product objectForKey:@"price"]floatValue]*(val - old) + p_change;
-        DLog(@"%f",[DataService sharedService].total_count);
+//        DLog(@"%f",[DataService sharedService].total_count);
         //重置id_count_price数据
         if ([DataService sharedService].id_count_price.count>0) {
             for (int i=0; i<[DataService sharedService].id_count_price.count; i++) {
@@ -158,7 +158,7 @@ static float p_price = 0;
         float price = [string floatValue];
         if (price != p_price) {
             [DataService sharedService].total_count = [DataService sharedService].total_count + (price-p_price) ;
-            DLog(@"%f",[DataService sharedService].total_count);
+//            DLog(@"%f",[DataService sharedService].total_count);
             //重置id_count_price数据
             if ([DataService sharedService].id_count_price.count>0) {
                 for (int i=0; i<[DataService sharedService].id_count_price.count; i++) {

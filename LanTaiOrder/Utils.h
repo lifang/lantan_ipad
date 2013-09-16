@@ -16,7 +16,7 @@
 #import <SystemConfiguration/SystemConfiguration.h>
 @interface Utils : NSObject
 + (NSString *) localWiFiIPAddress;
-
++ (NSString *)isExistenceNetwork;
 + (NSMutableArray *)matchArray;
 + (NSString *)connectToInternet;
 + (NSString *)orderStatus:(int)status;

@@ -36,7 +36,7 @@
 {
     [super viewDidLoad];
     if (![self.navigationItem rightBarButtonItem]) {
-        [self addRightnaviItemsWithImage:@"back" andImage:nil andImage:nil];
+        [self addRightnaviItemsWithImage:@"back" andImage:nil];
     }
     if (info) {
         self.lblCarNum.text = [info objectForKey:@"carNum"];
@@ -50,7 +50,7 @@
 
 //提交
 -(void)submit {
-    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kComplaint]];
+    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kComplaint]];
     [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:self.reasonView.text,@"reason",self.requestView.text,@"request",[DataService sharedService].store_id,@"store_id",[info objectForKey:@"order_id"],@"order_id", nil]];
     [r setPostDataEncoding:NSUTF8StringEncoding];
     NSError *error = nil;
@@ -101,8 +101,7 @@
         [self errorAlert:@"请输入投诉理由和要求"];
     }else{
         if ([[Utils connectToInternet] isEqualToString:@"locahost"] || [DataService sharedService].netWorking == NO) {
-            
-            NSArray *arr = [[LanTaiOrderManager sharedInstance]loadDataFromTableName:@"orderInfo" CarNum:nil andCodeID:[NSString stringWithFormat:@"%@",self.lblCode.text]];
+            NSArray *arr = [[LanTaiOrderManager sharedInstance]loadDataFromTableName:@"orderInfo" CarNum:nil andCodeID:[NSString stringWithFormat:@"%@",self.lblCode.text] andStore_id:[DataService sharedService].store_id];
             if (arr.count != 0) {
                 BOOL success = [[LanTaiOrderManager sharedInstance]updatetable:@"orderInfo" WithBilling:nil WithRequest:[NSString stringWithFormat:@"%@",self.requestView.text] WithReason:[NSString stringWithFormat:@"%@",self.reasonView.text] WithIs_please:[NSString stringWithFormat:@"%d",0] WithPayType:nil WithStatus:nil ByCarNum:[NSString stringWithFormat:@"%@",self.lblCarNum.text] andCodeID:[NSString stringWithFormat:@"%@",self.lblCode.text]];
                 if (success) {
@@ -138,6 +137,15 @@
                 }else {
                     [self errorAlert:@"投诉失败"];
                 }
+            }else {
+                [AHAlertView applyCustomAlertAppearance];
+                AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:kNoReachable];
+                __block AHAlertView *alert = alertt;
+                [alertt setCancelButtonTitle:@"确定" block:^{
+                    alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+                    alert = nil;
+                }];
+                [alertt show];
             }
             
         }else {
@@ -169,5 +177,9 @@
     [requestView resignFirstResponder];
     [DataService sharedService].payNumber = 0;
     [self.navigationController popViewControllerAnimated:YES];
+}
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
 }
 @end

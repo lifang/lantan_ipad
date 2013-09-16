@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "PictureCell.h"
 
+
 typedef enum {
     kAllType,
     kPhotoType,
@@ -17,6 +18,7 @@ typedef enum {
 
 @protocol GetPictureFromDeviceDelegate;
 
+@class OverlayView;
 @interface GetPictureFromDevice : NSObject
 <UINavigationControllerDelegate, UIImagePickerControllerDelegate> {
     NSData *fileData_;
@@ -24,8 +26,10 @@ typedef enum {
     NSString *fileName_;
     NSURL *fileUrl_;
     id<GetPictureFromDeviceDelegate> delegate_;
+    
 }
 
+@property (strong, nonatomic) OverlayView *customView;
 @property (nonatomic, strong) NSURL *fileUrl;
 @property (nonatomic, strong) NSData *fileData;
 @property (nonatomic, assign) FileType fileType;

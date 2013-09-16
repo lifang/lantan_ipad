@@ -22,7 +22,6 @@
     if (success) {
         cursor = addrs;
         while (cursor != NULL) {
-            // the second test keeps from picking up the loopback address
             if (cursor->ifa_addr->sa_family == AF_INET && (cursor->ifa_flags & IFF_LOOPBACK) == 0)
             {
                 NSString *name = [NSString stringWithUTF8String:cursor->ifa_name];
@@ -37,15 +36,45 @@
 }
 
 + (NSString *)connectToInternet {
-    NSString *str = nil;
-    NSString *ipAddress = [self localWiFiIPAddress];
-//    DLog(@"ip = %@",ipAddress);
-    if (ipAddress == nil) {
-        str = @"locahost";
-    }else {
-        str = @"internet";
-    }
+//    NSString *str = nil;
+//    NSString *ipAddress = [self localWiFiIPAddress];
+//    if (ipAddress == nil) {
+//        str = @"locahost";
+//    }else {
+//        str = @"internet";
+//    }
     
+    NSString *str = nil;
+	Reachability *r = [Reachability reachabilityWithHostName:@"www.baidu.com"];
+    switch ([r currentReachabilityStatus]) {
+        case NotReachable:
+			str = @"locahost";
+            break;
+        case ReachableViaWWAN:
+			str = @"ReachableViaWWAN";
+            break;
+        case ReachableViaWiFi:
+			str = @"ReachableViaWiFi";
+            break;
+    }
+    return str;
+}
+
+//判断网络类型
++ (NSString *)isExistenceNetwork {
+    NSString *str = nil;
+	Reachability *r = [Reachability reachabilityWithHostName:@"www.baidu.com"];
+    switch ([r currentReachabilityStatus]) {
+        case NotReachable:
+			str = @"NotReachable";
+            break;
+        case ReachableViaWWAN:
+			str = @"ReachableViaWWAN";
+            break;
+        case ReachableViaWiFi:
+			str = @"ReachableViaWiFi";
+            break;
+    }
     return str;
 }
 
@@ -65,7 +94,7 @@
 
 + (NSString *)orderStatus:(int)status{
     if (status==0) {
-        return @"未施工";
+        return @"排队等候";
     }else if(status==1){
         return @"施工中";
     }else if(status==2){

@@ -1,6 +1,11 @@
 #import "GetPictureFromDevice.h"
 #import "NSDate+Additions.h"
 
+#import "OverlayView.h"
+
+
+#define iPhone5 ([UIScreen instancesRespondToSelector:@selector(currentMode)] ? CGSizeEqualToSize(CGSizeMake(640, 1136), [[UIScreen mainScreen] currentMode].size) : NO)
+
 @implementation GetPictureFromDevice
 
 @synthesize fileType = fileType_;
@@ -10,7 +15,7 @@
 @synthesize fileUrl = fileUrl_;
 @synthesize parentController;
 @synthesize picCell;
-
+@synthesize customView;
 
 - (id)initWithParentViewController:(id)pc
 {
@@ -40,11 +45,18 @@
         }
         
 		ipc.delegate = self;
-		ipc.allowsEditing = YES;
+        
+        if ([DataService sharedService].isTakePic == YES) {
+            UIView *vv = [[UIView alloc]initWithFrame:CGRectMake(0, 0, 1024, 768)];
+            self.customView = [[OverlayView alloc]initWithFrame:CGRectMake(300, 250, 400, 200)];
+            self.customView.backgroundColor = [UIColor clearColor];
+            [vv addSubview:self.customView];
+            ipc.cameraOverlayView = vv;
+        }
+        
         if ([self.parentController respondsToSelector:@selector(presentModalViewController:animated:)]) {
             [self.parentController presentModalViewController:ipc animated:YES];
         }
-//        [(UIViewController *)self.parentController presentModalViewController:ipc animated:YES];
 	}
 	else {
         [delegate_ didGetFileFailedWithMessage:@"Error accessing device camera"];
@@ -88,14 +100,36 @@
 	NSData *uploadData = nil;
 	
 	if(fileType_ == kPhotoType){
-            UIImage *image = [info objectForKey:UIImagePickerControllerEditedImage];
+        UIImage *image = [info objectForKey:@"UIImagePickerControllerOriginalImage"];
 		NSURL *url = [info objectForKey:UIImagePickerControllerReferenceURL];
         self.fileUrl = url;
         
+        UIImage* subImage = nil;
+        if ([DataService sharedService].isTakePic == YES) {
+            double imageWidth = image.size.width;
+            double imageHeight = image.size.height;
+            
+            float x = imageWidth / 1024;
+            float y = imageHeight / 768;
+            
+            CGSize subImageSize = CGSizeMake(self.customView.frame.size.width*x, self.customView.frame.size.height*y) ;
+            CGRect subImageRect = CGRectMake(self.customView.frame.origin.x *x, self.customView.frame.origin.y *y, self.customView.frame.size.width *x, self.customView.frame.size.height *y);
+            CGImageRef imageRef = image.CGImage;
+            CGImageRef subImageRef = CGImageCreateWithImageInRect(imageRef, subImageRect);
+            UIGraphicsBeginImageContext(subImageSize);
+            CGContextRef context = UIGraphicsGetCurrentContext();
+            CGContextDrawImage(context, subImageRect, subImageRef);
+            subImage = [UIImage imageWithCGImage:subImageRef];
+            UIGraphicsEndImageContext();
+        }else {
+            subImage = image;
+        }
+        
         NSString *str = [NSDate dateToStringByFormat:[NSDate date] format:@"yyyyMMddHHmmss"];
         fullName = [NSString stringWithFormat:@"%@takephoto.jpg",str];
-        uploadData = UIImageJPEGRepresentation(image, 0.7);
-		UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil);
+        uploadData = UIImageJPEGRepresentation(subImage, 0.7);
+		UIImageWriteToSavedPhotosAlbum(subImage, nil, nil, nil);
+        
 	}
 	else if(fileType_ == kMovieType){
 		NSURL *videoURL = [info objectForKey:UIImagePickerControllerMediaURL];
@@ -114,23 +148,18 @@
 			fullName = [NSString stringWithFormat:@"%@takevideo.mov",str];
 		}
 	}
-    DLog(@"image full name is:%@",fullName);
     
 	self.fileName = fullName;
 	self.fileData = uploadData;
     [delegate_ didGetFileWithFile:self];
     if ([picker respondsToSelector:@selector(dismissViewControllerAnimated:completion:)]) {
         [picker dismissViewControllerAnimated:YES completion:nil];
-    }else{
-//        [picker dismissModalViewControllerAnimated:YES];
     }
 }
 - (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker
 {
     if ([picker respondsToSelector:@selector(dismissViewControllerAnimated:completion:)]) {
         [picker dismissViewControllerAnimated:YES completion:nil];
-    }else{
-//        [picker dismissModalViewControllerAnimated:YES];
     }
 }
 @end

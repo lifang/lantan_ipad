@@ -205,10 +205,11 @@ typedef NSUInteger SVPullToRefreshState;
                 actionHandler();
             
             // UI 更新日期计算
-            NSDate *nowDate = [NSDate date];
+            NSDate *localeDate = [NSDate date];
+
             NSDateFormatter *outFormat = [[NSDateFormatter alloc] init];
             [outFormat setDateFormat:@"MM'-'dd HH':'mm'"];
-            NSString *timeStr = [outFormat stringFromDate:nowDate];
+            NSString *timeStr = [outFormat stringFromDate:localeDate];
             [outFormat release];
             // UI 赋值
             lastUpdatedLabel.text = [NSString stringWithFormat:@"上次更新时间：%@",timeStr];

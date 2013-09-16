@@ -11,7 +11,7 @@
 #import "GetPictureFromDevice.h"
 #import "ConfirmViewController.h"
 
-@interface AddViewController : BaseViewController<GetPictureFromDeviceDelegate,PictureCellDelegate,UIPickerViewDataSource,UIPickerViewDelegate,UIScrollViewDelegate,UITableViewDelegate,UITableViewDataSource,UIGestureRecognizerDelegate>{
+@interface AddViewController : BaseViewController<GetPictureFromDeviceDelegate,PictureCellDelegate,UIPickerViewDataSource,UIPickerViewDelegate,UIScrollViewDelegate,UITableViewDelegate,UITableViewDataSource,UIGestureRecognizerDelegate,UITextFieldDelegate>{
     PictureCell *picView_0,*picView_1,*picView_2,*picView_3;
     GetPictureFromDevice *getPic;
 }
@@ -24,8 +24,8 @@
 @property (nonatomic,strong) IBOutlet UIImageView *stepImg;
 @property (nonatomic,strong) NSString *step;
 @property (nonatomic,strong) GetPictureFromDevice *getPic;
-@property (nonatomic,strong) NSMutableDictionary *customer;
-@property (nonatomic,strong) NSMutableArray *brandList,*productList,*selectedIndexs;
+@property (nonatomic,strong) NSMutableDictionary *customer,*productList;
+@property (nonatomic,strong) NSMutableArray *brandList,*selectedIndexs;
 
 @property (nonatomic,strong) NSMutableArray *firstArray,*secondArray,*thirdArray;
 
@@ -45,10 +45,13 @@
 @property (nonatomic,strong) NSMutableArray *dataArray ;
 @property (nonatomic,assign) int button_tag;
 
-@property (nonatomic, retain) IBOutlet UIScrollView *myScrollView;
-@property (nonatomic, retain) IBOutlet UIPageControl *myPageControl;
-@property (nonatomic, retain) UITableView *myTable;
+@property (nonatomic, strong) IBOutlet UIScrollView *myScrollView;
+@property (nonatomic, strong) IBOutlet UIPageControl *myPageControl;
+@property (nonatomic, strong) UITableView *myTable;
 
+
+@property (nonatomic, strong) IBOutlet UIScrollView *scrollView1;
+@property (nonatomic, strong) NSMutableArray *titleArray,*numArray;
 - (IBAction)clickNext:(id)sender;
 - (IBAction)clickFinished:(id)sender;
 

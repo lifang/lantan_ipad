@@ -5,7 +5,7 @@
 //  Created by comdosoft on 13-5-27.
 //  Copyright (c) 2013年 LanTai. All rights reserved.
 //
-
+#import "PlateNumber.h"
 #import "LanTaiOrderManager.h"
 #import "RJFileUtils.h"
 #import "RJDBKit.h"
@@ -19,6 +19,7 @@
 #import "CarCapital.h"
 
 @interface LanTaiOrderManager(XDPrivate)
+- (PlateNumber *)plateNumberDetailInfoFromDBRecord:(RJDbRecordSet*)aRecord AndTemIndex:(NSString *)index;
 - (EmployeeInfo *)employeeInfoDetailInfoFromDBRecord:(RJDbRecordSet*)aRecord AndTemIndex:(NSString *)index;
 - (CarCapital *)carCapitalDetailInfoFromDBRecord:(RJDbRecordSet*)aRecord AndTemIndex:(NSString *)index;
 - (CarBrand *)carBrandDetailInfoFromDBRecord:(RJDbRecordSet*)aRecord AndTemIndex:(NSString *)index;
@@ -93,6 +94,7 @@
     itemCatInfo.brand_name = [aRecord columnString:8];
     itemCatInfo.model_name = [aRecord columnString:9];
     itemCatInfo.sex = [aRecord columnString:10];
+    itemCatInfo.store_id = [aRecord columnString:11];
     return itemCatInfo;
 }
 
@@ -129,6 +131,15 @@
     itemCatInfo.price = [aRecord columnString:7];
     itemCatInfo.codeID = [aRecord columnString:8];
     itemCatInfo.classify_id = [aRecord columnString:9];
+    return itemCatInfo;
+}
+- (PlateNumber *)plateNumberDetailInfoFromDBRecord:(RJDbRecordSet*)aRecord AndTemIndex:(NSString *)index {
+    PlateNumber *itemCatInfo = [[[PlateNumber alloc] init] autorelease];
+    NSInteger employeeID = [aRecord columnInteger:0];
+    itemCatInfo.ID = [NSString stringWithFormat:@"%d", employeeID];
+    itemCatInfo.right = [aRecord columnString:1];
+    itemCatInfo.wrong = [aRecord columnString:2];
+    itemCatInfo.number = [aRecord columnString:3];
     return itemCatInfo;
 }
 @end
@@ -237,19 +248,19 @@ static LanTaiOrderManager * _sDBManager = nil;
     return [dataArray autorelease];
 }
 //读取数据
-- (NSArray*)loadDataFromTableName:(NSString *)tableName WithName:(NSString *)name andPassWord:(NSString *)password andCarNum:(NSString *)carNum andBrand_id:(NSString *)brand_id andCar_brand_id:(NSString *)car_brand_id andProduct_id:(NSString *)product_id andClassify_id:(NSString *)classify_id andCar_capital_id:car_capital_id{
+- (NSArray*)loadDataFromTableName:(NSString *)tableName WithName:(NSString *)name andPassWord:(NSString *)password andCarNum:(NSString *)carNum andBrand_id:(NSString *)brand_id andCar_brand_id:(NSString *)car_brand_id andProduct_id:(NSString *)product_id andClassify_id:(NSString *)classify_id andCar_capital_id:car_capital_id andStore_id:(NSString *)store_id{
     BOOL ret = [_db open];
     if (!ret)
     {
         return nil;
     }
     NSString *sql = nil;
-    if (name==nil && password==nil && carNum==nil && brand_id==nil && car_brand_id==nil && product_id==nil &&classify_id==nil && car_capital_id==nil) {
+    if (name==nil && password==nil && carNum==nil && brand_id==nil && car_brand_id==nil && product_id==nil &&classify_id==nil && car_capital_id==nil && store_id==nil) {
         sql = [NSString stringWithFormat:@"select * from %@",tableName];
     }else if (name!=nil && password!=nil) {//登陆
         sql = [NSString stringWithFormat:@"select * from %@ where name = '%@' and password = '%@'",tableName,name,password];
-    }else if (carNum != nil) {//搜索车牌
-        sql = [NSString stringWithFormat:@"select * from %@ where carNum = '%@'",tableName,carNum];
+    }else if (carNum != nil && store_id != nil) {//搜索车牌
+        sql = [NSString stringWithFormat:@"select * from %@ where carNum = '%@' and store_id = '%@'",tableName,carNum,store_id];
     }else if (brand_id != nil) {//车品牌
         sql = [NSString stringWithFormat:@"select * from %@ where brand_id = '%@'",tableName,brand_id];
     }else if (car_brand_id != nil) {//车型号
@@ -260,6 +271,8 @@ static LanTaiOrderManager * _sDBManager = nil;
         sql = [NSString stringWithFormat:@"select * from %@ where classify_id = '%@'",tableName,classify_id];
     }else if (car_capital_id != nil){
         sql = [NSString stringWithFormat:@"select * from %@ where car_capital_id = '%@'",tableName,car_capital_id];
+    }else if (carNum==nil && store_id != nil) {
+        sql = [NSString stringWithFormat:@"select * from %@ where store_id = '%@'",tableName,store_id];
     }
 
     
@@ -368,21 +381,25 @@ static LanTaiOrderManager * _sDBManager = nil;
 }
 
 //读取订单数据
-- (NSArray*)loadDataFromTableName:(NSString *)tableName CarNum:(NSString *)carNum andCodeID:(NSString *)codeID {
+- (NSArray*)loadDataFromTableName:(NSString *)tableName CarNum:(NSString *)carNum andCodeID:(NSString *)codeID andStore_id:(NSString *)store_id{
     BOOL ret = [_db open];
     if (!ret)
     {
         return nil;
     }
     NSString *sql = nil;
-    if (carNum == nil && codeID == nil) {
+    if (carNum == nil && codeID == nil && store_id == nil) {
         sql = [NSString stringWithFormat:@"select * from %@",tableName];
-    }else if (carNum != nil && codeID == nil) {//
-        sql = [NSString stringWithFormat:@"select * from %@ where carNum = '%@'",tableName,carNum];
-    }else if (codeID != nil && carNum == nil) {//关联产品
+    }else if (carNum != nil && codeID == nil && store_id != nil) {//
+        sql = [NSString stringWithFormat:@"select * from %@ where carNum = '%@' and store_id = '%@'",tableName,carNum,store_id];
+    }else if (codeID != nil && carNum == nil && store_id == nil) {//关联产品
         sql = [NSString stringWithFormat:@"select * from %@ where codeID = '%@'",tableName,codeID];
-    }else if (carNum != nil && codeID != nil) {
+    }else if (carNum != nil && codeID != nil && store_id == nil) {
         sql = [NSString stringWithFormat:@"select * from %@ where codeID = '%@' and carNum = '%@'",tableName,codeID,carNum];
+    }else if (store_id != nil && carNum == nil && codeID == nil) {//关联产品
+        sql = [NSString stringWithFormat:@"select * from %@ where store_id = '%@'",tableName,store_id];
+    }else if (store_id != nil && carNum == nil && codeID != nil){
+        sql = [NSString stringWithFormat:@"select * from %@ where codeID = '%@' and store_id = '%@'",tableName,codeID,store_id];
     }
     
     RJDbRecordSet* set = [_db sqlQuery:sql];
@@ -429,7 +446,7 @@ static LanTaiOrderManager * _sDBManager = nil;
     }else if ([tableName isEqualToString:@"products"]) {
         sql = [NSString stringWithFormat:@"insert into %@ (name, price, product_id, img, type, classify_id, store_id, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",tableName];
     }else if ([tableName isEqualToString:@"customer"]) {
-        sql = [NSString stringWithFormat:@"insert into %@ (carNum, name, phone, brand, email, birth, year, brand_name, model_name, sex) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",tableName];
+        sql = [NSString stringWithFormat:@"insert into %@ (carNum, name, phone, brand, email, birth, year, brand_name, model_name, sex, store_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",tableName];
     }else if ([tableName isEqualToString:@"orderInfo"]) {
         sql = [NSString stringWithFormat:@"insert into %@ (billing, request, reason, is_please, carNum, prods, price, payType, store_id, user_id, time, codeID, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",tableName];
     }else if ([tableName isEqualToString:@"member"]) {
@@ -488,4 +505,72 @@ static LanTaiOrderManager * _sDBManager = nil;
     
     return [_db insertOrUpdateUser:sql];
 }
+
+//读取数据
+- (NSArray*)loadDataFromTableWithWrong:(NSString *)wrongName {
+    BOOL ret = [_db open];
+    if (!ret)
+    {
+        return nil;
+    }
+    NSString *sql = [NSString stringWithFormat:@"select * from plate where wrong = '%@'",wrongName];
+    
+    RJDbRecordSet* set = [_db sqlQuery:sql];
+    
+    NSMutableArray* dataArray = [[NSMutableArray alloc] init];
+    while ([set next]) {
+        PlateNumber* detailInfo = [self plateNumberDetailInfoFromDBRecord:set AndTemIndex:nil];
+        if (nil != detailInfo)
+        {
+            [dataArray addObject:detailInfo];
+        }
+    }
+    [set close];
+    [_db close];
+    return [dataArray autorelease];
+}
+//读取数据
+- (NSArray*)loadDataFromTableWithWrong:(NSString *)wrongName WithRight:(NSString *)rightName {
+    BOOL ret = [_db open];
+    if (!ret)
+    {
+        return nil;
+    }
+    NSString *sql = [NSString stringWithFormat:@"select * from plate where wrong = '%@' and right = '%@'",wrongName,rightName];
+    RJDbRecordSet* set = [_db sqlQuery:sql];
+    
+    NSMutableArray* dataArray = [[NSMutableArray alloc] init];
+    while ([set next]) {
+        PlateNumber* detailInfo = [self plateNumberDetailInfoFromDBRecord:set AndTemIndex:nil];
+        if (nil != detailInfo)
+        {
+            [dataArray addObject:detailInfo];
+        }
+    }
+    [set close];
+    [_db close];
+    return [dataArray autorelease];
+}
+//添加数据
+-(BOOL)addDataToTableWithArray:(NSArray *)array {
+    BOOL ret = [_db open];
+    if (!ret)
+    {
+        return NO;
+    }
+    NSString *sql = @"insert into plate (right, wrong, number) VALUES (?, ?, ?)";
+    
+    return [_db dealData:sql paramArray:array];
+}
+//更新订单数据
+-(BOOL)updatetableWithWrong:(NSString *)wrongName WithRight:(NSString *)rightName WithNumber:(NSString *)number {
+    BOOL ret = [_db open];
+    if (!ret)
+    {
+        return NO;
+    }
+    NSString *sql = [NSString stringWithFormat:@"update plate set number= '%@' where right= '%@' and wrong= '%@'",number,rightName,wrongName];
+    return [_db insertOrUpdateUser:sql];
+}
+
 @end

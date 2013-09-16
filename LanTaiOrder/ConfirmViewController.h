@@ -20,7 +20,6 @@
 
 @property (nonatomic,strong) IBOutlet UILabel *start_lab,*end_lab;
 
-
 - (IBAction)clickConfirm:(id)sender;
 - (IBAction)clickCancel:(id)sender;
 

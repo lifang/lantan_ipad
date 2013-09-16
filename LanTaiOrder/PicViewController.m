@@ -34,6 +34,7 @@
     GetPictureFromDevice *pic = [[GetPictureFromDevice alloc] initWithParentViewController:self.parentController];
     self.getPic = pic;
     self.getPic.delegate = self;
+    [DataService sharedService].isTakePic = NO;
     self.getPic.fileType = kPhotoType;
     self.getPic.picCell = cell;
     [self.getPic takePhotoWithCamera];

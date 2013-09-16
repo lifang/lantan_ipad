@@ -11,13 +11,10 @@
 
 @interface DataService : NSObject
 
-@property (nonatomic,strong) NSString *kHost;
-@property (nonatomic,strong) NSString *kDomain;
 @property (nonatomic,strong) NSString *kPosAppId;
-@property (nonatomic,strong) NSString *str_ip;
 @property (nonatomic,strong) NSString *user_id,*reserve_count,*store_id,*car_num;
-@property (nonatomic,strong) NSMutableArray *workingOrders,*reserve_list;
-
+@property (nonatomic,strong) NSMutableArray *reserve_list;
+@property (nonatomic,strong) NSMutableDictionary *workingOrders;
 @property (nonatomic,assign) int number;//判断是下单还是登记信息:1登记，0下单
 @property (nonatomic,assign) int payNumber;//判断是否弹出pay的popView:1弹出，0不弹出
 @property (nonatomic,strong) NSMutableArray *doneArray;//已投诉得数组
@@ -46,6 +43,11 @@
 //活动
 @property (nonatomic,strong) NSMutableArray *saleArray;
 @property (nonatomic,assign) BOOL netWorking;//判定网络
+
+@property (nonatomic,assign) BOOL isTakePic;
+@property (nonatomic,assign) BOOL timeCanale;
+@property (nonatomic,assign) BOOL clean;
+@property (nonatomic,strong) NSMutableArray *package_product;//进入addView之前已选择的产品、服务
 
 + (DataService *)sharedService;
 

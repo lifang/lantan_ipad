@@ -98,7 +98,7 @@
         DLog(@"添加数据===> 失败");
         return NO;
     }
-    //    sqlite3_close(_db);
+//    sqlite3_close(_db);
     DLog(@"添加数据===> 成功");
     return TRUE;
 }

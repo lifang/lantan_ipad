@@ -12,6 +12,7 @@
 #define CLOSE 1000
 
 @implementation PackageCardCell
+
 @synthesize lblName,lblPrice,selectedArr,product,index,cellType;
 
 - (id)initWithStyle:(UITableViewCellStyle)style reuseIdentifier:(NSString *)reuseIdentifier  with:(NSMutableDictionary *)prod indexPath:(NSIndexPath *)idx type:(NSInteger)type{
@@ -28,13 +29,20 @@
         }
 
         for (int i=0; i<len; i++) {
+            NSDictionary *dic = [selectedArr objectAtIndex:i];
+            
             frame.origin.y = 44 * i;
             UILabel *lblProd = [[UILabel alloc] initWithFrame:frame];
             lblProd.lineBreakMode = NSLineBreakByCharWrapping;
             lblProd.numberOfLines = 0;
             lblProd.text = [NSString stringWithFormat:@"%@(%@)次",[[selectedArr objectAtIndex:i] objectForKey:@"name"],[[selectedArr objectAtIndex:i] objectForKey:@"num"]];
             lblProd.textAlignment = NSTextAlignmentRight;
-            lblProd.tag = CLOSE +i+CLOSE;
+            if ([[dic objectForKey:@"selected"] intValue] == 0 ) {
+                lblProd.tag = OPEN +i+OPEN;
+            }else {
+                lblProd.tag = CLOSE +i+CLOSE;
+            }
+            
             [self addSubview:lblProd];
             if(cellType == 0){
                 frame.origin.x += 185;
@@ -45,10 +53,10 @@
                 btn.frame = frame;
                 [btn addTarget:self action:@selector(clickSwitch:) forControlEvents:UIControlEventTouchUpInside];
                 int num = [[[selectedArr objectAtIndex:i] objectForKey:@"num"]intValue];
-                if (num != 0) {
+                if (num != 0 || (num==0 && [[dic objectForKey:@"selected"] intValue] == 0)) {
                     [self addSubview:btn];
                 }
-                NSDictionary *dic = [selectedArr objectAtIndex:i];
+                
                 if ([[dic objectForKey:@"selected"] intValue] == 0 ) {
                     btn.tag = OPEN +i;
                     [btn setImage:[UIImage imageNamed:@"cb_mono_on"] forState:UIControlStateNormal];
@@ -91,6 +99,7 @@
 }
 //选择开关
 - (void)clickSwitch:(UIButton *)sender{
+//    DLog(@"self.selectedArr = %@",self.selectedArr);
     [DataService sharedService].first = NO;
     UIButton *btn = (UIButton *)sender;
     NSString *tagStr = [NSString stringWithFormat:@"%d",btn.tag];
@@ -98,9 +107,10 @@
     CGFloat x = [self.lblPrice.text floatValue];
     CGFloat y = 0;
 
+    self.selectedArr = [NSMutableArray arrayWithArray:[[[DataService sharedService].productList objectAtIndex:self.index.row] objectForKey:@"products"]];
+    
     NSArray *array = [[DataService sharedService].number_id allKeys];
     if (tagStr.length == 3) {
-//        [[NSNotificationCenter defaultCenter] postNotificationName:@"scardReloadTableView" object:nil];
         dic = [[selectedArr objectAtIndex:sender.tag - OPEN] mutableCopy];
         NSString * product_id = [dic objectForKey:@"product_id"];
         if ([array containsObject:product_id]) {//套餐卡包含此产品／服务
@@ -125,7 +135,7 @@
                             y = y * num_count;
                             x =x + y ;
                             //重置number_id数据
-                            int count_num = [[[DataService sharedService].number_id objectForKey:product_id]intValue];//剩余次数
+                            int count_num = [[[DataService sharedService].number_id objectForKey:product_id]intValue];//用户选择 剩余次数
                             [[DataService sharedService].number_id removeObjectForKey:product_id];
                             [[DataService sharedService].number_id setObject:[NSString stringWithFormat:@"%d", num_count+count_num] forKey:product_id];
                             
@@ -157,6 +167,7 @@
                             [[NSNotificationCenter defaultCenter] postNotificationName:@"update_total" object:dic1];
                             //删除
                             [[DataService sharedService].row_id_countArray removeObjectAtIndex:i];
+                            DLog(@"删除row_id_countArray = %@",[DataService sharedService].row_id_countArray);
                             break;
                         }
                         
@@ -179,7 +190,6 @@
         dic = [[selectedArr objectAtIndex:sender.tag - CLOSE] mutableCopy];
         NSString * product_id = [dic objectForKey:@"product_id"];
         if ([array containsObject:product_id]) {//套餐卡包含此产品／服务
-//            [[NSNotificationCenter defaultCenter] postNotificationName:@"scardReloadTableView" object:nil];
             int num = [[dic objectForKey:@"num"]intValue];//套餐卡里面的数目
             
             int count_num = [[[DataService sharedService].number_id objectForKey:product_id]intValue];//用户选择的数目
@@ -198,6 +208,7 @@
                     //初始count  --num
                     NSString *str = [self checkFormWithIndexRow:self.index.row andId:[product_id intValue] andNumber:num];
                     [[DataService sharedService].row_id_countArray addObject:str];
+                    DLog(@"添加111row_id_countArray = %@",[DataService sharedService].row_id_countArray);
                     //用户选择的次数  －  消费的次数 （用户还需要消费的次数）>=0
                     y = y * num;
                     x = x + y;
@@ -210,6 +221,7 @@
                     //初始count  --count_num
                     NSString *str = [self checkFormWithIndexRow:self.index.row andId:[product_id intValue] andNumber:count_num];
                     [[DataService sharedService].row_id_countArray addObject:str];
+                    DLog(@"添加row_id_countArray = %@",[DataService sharedService].row_id_countArray);
                     //重置temp—dic数据
                     [[DataService sharedService].number_id removeObjectForKey:product_id];
                     [[DataService sharedService].number_id setObject:[NSString stringWithFormat:@"%d",count_num - count_num] forKey:product_id];
@@ -251,6 +263,7 @@
             [alertt show];
         }
     }
+//    DLog(@"self.selectedArr2222 = %@",self.selectedArr);
 }
 
 

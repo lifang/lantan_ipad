@@ -12,6 +12,7 @@
 #import "pinyin.h"
 
 
+
 @implementation AppDelegate
 @synthesize lantan_initView;
 @synthesize versionUrlStr,definitionData;
@@ -32,6 +33,7 @@
 }
 -(void)showView {
     self.window.rootViewController = self.navigationView;
+    self.navigationView = nil;
 }
 - (void)showRootView{
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -64,9 +66,11 @@
     [self.window makeKeyAndVisible];
     
     [DataService sharedService].doneArray = [NSMutableArray array];
-    
+    [DataService sharedService].clean = NO;
     [self getmatchArray];
 
+   
+    
     //新版本链接
     //获取appstore中的应用版本信息
     //异步请求信息

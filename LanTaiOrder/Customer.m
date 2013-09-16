@@ -9,5 +9,5 @@
 #import "Customer.h"
 
 @implementation Customer
-@synthesize ID,carNum,name,phone,email,birth,year,brand_name,model_name,sex,brand;
+@synthesize ID,carNum,name,phone,email,birth,year,brand_name,model_name,sex,brand,store_id;
 @end

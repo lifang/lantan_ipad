@@ -15,14 +15,14 @@
 }
 
 @property (nonatomic,strong) IBOutlet UIView *carInfoView,*orderView,*carInfoBgView,*noInfoView,*workingView,*noWorkingView;
-@property (nonatomic,strong) IBOutlet UIButton *btnDone,*btnCheckIn,*btnOrderRecord,*btnOldRecord,*btnPay,*btnCancel;
-@property (nonatomic,strong) IBOutlet UITableView *orderTable,*workingTable;
+@property (nonatomic,strong) IBOutlet UIButton *btnDone,*btnCheckIn,*btnOrderRecord,*btnOldRecord,*btnPay,*btnCancel,*btnPackageRecord;
+@property (nonatomic,strong) IBOutlet UITableView *orderTable,*workingTable,*packageTable;
 @property (nonatomic,strong) IBOutlet UILabel *lblCarNum,*lblBrand,*lblUserName,*lblPhone,*lblProduct,*lblTime;
 @property (nonatomic,strong) IBOutlet UILabel *lblReceiver,*lblOrderNum,*lblWorkingCar,*lblStatus,*lblWorkingName,*lblTotal;
 @property (nonatomic,strong) IBOutlet UILabel *timeLabel;
 @property (nonatomic,strong) IBOutlet UILabel *productLabel;
 
-@property (nonatomic,strong) NSMutableArray *orderList,*orderItems;
+@property (nonatomic,strong) NSMutableArray *orderList,*orderItems,*packageList;
 @property (nonatomic,strong) NSString *car_num;//车牌号
 @property (nonatomic,strong) NSString *car_id;//车辆id
 @property (nonatomic,strong) NSMutableDictionary *customer,*workingOrder;

@@ -20,4 +20,5 @@
 @property (nonatomic,strong) NSString *model_name;
 @property (nonatomic,strong) NSString *sex;
 @property (nonatomic,strong) NSString *brand;
+@property (nonatomic,strong) NSString * store_id;
 @end

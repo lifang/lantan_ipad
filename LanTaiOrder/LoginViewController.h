@@ -17,7 +17,6 @@
 @property (nonatomic,strong) IBOutlet UITextField *txtPwd;
 @property (nonatomic,strong) IBOutlet UIView *loginView;
 
-@property (strong, nonatomic) UIButton *btn_ip;
 
 - (IBAction)clickLogin:(id)sender;
 

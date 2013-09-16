@@ -27,10 +27,11 @@
 @synthesize segBtn2;
 @synthesize posView,txtPos;
 @synthesize posBtn,posLab,sureBtn;
+@synthesize timer;
 
 #pragma mark - 支付
 -(void)payWithType {
-    STHTTPRequest *r  = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kPay]];
+    STHTTPRequest *r  = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kPay]];
     NSString *billing = @"1";
     if (self.billingBtn.isOn) {
         billing = @"1";
@@ -73,8 +74,8 @@
         isSuccess = FALSE;
     }
     [MBProgressHUD hideHUDForView:self.view animated:YES];
-    if (self.delegate && [self.delegate respondsToSelector:@selector(closePopView:)]) {
-        [self.delegate closePopView:self];
+    if (self.delegate && [self.delegate respondsToSelector:@selector(closePopVieww:)]) {
+        [self.delegate closePopVieww:self];
     }
 }
 - (void)pay:(int)type{
@@ -99,31 +100,87 @@
                     billing = @"0";
                 }
                 
-                BOOL success = [[LanTaiOrderManager sharedInstance]updatetable:@"orderInfo" WithBilling:[NSString stringWithFormat:@"%@",billing] WithRequest:nil WithReason:nil WithIs_please:[NSString stringWithFormat:@"%@",[order objectForKey:@"is_please"]] WithPayType:[NSString stringWithFormat:@"%d",self.payType] WithStatus:[NSString stringWithFormat:@"%d",3] ByCarNum:[order objectForKey:@"carNum"] andCodeID:[order objectForKey:@"code"]];
-                if (success) {
-                    [AHAlertView applyCustomAlertAppearance];
-                    AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"交易成功！"];
-                    __block AHAlertView *alert = alertt;
-                    [alertt setCancelButtonTitle:@"确定" block:^{
-                        alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
-                        alert = nil;
-                    }];
-                    [alertt show];
-                    isSuccess = TRUE;
-                }else{
-                    [AHAlertView applyCustomAlertAppearance];
-                    AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"交易失败！"];
-                    __block AHAlertView *alert = alertt;
-                    [alertt setCancelButtonTitle:@"确定" block:^{
-                        alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
-                        alert = nil;
-                    }];
-                    [alertt show];
-                    isSuccess = FALSE;
+                NSString *status = nil;
+                if (self.payType == 5) {
+                    status = [NSString stringWithFormat:@"%d",4];
+                }else {
+                    status = [NSString stringWithFormat:@"%d",3];
                 }
-                if (self.delegate && [self.delegate respondsToSelector:@selector(closePopView:)]) {
-                    [self.delegate closePopView:self];
+                
+                NSString *order_id = self.codeStr;
+                NSString *carNum = nil;
+                if (![[order objectForKey:@"order_id"]isKindOfClass:[NSNull class]] && [order objectForKey:@"order_id"]!= nil) {
+                    
+                }else {
+                    
+                    carNum = [order objectForKey:@"carNum"];
                 }
+                NSArray *arr = [[LanTaiOrderManager sharedInstance]loadDataFromTableName:@"orderInfo" CarNum:nil andCodeID:order_id andStore_id:[DataService sharedService].store_id];
+                
+                if (arr.count != 0) {
+                    BOOL success = [[LanTaiOrderManager sharedInstance]updatetable:@"orderInfo" WithBilling:[NSString stringWithFormat:@"%@",billing] WithRequest:nil WithReason:nil WithIs_please:[NSString stringWithFormat:@"%@",[order objectForKey:@"is_please"]] WithPayType:[NSString stringWithFormat:@"%d",self.payType] WithStatus:status ByCarNum:carNum andCodeID:order_id];
+                    if (success) {
+                        [AHAlertView applyCustomAlertAppearance];
+                        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"交易成功！"];
+                        __block AHAlertView *alert = alertt;
+                        [alertt setCancelButtonTitle:@"确定" block:^{
+                            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+                            alert = nil;
+                        }];
+                        [alertt show];
+                        isSuccess = TRUE;
+                    }else{
+                        [AHAlertView applyCustomAlertAppearance];
+                        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"交易失败！"];
+                        __block AHAlertView *alert = alertt;
+                        [alertt setCancelButtonTitle:@"确定" block:^{
+                            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+                            alert = nil;
+                        }];
+                        [alertt show];
+                        isSuccess = FALSE;
+                    }
+                    if (self.delegate && [self.delegate respondsToSelector:@selector(closePopVieww:)]) {
+                        [self.delegate closePopVieww:self];
+                    }
+                }else {
+                    NSArray *paramarray = [[NSArray alloc] initWithObjects:[NSString stringWithFormat:@"%@",billing],@"",@"",[NSString stringWithFormat:@"%@",[order objectForKey:@"is_please"]],@"",@"",@"",[NSString stringWithFormat:@"%d",self.payType],[NSString stringWithFormat:@"%@",[DataService sharedService].store_id],@"",@"",[NSString stringWithFormat:@"%@",order_id],[NSString stringWithFormat:@"%@",status],nil];
+                    BOOL success = [[LanTaiOrderManager sharedInstance]addDataToTable:@"orderInfo" WithArray:paramarray];
+                    if (success) {
+                        //设置  判断是否要上传数据
+                        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                        NSString *syncStr = [defaults objectForKey:@"sync"];
+                        int syncValue = 0;
+                        if (syncStr==nil) {
+                            syncValue += 1;
+                            [defaults setObject:[NSString stringWithFormat:@"%d",syncValue] forKey:@"sync"];
+                        }else {
+                            syncValue = [[defaults objectForKey:@"sync"]intValue];
+                            syncValue += 1;
+                            [defaults removeObjectForKey:@"sync"];
+                            [defaults setObject:[NSString stringWithFormat:@"%d",syncValue] forKey:@"sync"];
+                        }
+                        DLog(@"sync = %@",[defaults objectForKey:@"sync"]);
+                        [defaults synchronize];
+                        
+                        [DataService sharedService].refreshing = YES;
+                        
+                        [AHAlertView applyCustomAlertAppearance];
+                        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"交易成功！"];
+                        __block AHAlertView *alert = alertt;
+                        [alertt setCancelButtonTitle:@"确定" block:^{
+                            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+                            alert = nil;
+                        }];
+                        [alertt show];
+                        isSuccess = TRUE;
+                        
+                        if (self.delegate && [self.delegate respondsToSelector:@selector(closePopVieww:)]) {
+                            [self.delegate closePopVieww:self];
+                        }
+                    }
+                }
+                
             }
         }else {
             MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
@@ -287,8 +344,8 @@
 
 #pragma mark - 提交输入的验证码
 -(void)code {
-    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kSendVerifyCode]];
-    [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:self.txtPhone.text,@"mobilephone",[order objectForKey:@"price"],@"price",self.txtCode.text,@"verify_code",[order objectForKey:@"content"],@"content", nil]];
+    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kSendVerifyCode]];
+    [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:self.txtPhone.text,@"mobilephone",[order objectForKey:@"price"],@"price",self.txtCode.text,@"verify_code",[order objectForKey:@"content"],@"content",[DataService sharedService].store_id,@"store_id", nil]];
     [r setPostDataEncoding:NSUTF8StringEncoding];
     NSError *error = nil;
     NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
@@ -352,8 +409,8 @@
         }];
         [alertt show];
     }else{
-        STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kSendMeg]];
-        [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:self.txtPhone.text,@"mobilephone",[order objectForKey:@"price"],@"price", nil]];
+        STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kSendMeg]];
+        [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:self.txtPhone.text,@"mobilephone",[order objectForKey:@"price"],@"price",[DataService sharedService].store_id,@"store_id", nil]];
         [r setPostDataEncoding:NSUTF8StringEncoding];
         NSError *error = nil;
         NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
@@ -398,6 +455,8 @@
     }
 }
 
+
+
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
@@ -409,10 +468,25 @@
 -(void)setsetTotal:(NSNotification *)notification {
     
 }
+-(void)netWorking:(id)sender {
+    if ([[Utils connectToInternet] isEqualToString:@"locahost"] && [DataService sharedService].netWorking == YES) {
+        [DataService sharedService].netWorking = NO;
+        if (self.delegate && [self.delegate respondsToSelector:@selector(closePopVieww:)]) {
+            [self.delegate closePopVieww:self];
+        }
+    }else if ([[Utils connectToInternet] isEqualToString:@"internet"] && [DataService sharedService].netWorking == NO  && [DataService sharedService].timeCanale == YES) {
+        [DataService sharedService].netWorking = YES;
+        if (self.delegate && [self.delegate respondsToSelector:@selector(closePopVieww:)]) {
+            [self.delegate closePopVieww:self];
+        }
+    }
+}
+
 - (void)viewDidLoad
-{
+{ 
     [super viewDidLoad];
     self.payType = -1;
+    [DataService sharedService].clean = YES;
     if ([[Utils connectToInternet] isEqualToString:@"locahost"] || [DataService sharedService].netWorking == NO) {
         self.segBtn.hidden = YES;
         self.segBtn2.hidden = NO;
@@ -422,11 +496,23 @@
         self.segBtn2.hidden = YES;
         self.segBtn.momentary = YES;
     }
+    if (self.timer == nil) {
+        self.timer = [NSTimer scheduledTimerWithTimeInterval:3 target:self selector:@selector(netWorking:) userInfo:nil repeats:YES];
+    }
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(timeCancle:) name:@"timeCancleWhenDismiss" object:nil];
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(payResult:) name:@"payQFPOS" object:nil];
     self.payStyle.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"alert_bg"]];
     self.phoneView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"alert_bg"]];
     self.codeView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"alert_bg"]];
     self.posView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"alert_bg"]];
 }
-
+- (void)timeCancle:(NSNotification *)notification {
+    [DataService sharedService].clean = NO;
+    [self.timer invalidate];
+    self.timer = nil;
+}
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+}
 @end

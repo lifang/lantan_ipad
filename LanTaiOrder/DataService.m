@@ -10,14 +10,14 @@
 
 @implementation DataService
 
-@synthesize user_id,reserve_count,car_num,reserve_list,kHost,kDomain,str_ip,kPosAppId;
+@synthesize user_id,reserve_count,car_num,reserve_list,kPosAppId;
 @synthesize number,payNumber;
 @synthesize doneArray;
 @synthesize tagOfBtn;
 @synthesize first,row_id_countArray,productList,row_id_numArray,price_id,number_id;
 @synthesize ReservationFirst,refreshing,packageCard_dic,total_count,row,matchArray,sectionArray;
 @synthesize id_count_price,saleArray;
-@synthesize netWorking;
+@synthesize netWorking,isTakePic,package_product,timeCanale,clean;
 
 - (id)init{
     self = [super init];
@@ -25,7 +25,7 @@
         self.reserve_count = [NSString string];
         self.user_id = [NSString string];
         self.store_id = [NSString string];
-        self.workingOrders = [NSMutableArray array];
+        self.workingOrders = [NSMutableDictionary dictionary];
         self.car_num = [NSString string];
         self.reserve_list = [NSMutableArray array];
         self.doneArray = [NSMutableArray array];
@@ -45,6 +45,10 @@
         self.id_count_price = [NSMutableArray array];
         self.saleArray = [NSMutableArray array];
         self.netWorking = YES;
+        self.isTakePic = NO;
+        self.timeCanale = NO;
+        self.clean = NO;
+        self.package_product = [NSMutableArray array];
     }
     return self;
 }

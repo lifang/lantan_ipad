@@ -21,10 +21,11 @@
 @property (nonatomic,strong) IBOutlet UISegmentedControl *segBtn;
 @property (nonatomic,strong) NSString *codeStr;
 @property (nonatomic,assign) int payType;
-
+@property (nonatomic,strong) NSTimer *timer;
 @property (nonatomic,strong) IBOutlet UISegmentedControl *segBtn2;
 @property (nonatomic,strong) IBOutlet UILabel *posLab;
 @property (nonatomic,strong) IBOutlet UIButton *posBtn,*sureBtn;
+
 - (IBAction)clickSendCode:(id)sender;
 - (IBAction)clickCodeBtn:(id)sender;
 
@@ -32,5 +33,5 @@
 
 @protocol PayStyleViewDelegate <NSObject>
 @optional
-- (void)closePopView:(PayStyleViewController *)payStyleViewController;
+- (void)closePopVieww:(PayStyleViewController *)payStyleViewController;
 @end

@@ -10,9 +10,7 @@
 
 @interface InitViewController : UIViewController<UITextFieldDelegate>
 
-@property (strong, nonatomic) IBOutlet UIView *view1;
 @property (strong, nonatomic) IBOutlet UIView *view2;
-@property (strong, nonatomic) IBOutlet UITextField *txt;
 
 @property (nonatomic, strong) IBOutlet UIActivityIndicatorView* activityView;
 @end

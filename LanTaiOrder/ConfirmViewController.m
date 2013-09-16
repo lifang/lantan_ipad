@@ -46,14 +46,13 @@
     [DataService sharedService].number_id = [NSMutableDictionary dictionary];
     [DataService sharedService].packageCard_dic = nil;
     [DataService sharedService].packageCard_dic = [NSMutableDictionary dictionary];
-    
     //套餐卡
     [DataService sharedService].row_id_countArray = nil;
     [DataService sharedService].row_id_countArray =[NSMutableArray array];
     //活动打折卡
     [DataService sharedService].row_id_numArray = nil;
     [DataService sharedService].row_id_numArray =[NSMutableArray array];
-    [DataService sharedService].productList = self.productList;
+    [DataService sharedService].productList = [NSMutableArray arrayWithArray:self.productList];
     //打折卡
     [DataService sharedService].row = nil;
     [DataService sharedService].row =[NSMutableArray array];
@@ -64,6 +63,36 @@
     //活动
     [DataService sharedService].saleArray = nil;
     [DataService sharedService].saleArray =[NSMutableArray array];
+}
+//[DataService sharedService].row_id_countArray
+- (NSString *)checkFormWithIndexRow:(int)row andId:(int)product_id andNumber:(int)num {
+    NSMutableString *prod_count = [NSMutableString string];
+    [prod_count appendFormat:@"%d_%d_%d,",row,product_id,num];
+    return prod_count;
+}
+-(void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    if ([DataService sharedService].package_product.count > 0) {//套餐卡选择了产品
+        for (int i=0; i<self.productList.count; i++) {
+           NSMutableDictionary *product = [productList objectAtIndex:i];
+            if([product objectForKey:@"products"]) {//套餐卡
+                NSArray *products = [product objectForKey:@"products"];
+                if (products.count>0) {
+                    for (int k=0; k<products.count; k++) {
+                        NSDictionary *p_dic = [products objectAtIndex:k];
+                        int selected = [[p_dic objectForKey:@"selected"]intValue];
+                        if (selected == 0) {
+                            int count = 1;
+                            int p_id = [[p_dic objectForKey:@"product_id"]intValue];
+                            NSString *str = [self checkFormWithIndexRow:i andId:p_id andNumber:count];
+                            [[DataService sharedService].row_id_countArray addObject:str];
+                        }
+                    }
+                }
+                
+            }  
+        }
+    }
 }
 -(void)viewWillDisappear:(BOOL)animated {
     [super viewWillDisappear:animated];
@@ -106,7 +135,7 @@
     
     [super viewDidLoad];
     if (![self.navigationItem rightBarButtonItem]) {
-        [self addRightnaviItemsWithImage:@"back" andImage:nil andImage:nil];
+        [self addRightnaviItemsWithImage:@"back" andImage:nil];
     }
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"view_bg"]];
     self.confirmBgView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"confirm_bg"]];
@@ -146,7 +175,7 @@
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
-    NSMutableDictionary *product = [productList objectAtIndex:indexPath.row];
+    NSMutableDictionary *product = [self.productList objectAtIndex:indexPath.row];
     //产品，服务
     if ([product objectForKey:@"id"] && ![product objectForKey:@"has_p_card"]) {
         if ([product objectForKey:@"count"]) {
@@ -157,10 +186,18 @@
                     [[DataService sharedService].number_id removeObjectForKey:[product objectForKey:@"id"]];
                 }
                 [[DataService sharedService].price_id setObject:[product objectForKey:@"price"] forKey:[product objectForKey:@"id"]];
-                [[DataService sharedService].number_id setObject:[product objectForKey:@"count"] forKey:[product objectForKey:@"id"]];
                 
-                NSString *str = [NSString stringWithFormat:@"%@_%@_%@",[product objectForKey:@"id"],[product objectForKey:@"count"],[product objectForKey:@"price"]];
-                [[DataService sharedService].id_count_price addObject:str];
+                if ([DataService sharedService].package_product.count > 0) {
+                    [[DataService sharedService].number_id setObject:@"0" forKey:[product objectForKey:@"id"]];
+                    NSString *str = [NSString stringWithFormat:@"%@_%@_%.2f",[product objectForKey:@"id"],[product objectForKey:@"count"],[[product objectForKey:@"price"]floatValue]*[[product objectForKey:@"count"]intValue]];
+                    [[DataService sharedService].id_count_price addObject:str];
+                }else {
+                    [[DataService sharedService].number_id setObject:[product objectForKey:@"count"] forKey:[product objectForKey:@"id"]];
+                    NSString *str = [NSString stringWithFormat:@"%@_%@_%@",[product objectForKey:@"id"],[product objectForKey:@"count"],[product objectForKey:@"price"]];
+                    [[DataService sharedService].id_count_price addObject:str];
+                }
+                
+                
             }
         }
         static NSString *CellIdentifier = @"ServiceCell";
@@ -323,8 +360,11 @@
     self.lblTotal.text = [NSString stringWithFormat:@"总计：%.2f(元)",self.total_count];
     NSIndexPath *idx = [dic objectForKey:@"idx"];
     [self.productList replaceObjectAtIndex:idx.row withObject:[dic objectForKey:@"prod"]];
-    [DataService sharedService].productList = self.productList;
-    
+
+    [DataService sharedService].productList = [NSMutableArray arrayWithArray:self.productList];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self.productTable reloadData];
+    });
 }
 
 - (IBAction)clickCancel:(id)sender{
@@ -413,7 +453,7 @@
 -(void)confirm {
     NSString *str_product = [self checkForm];
     //确定生成订单后进入订单详情页面
-    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kDone]];
+    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kDone]];
     NSMutableDictionary *data = [NSMutableDictionary dictionary];
     [data setObject:[orderInfo objectForKey:@"c_id"] forKey:@"c_id"];
     [data setObject:[orderInfo objectForKey:@"car_num_id"] forKey:@"car_num_id"];
@@ -430,7 +470,7 @@
     NSString *strr = [r startSynchronousWithError:&error];
     NSDictionary *result = [strr objectFromJSONString];
 
-    DLog(@"%@",result);
+//    DLog(@"%@",result);
     if ([[result objectForKey:@"status"] intValue]==1) {
         PayViewController *payView  = [[PayViewController alloc] initWithNibName:@"PayViewController" bundle:nil];
         payView.orderInfo = [result objectForKey:@"order"];
@@ -444,7 +484,7 @@
     NSString *str = [self checkForm];
     if ([str length]>0 && [[DataService sharedService].user_id intValue] > 0) {
         //确定生成订单后进入订单详情页面
-        if ([DataService sharedService].netWorking == YES && [[Utils connectToInternet] isEqualToString:@"locahost"]) {
+        if (([DataService sharedService].netWorking == YES && [[Utils connectToInternet] isEqualToString:@"locahost"]) || ([DataService sharedService].package_product.count>0 && [[Utils connectToInternet] isEqualToString:@"locahost"])) {
             [AHAlertView applyCustomAlertAppearance];
             NSString *message = @"暂无网络,请前往首页进行离线下单";
             AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:nil message:message];
@@ -460,6 +500,7 @@
             }];
             [alertt show];
         }else if ([[Utils connectToInternet] isEqualToString:@"locahost"] || [DataService sharedService].netWorking == NO) {
+            [DataService sharedService].timeCanale = NO;
             //没有网络
             NSMutableDictionary *confirmDic = [NSMutableDictionary dictionary];
             NSMutableArray *p_array = [NSMutableArray array];//产品
@@ -470,7 +511,7 @@
                 
                 int  classify_id = [[product objectForKey:@"classify_id"]intValue];
                 [status appendFormat:@"%d_",classify_id];
-                if (classify_id < 3) {
+                if (classify_id < 7) {
                     NSMutableDictionary *dic = [NSMutableDictionary dictionary];
                     [dic setObject:[product objectForKey:@"id"] forKey:@"id"];
                     [dic setObject:[product objectForKey:@"name"] forKey:@"name"];
@@ -482,7 +523,7 @@
                     [dic setObject:@"0" forKey:@"type"];
                     [p_array addObject:dic];
                     
-                }else if (classify_id == 3 && [[product objectForKey:@"type"]intValue] == 0){//套餐
+                }else if (classify_id == 7 && [[product objectForKey:@"type"]intValue] == 0){//套餐
                     NSMutableDictionary *dic = [NSMutableDictionary dictionary];
                     [dic setObject:[product objectForKey:@"id"] forKey:@"id"];
                     [dic setObject:[product objectForKey:@"name"] forKey:@"name"];
@@ -494,7 +535,7 @@
                     
                     [dic setObject:@"3" forKey:@"type"];
                     [c_array addObject:dic];
-                }else if (classify_id == 3 && [[product objectForKey:@"type"]intValue] == 1) {//打折
+                }else if (classify_id == 7 && [[product objectForKey:@"type"]intValue] == 1) {//打折
                     NSMutableDictionary *dic = [NSMutableDictionary dictionary];
                     [dic setObject:[product objectForKey:@"scard_id"] forKey:@"id"];
                     [dic setObject:[product objectForKey:@"scard_name"] forKey:@"name"];
@@ -522,8 +563,6 @@
             NSDate *dates = [NSDate date];
             NSDateFormatter *formatter =  [[NSDateFormatter alloc] init];
             [formatter setDateFormat:@"yyyy-MM-dd HH:mm:ss"];
-            NSTimeZone* timeZone = [NSTimeZone timeZoneWithName:@"Asia/beijing"];
-            [formatter setTimeZone:timeZone];
             NSString *loctime = [formatter stringFromDate:dates];
             
             [confirmDic setObject:loctime forKey:@"code"];
@@ -539,19 +578,37 @@
             NSArray *paramarray = [[NSArray alloc] initWithObjects:@"",@"",@"",@"",[orderInfo objectForKey:@"car_num"],str,[NSString stringWithFormat:@"%.2f",self.total_count],@"",[DataService sharedService].store_id,[DataService sharedService].user_id,loctime,loctime,status_str,nil];
             BOOL success = [[LanTaiOrderManager sharedInstance]addDataToTable:@"orderInfo" WithArray:paramarray];
             
+            if (success) {
+                //设置  判断是否要上传数据
+                NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                NSString *syncStr = [defaults objectForKey:@"sync"];
+                int syncValue = 0;
+                if (syncStr==nil) {
+                    syncValue += 1;
+                    [defaults setObject:[NSString stringWithFormat:@"%d",syncValue] forKey:@"sync"];
+                }else {
+                    syncValue = [[defaults objectForKey:@"sync"]intValue];
+                    syncValue += 1;
+                    [defaults removeObjectForKey:@"sync"];
+                    [defaults setObject:[NSString stringWithFormat:@"%d",syncValue] forKey:@"sync"];
+                }
+//                DLog(@"sync = %@",[defaults objectForKey:@"sync"]);
+                [defaults synchronize];
+            }
+            
             //插入关联产品数据
             NSMutableArray *temp_arr = [NSMutableArray array];
             for (int i=0; i<self.productList.count; i++) {
                 NSMutableDictionary *mutableDic = [NSMutableDictionary dictionaryWithDictionary:[self.productList objectAtIndex:i]];
-                if ([[mutableDic objectForKey:@"classify_id"]intValue]<3) {
+                if ([[mutableDic objectForKey:@"classify_id"]intValue]<7) {
                     NSArray *arr = [NSArray arrayWithObjects:@"",@"",@"",[NSString stringWithFormat:@"%@",[mutableDic objectForKey:@"count"]],[NSString stringWithFormat:@"%@",[mutableDic objectForKey:@"id"]],[mutableDic objectForKey:@"name"],[NSString stringWithFormat:@"%@",[mutableDic objectForKey:@"price"]],loctime,[NSString stringWithFormat:@"%@",[mutableDic objectForKey:@"classify_id"]], nil];
                     
                     [temp_arr addObject:arr];
-                }else if ([[mutableDic objectForKey:@"classify_id"]intValue] == 3  && [[mutableDic objectForKey:@"is_new"]intValue] != 1){
+                }else if ([[mutableDic objectForKey:@"classify_id"]intValue] == 7  && [[mutableDic objectForKey:@"is_new"]intValue] != 1){
                     NSArray *arr = [NSArray arrayWithObjects:@"",[NSString stringWithFormat:@"%@",[mutableDic objectForKey:@"show_price"]],[NSString stringWithFormat:@"%@",[mutableDic objectForKey:@"has_p_card"]],[NSString stringWithFormat:@"%d",1],[NSString stringWithFormat:@"%@",[mutableDic objectForKey:@"id"]],[mutableDic objectForKey:@"name"],[NSString stringWithFormat:@"%@",[mutableDic objectForKey:@"price"]],loctime,[NSString stringWithFormat:@"%@",[mutableDic objectForKey:@"classify_id"]], nil];
                     
                     [temp_arr addObject:arr];
-                }else if ([[mutableDic objectForKey:@"classify_id"]intValue] == 3  && [[mutableDic objectForKey:@"is_new"]intValue] == 1) {
+                }else if ([[mutableDic objectForKey:@"classify_id"]intValue] == 7  && [[mutableDic objectForKey:@"is_new"]intValue] == 1) {
                     NSArray *arr = [NSArray arrayWithObjects:@"is_new",[NSString stringWithFormat:@"%@",[mutableDic objectForKey:@"show_price"]],[NSString stringWithFormat:@"%@",[mutableDic objectForKey:@"has_p_card"]],[NSString stringWithFormat:@"%d",1],[NSString stringWithFormat:@"%@",[mutableDic objectForKey:@"scard_id"]],[mutableDic objectForKey:@"scard_name"],[NSString stringWithFormat:@"%@",[mutableDic objectForKey:@"price"]],loctime,[NSString stringWithFormat:@"%@",[mutableDic objectForKey:@"classify_id"]], nil];
                     
                     [temp_arr addObject:arr];
@@ -559,27 +616,34 @@
             }
             BOOL success2 = NO;
             if (temp_arr.count>0 && success) {
-                //判断同步按钮，避免访问数据库
-                NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-                int sync = [[defaults objectForKey:@"sync"]intValue];
-                if (sync != 1) {
-                    [defaults removeObjectForKey:@"sync"];
-                    [defaults setObject:@"1" forKey:@"sync"];
-                }
-                [defaults synchronize];
-                
                 for (int i=0; i<temp_arr.count; i++) {
                     NSArray *array = [temp_arr objectAtIndex:i];
                     success2 = [[LanTaiOrderManager sharedInstance]addDataToTable:@"member" WithArray:array];
                 }
             }
-            
             if (success2) {
+                //设置  判断是否要上传数据
+                NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                NSString *syncStr = [defaults objectForKey:@"sync"];
+                int syncValue = 0;
+                if (syncStr==nil) {
+                    syncValue += 1;
+                    [defaults setObject:[NSString stringWithFormat:@"%d",syncValue] forKey:@"sync"];
+                }else {
+                    syncValue = [[defaults objectForKey:@"sync"]intValue];
+                    syncValue += 1;
+                    [defaults removeObjectForKey:@"sync"];
+                    [defaults setObject:[NSString stringWithFormat:@"%d",syncValue] forKey:@"sync"];
+                }
+//                DLog(@"sync = %@",[defaults objectForKey:@"sync"]);
+                [defaults synchronize];
+                
                 PayViewController *payView  = [[PayViewController alloc] initWithNibName:@"PayViewController" bundle:nil];
                 payView.orderInfo = [NSMutableDictionary dictionaryWithDictionary:confirmDic];
                 [self.navigationController pushViewController:payView animated:YES];
             }
         }else {
+            [DataService sharedService].timeCanale = YES;
             MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
             hud.dimBackground = NO;
             [hud showWhileExecuting:@selector(confirm) onTarget:self withObject:nil animated:YES];
@@ -621,7 +685,7 @@
     CGFloat y = 0;
     NSArray *array = [[DataService sharedService].number_id allKeys];
     if ([array containsObject:product_id]) {
-        y = [[dic objectForKey:@"price"] floatValue];//服务／产品的  单价
+        
         int num_count = 0;
         int index_row = 0;
         int num = 0;
@@ -638,12 +702,12 @@
                     index_row = [[arr objectAtIndex:0]intValue];
                     //通过index找到cell
                     NSIndexPath *idx = [NSIndexPath indexPathForRow:index_row inSection:0];
-                    NSMutableDictionary *product_dic = [[DataService sharedService].productList objectAtIndex:index_row];
+                    NSMutableDictionary *product_dic = [NSMutableDictionary dictionaryWithDictionary:[[DataService sharedService].productList objectAtIndex:index_row]];
                     PackageCardCell *cell = (PackageCardCell *)[self.productTable cellForRowAtIndexPath:idx];
                     CGFloat x = [cell.lblPrice.text floatValue];
                     
-                    p_arr = [product_dic objectForKey:@"products"];
-                    DLog(@"p_arr = %@",p_arr);
+                    p_arr = [NSMutableArray arrayWithArray:[product_dic objectForKey:@"products"]];
+//                    DLog(@"p_arr = %@",p_arr);
                     
                     for (int j=0; j<p_arr.count; j++) {
                         
@@ -654,6 +718,7 @@
                             UIButton *btn = (UIButton *)[cell viewWithTag:OPEN+j];
                             num = [[p_dic objectForKey:@"num"]intValue];//套餐卡剩余次数
                             
+                            y = [[dic objectForKey:@"price"] floatValue];//服务／产品的  单价
                             num_count = [[arr objectAtIndex:2]intValue];//放在单列里面此id产品消费次数
                             y = y * num_count;
                             x =x + y ;
@@ -662,7 +727,7 @@
                             int count_num = [[[DataService sharedService].number_id objectForKey:product_id]intValue];//剩余次数
                             [[DataService sharedService].number_id removeObjectForKey:product_id];
                             [[DataService sharedService].number_id setObject:[NSString stringWithFormat:@"%d", num_count+count_num] forKey:product_id];
-                            DLog(@"dic = %@",[DataService sharedService].number_id);
+//                            DLog(@"dic = %@",[DataService sharedService].number_id);
                             
                             [p_dic setObject:[NSString stringWithFormat:@"%d",num + num_count] forKey:@"num"];
                             [p_dic setValue:@"1" forKey:@"selected"];
@@ -678,7 +743,6 @@
                             [btn setImage:[UIImage imageNamed:@"cb_mono_off"] forState:UIControlStateNormal];
                             
                             NSString *price = [NSString stringWithFormat:@"%.2f",x];
-//                            cell.lblPrice.text = price;
                             [product_dic setObject:p_arr forKey:@"products"];
                             
                             [product_dic setObject:price forKey:@"show_price"];
@@ -696,6 +760,7 @@
             //删除
             if (collection_temp.count>0) {
                 [[DataService sharedService].row_id_countArray removeObjectsInArray:collection_temp];
+                DLog(@"删除222 row_id_countArray = %@",[DataService sharedService].row_id_countArray);
             }
         }
     }
@@ -780,7 +845,7 @@
                                     int count_num = [[[DataService sharedService].number_id objectForKey:product_id]intValue];//剩余次数
                                     [[DataService sharedService].number_id removeObjectForKey:product_id];
                                     [[DataService sharedService].number_id setObject:[NSString stringWithFormat:@"%d", num_count+count_num] forKey:product_id];
-                                    DLog(@"dic = %@",[DataService sharedService].number_id);
+//                                    DLog(@"dic = %@",[DataService sharedService].number_id);
                                     
                                     [p_dic setObject:[NSString stringWithFormat:@"%d",num + num_count] forKey:@"num"];
                                     [p_dic setValue:@"1" forKey:@"selected"];
@@ -1180,5 +1245,12 @@
             }
         }
     }
+}
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
+}
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
+    return (interfaceOrientation == UIInterfaceOrientationLandscapeLeft || interfaceOrientation==UIInterfaceOrientationLandscapeRight);
 }
 @end

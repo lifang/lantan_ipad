@@ -21,6 +21,11 @@
 #import "MBProgressHUD.h"
 #import "AHAlertView.h"
 #import "LanTaiOrderManager.h"
+
+#endif
+
+#ifdef __cplusplus
+#import <opencv2/opencv.hpp>
 #endif
 
 #ifdef DEBUG

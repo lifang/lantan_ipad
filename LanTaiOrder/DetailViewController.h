@@ -14,13 +14,20 @@
 @property (nonatomic,assign) id<DetailViewDelegate> delegate;
 
 @property (strong, nonatomic) IBOutlet UILabel *classLab;
-@property (strong, nonatomic) IBOutlet UIImageView *imageView;
 @property (strong, nonatomic) IBOutlet UILabel *nameLab;
 @property (strong, nonatomic) IBOutlet UILabel *priceLab;
-@property (strong, nonatomic) IBOutlet UILabel *detailLab;
-
+@property (strong, nonatomic) UILabel *detailLab;
+@property (strong, nonatomic) IBOutlet UIScrollView *scrollView;
+@property (strong, nonatomic) IBOutlet UILabel *detailLabb;
 @property (strong, nonatomic) NSDictionary *productDic;
 @property (assign, nonatomic) int number;
+@property (strong, nonatomic) NSMutableArray *titleArray;
+
+@property (strong, nonatomic) IBOutlet UILabel *kucunLab;
+@property (strong, nonatomic) IBOutlet UILabel *countLab;
+@property (strong, nonatomic) IBOutlet UILabel *pointLab;
+@property (strong, nonatomic) IBOutlet UILabel *point;
+
 @end
 
 

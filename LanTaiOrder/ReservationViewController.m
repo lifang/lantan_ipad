@@ -32,7 +32,7 @@
 //    self.navigationController.navigationBar.hidden = NO;
     [super viewDidLoad];
     if (![self.navigationItem rightBarButtonItem]) {
-        [self addRightnaviItemsWithImage:@"back" andImage:nil andImage:nil];
+        [self addRightnaviItemsWithImage:@"back" andImage:nil];
     }
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(refreshData:) name:@"updateReservation" object:nil];
     
@@ -129,4 +129,5 @@
     self.reservList = [DataService sharedService].reserve_list;
     [self.reservTable reloadData];
 }
+
 @end

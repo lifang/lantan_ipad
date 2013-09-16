@@ -23,6 +23,9 @@
 #import "Member.h"//订单关联的产品
 #import "EmployeeInfo.h"
 #import "CarCapital.h"
+#import "PackageCell.h"
+#import "PackageHeader.h"
+#import "ConfirmViewController.h"
 
 @interface OrderViewController ()<PicViewDelegate>{
     PicViewController *picView;
@@ -41,7 +44,7 @@
 @synthesize addOrderView;
 @synthesize timeLabel,productLabel;
 @synthesize car_id;
-
+@synthesize packageTable,packageList,btnPackageRecord;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
@@ -56,7 +59,7 @@
 }
 #pragma mark - 本地获取客户信息
 - (void)getOrderByCarNumWithCar_id:(NSString *)carid {
-    NSArray *array = [[LanTaiOrderManager sharedInstance] loadDataFromTableName:@"customer" WithName:nil andPassWord:nil andCarNum:self.car_num andBrand_id:nil andCar_brand_id:nil andProduct_id:nil andClassify_id:nil andCar_capital_id:nil];
+    NSArray *array = [[LanTaiOrderManager sharedInstance] loadDataFromTableName:@"customer" WithName:nil andPassWord:nil andCarNum:self.car_num andBrand_id:nil andCar_brand_id:nil andProduct_id:nil andClassify_id:nil andCar_capital_id:nil andStore_id:[DataService sharedService].store_id];
     if (array.count != 0) {
         self.carInfoView.hidden = NO;
         self.noInfoView.hidden = YES;
@@ -87,7 +90,7 @@
     NSMutableArray *orderOld = [NSMutableArray array];//消费纪录
     if (array.count != 0) {//有客户信息之后查看有没有订单
         
-        NSArray *orderArray = [[LanTaiOrderManager sharedInstance]loadDataFromTableName:@"orderInfo" CarNum:self.car_num andCodeID:nil];
+        NSArray *orderArray = [[LanTaiOrderManager sharedInstance]loadDataFromTableName:@"orderInfo" CarNum:self.car_num andCodeID:nil andStore_id:[DataService sharedService].store_id];
         if (orderArray.count>0) {
             for (int i =0; i<orderArray.count; i++) {
                 Order *orderInfo = (Order *)[orderArray objectAtIndex:i];
@@ -129,7 +132,7 @@
                     }
                 }
                 //关联产品
-                NSArray *product_array = [[LanTaiOrderManager sharedInstance]loadDataFromTableName:@"member" CarNum:nil andCodeID:orderInfo.codeID];
+                NSArray *product_array = [[LanTaiOrderManager sharedInstance]loadDataFromTableName:@"member" CarNum:nil andCodeID:orderInfo.codeID andStore_id:nil];
                 if (product_array.count>0) {
                     NSMutableArray *tempArray = [NSMutableArray array];
                     NSMutableString *prods = [NSMutableString string];
@@ -186,7 +189,7 @@
                     [dic setObject:orderInfo.codeID forKey:@"created_at"];
                     
                     //关联产品
-                    NSArray *product_array = [[LanTaiOrderManager sharedInstance]loadDataFromTableName:@"member" CarNum:nil andCodeID:orderInfo.codeID];
+                    NSArray *product_array = [[LanTaiOrderManager sharedInstance]loadDataFromTableName:@"member" CarNum:nil andCodeID:orderInfo.codeID andStore_id:nil];
                     if (product_array.count>0) {
                         NSMutableArray *p_arr = [NSMutableArray array];
                         for (Member *member in product_array) {
@@ -217,14 +220,14 @@
     if (car_num) {
         NSDictionary *result = nil;
         if (self.car_id) {
-            STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kShowCar]];
+            STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kShowCar]];
             [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id",car_num,@"car_num",car_id,@"car_id", nil]];
             [r setPostDataEncoding:NSUTF8StringEncoding];
             NSError *error = nil;
             NSString *str = [r startSynchronousWithError:&error];
             result = [str objectFromJSONString];
         }else {
-            STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kSearchCar]];
+            STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kSearchCar]];
             [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id",car_num,@"car_num", nil]];
             [r setPostDataEncoding:NSUTF8StringEncoding];
             NSError *error = nil;
@@ -234,7 +237,7 @@
 
         DLog(@"%@",result);
         if ([[result objectForKey:@"status"] intValue]==1) {
-            if ([[result objectForKey:@"customer"] count]==0) {
+            if ([[result objectForKey:@"customer"]isKindOfClass:[NSNull class]]) {
                 self.carInfoView.hidden = YES;
                 self.noInfoView.hidden = NO;
             }else{
@@ -298,6 +301,9 @@
                     self.lblReceiver.text = [[result objectForKey:@"working"] objectForKey:@"staff"];
                     self.lblOrderNum.text = [[result objectForKey:@"working"] objectForKey:@"code"];
                     self.lblStatus.text = [Utils orderStatus:[[[result objectForKey:@"working"] objectForKey:@"status"] intValue]];
+                    
+                    self.btnCancel.hidden = NO;
+                
                     self.lblWorkingName.text = [[result objectForKey:@"customer"] objectForKey:@"name"];
                     self.lblWorkingCar.text = [[result objectForKey:@"customer"] objectForKey:@"num"];
                     self.lblTotal.text = [NSString stringWithFormat:@"%@(元)",[[result objectForKey:@"working"] objectForKey:@"price"]];
@@ -307,13 +313,15 @@
                     }else {
                         self.productLabel.hidden = NO;//服务lab
                     }
-                    
-                    self.btnCancel.hidden = NO;
                     self.btnPay.hidden = NO;
                 }
                 //过往订单
                 if ([[result objectForKey:@"old"] count]>0) {
                     self.orderList = [result objectForKey:@"old"];
+                }
+                //套餐卡消费纪录
+                if ([[result objectForKey:@"package_cards"] count]>0) {
+                    self.packageList = [NSMutableArray arrayWithArray:[result objectForKey:@"package_cards"]];
                 }
             }
         }
@@ -325,13 +333,18 @@
     [super viewWillAppear:animated];
     [self.orderTable reloadData];
     [self.workingTable reloadData];
+    [self.packageTable reloadData];
 }
 - (void)viewDidLoad
 {
     self.orderList = [NSMutableArray array];
     self.orderItems = [NSMutableArray array];
+    self.packageList = [NSMutableArray array];
     self.customer = [NSMutableDictionary dictionary];
     self.workingOrder = [NSMutableDictionary dictionary];
+    [DataService sharedService].package_product = nil;
+    [DataService sharedService].package_product = [NSMutableArray array];
+    
     
     if ([[Utils connectToInternet] isEqualToString:@"locahost"]) {
         [self getOrderByCarNumWithCar_id:self.car_id];
@@ -344,7 +357,7 @@
     self.carInfoView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"dot_bg"]];
     self.noInfoView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"dot_bg"]];
     if (![self.navigationItem rightBarButtonItem]) {
-        [self addRightnaviItemsWithImage:@"back" andImage:nil andImage:nil];
+        [self addRightnaviItemsWithImage:@"back" andImage:nil];
     }
     
     //加摄像头
@@ -355,6 +368,7 @@
     
     
     self.orderView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"order"]];
+
 }
 
 - (void)didReceiveMemoryWarning
@@ -372,12 +386,16 @@
         return orderList.count;
     }else if([tableView isEqual:workingTable]){
         return orderItems.count;
+    }else if ([tableView isEqual:packageTable]) {
+        return packageList.count;
     }
     return 0;
 }
 - (CGFloat)tableView:(UITableView *)tableView heightForHeaderInSection:(NSInteger)section{
     if ([tableView isEqual:workingTable]) {
         return 0;
+    }else if ([tableView isEqual:orderTable]) {
+        return 44;
     }else {
         return 44;
     }
@@ -392,9 +410,13 @@
     }
    
     CGRect frame = CGRectMake(0, 0, 844, 43);
-    TabHeader *tabHeader = [[TabHeader alloc] initWithFrame:frame];
-    return tabHeader;
-
+    if ([tableView isEqual:orderTable]) {
+        TabHeader *tabHeader = [[TabHeader alloc] initWithFrame:frame];
+        return tabHeader;
+    }else {
+        PackageHeader *tabHeader = [[PackageHeader alloc] initWithFrame:frame];
+        return tabHeader;
+    }
 }
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
     
@@ -409,7 +431,7 @@
         cell.lblPrice.text = [NSString stringWithFormat:@"%@",[product objectForKey:@"price"]];
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
         return cell;
-    }else{
+    }else if ([tableView isEqual:orderTable]){
         NSString *CellIdentifier = [NSString stringWithFormat:@"OldProductCell%d", [indexPath row]];
         OldProductCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
         NSDictionary *order = [orderList objectAtIndex:indexPath.row];
@@ -449,20 +471,41 @@
         
         cell.selectionStyle = UITableViewCellSelectionStyleNone;
         return cell;
+    }else {//套餐卡消费纪录
+        NSString *CellIdentifier = [NSString stringWithFormat:@"PackageCell%d", [indexPath row]];
+        PackageCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+        NSMutableDictionary *order = [packageList objectAtIndex:indexPath.row];
+        if (cell == nil) {
+            cell = [[PackageCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier item:order indexPath:indexPath];
+        }
+        if (![[order objectForKey:@"ended_at"] isKindOfClass:[NSNull class]] && [order objectForKey:@"ended_at"]!= nil) {
+            cell.dateLab.text = [order objectForKey:@"ended_at"];
+        }
+        cell.nameLab.text = [order objectForKey:@"name"];
+        
+        cell.selectionStyle = UITableViewCellSelectionStyleNone;
+        return cell;
     }
 }
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
     if ([tableView isEqual:workingTable]) {
         return 44;
-    }else{
+    }else if ([tableView isEqual:orderTable]){
         NSDictionary *order = [orderList objectAtIndex:indexPath.row];
         int count = [[order objectForKey:@"products"] count];
         if (count == 0) {
             return 44+20;
         }
         return count * 44 +20;
+    }else {
+        NSDictionary *order = [packageList objectAtIndex:indexPath.row];
+        int count = [[order objectForKey:@"products"] count];
+        if (count == 0) {
+            return 44+20;
         }
+        return count * 44 +20;
+    }
 }
 
 #pragma mark -点击投诉按钮
@@ -494,10 +537,10 @@
     [self.navigationController pushViewController:complaintView animated:YES];
 }
 
-#pragma mark -取消订单（未施工）
+#pragma mark -取消订单（排队等待中）
 -(void)cancleOrder {
     
-    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kPayOrder]];
+    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kPayOrder]];
     [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[workingOrder objectForKey:@"id"],@"order_id",@"1",@"opt_type", nil]];
     [r setPostDataEncoding:NSUTF8StringEncoding];
     NSError *error = nil;
@@ -519,58 +562,119 @@
     [MBProgressHUD hideHUDForView:self.view animated:YES];
 }
 - (IBAction)clickCancel:(id)sender{
-    if ([workingOrder objectForKey:@"id"] != NULL) {
-        if ([[Utils connectToInternet] isEqualToString:@"locahost"]) {
-            NSArray *paramarray = [[NSArray alloc] initWithObjects:@"",@"",@"",@"",@"",@"",@"",@"",@"",@"",@"",[NSString stringWithFormat:@"%@",[self.workingOrder objectForKey:@"code"]],[NSString stringWithFormat:@"%d",5],nil];
-            BOOL success = [[LanTaiOrderManager sharedInstance]addDataToTable:@"orderInfo" WithArray:paramarray];
-            if (success) {
-                [DataService sharedService].refreshing = YES;
-                [AHAlertView applyCustomAlertAppearance];
-                AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"订单已取消"];
-                __block AHAlertView *alert = alertt;
-                [alertt setCancelButtonTitle:@"确定" block:^{
-                    alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
-                    alert = nil;
-                    [self.navigationController popToRootViewControllerAnimated:YES];
-                }];
-                [alertt show];
+    [AHAlertView applyCustomAlertAppearance];
+    AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"确定取消订单？"];
+    __block AHAlertView *alert = alertt;
+    [alertt setCancelButtonTitle:@"取消" block:^{
+        alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+        alert = nil;
+    }];
+    [alertt addButtonWithTitle:@"确定" block:^{
+        alert.dismissalStyle = AHAlertViewDismissalStyleZoomDown;
+        alert = nil;
+        if ([workingOrder objectForKey:@"id"] != NULL) {
+            if ([[Utils connectToInternet] isEqualToString:@"locahost"]) {
+                NSArray *paramarray = [[NSArray alloc] initWithObjects:@"",@"",@"",@"",@"",@"",@"",@"",[NSString stringWithFormat:@"%@",[DataService sharedService].store_id],@"",@"",[NSString stringWithFormat:@"%@",[self.workingOrder objectForKey:@"code"]],[NSString stringWithFormat:@"%d",5],nil];
+                BOOL success = [[LanTaiOrderManager sharedInstance]addDataToTable:@"orderInfo" WithArray:paramarray];
+                if (success) {
+                    //设置  判断是否要上传数据
+                    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                    NSString *syncStr = [defaults objectForKey:@"sync"];
+                    int syncValue = 0;
+                    if (syncStr==nil) {
+                        syncValue += 1;
+                        [defaults setObject:[NSString stringWithFormat:@"%d",syncValue] forKey:@"sync"];
+                    }else {
+                        syncValue = [[defaults objectForKey:@"sync"]intValue];
+                        syncValue += 1;
+                        [defaults removeObjectForKey:@"sync"];
+                        [defaults setObject:[NSString stringWithFormat:@"%d",syncValue] forKey:@"sync"];
+                    }
+                    DLog(@"sync = %@",[defaults objectForKey:@"sync"]);
+                    [defaults synchronize];
+                    
+                    [DataService sharedService].refreshing = YES;
+                    [AHAlertView applyCustomAlertAppearance];
+                    AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"订单已取消"];
+                    __block AHAlertView *alert = alertt;
+                    [alertt setCancelButtonTitle:@"确定" block:^{
+                        alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+                        alert = nil;
+                        [self.navigationController popToRootViewControllerAnimated:YES];
+                    }];
+                    [alertt show];
+                }else {
+                    [self errorAlert:@"订单取消失败"];
+                }
             }else {
-                [self errorAlert:@"订单取消失败"];
+                MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+                hud.dimBackground = NO;
+                [hud showWhileExecuting:@selector(cancleOrder) onTarget:self withObject:nil animated:YES];
+                hud.labelText = @"正在努力加载...";
+                [self.view addSubview:hud];
             }
         }else {
-            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
-            hud.dimBackground = NO;
-            [hud showWhileExecuting:@selector(cancleOrder) onTarget:self withObject:nil animated:YES];
-            hud.labelText = @"正在努力加载...";
-            [self.view addSubview:hud];
-        }
-    }else {
-        NSString *codeID = [self.workingOrder objectForKey:@"code"];
-        BOOL success = [[LanTaiOrderManager sharedInstance]deleteTable:@"orderInfo" WithName:nil andPassWord:nil andCarNum:nil andProduct_id:nil andCodeID:codeID];
-        if (success) {
-            BOOL success2 = [[LanTaiOrderManager sharedInstance]deleteTable:@"member" WithName:nil andPassWord:nil andCarNum:nil andProduct_id:nil andCodeID:codeID];
-            if (success2) {
-                [DataService sharedService].refreshing = YES;
-                [AHAlertView applyCustomAlertAppearance];
-                AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"订单已取消"];
-                __block AHAlertView *alert = alertt;
-                [alertt setCancelButtonTitle:@"确定" block:^{
-                    alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
-                    alert = nil;
-                    [self.navigationController popToRootViewControllerAnimated:YES];
-                }];
-                [alertt show];
-            }else {
-                [self errorAlert:@"订单取消失败"];
+            NSString *codeID = [self.workingOrder objectForKey:@"code"];
+            BOOL success = [[LanTaiOrderManager sharedInstance]deleteTable:@"orderInfo" WithName:nil andPassWord:nil andCarNum:nil andProduct_id:nil andCodeID:codeID];
+            if (success) {
+                //设置  判断是否要上传数据
+                NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                NSString *syncStr = [defaults objectForKey:@"sync"];
+                int syncValue = 0;
+                if (syncStr==nil) {
+                    syncValue -= 1;
+                    [defaults setObject:[NSString stringWithFormat:@"%d",syncValue] forKey:@"sync"];
+                }else {
+                    syncValue = [[defaults objectForKey:@"sync"]intValue];
+                    syncValue -= 1;
+                    [defaults removeObjectForKey:@"sync"];
+                    [defaults setObject:[NSString stringWithFormat:@"%d",syncValue] forKey:@"sync"];
+                }
+                DLog(@"sync = %@",[defaults objectForKey:@"sync"]);
+                [defaults synchronize];
+                
+                BOOL success2 = [[LanTaiOrderManager sharedInstance]deleteTable:@"member" WithName:nil andPassWord:nil andCarNum:nil andProduct_id:nil andCodeID:codeID];
+                if (success2) {
+                    //设置  判断是否要上传数据
+                    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                    NSString *syncStr = [defaults objectForKey:@"sync"];
+                    int syncValue = 0;
+                    if (syncStr==nil) {
+                        syncValue -= 1;
+                        [defaults setObject:[NSString stringWithFormat:@"%d",syncValue] forKey:@"sync"];
+                    }else {
+                        syncValue = [[defaults objectForKey:@"sync"]intValue];
+                        syncValue -= 1;
+                        [defaults removeObjectForKey:@"sync"];
+                        [defaults setObject:[NSString stringWithFormat:@"%d",syncValue] forKey:@"sync"];
+                    }
+                    DLog(@"sync = %@",[defaults objectForKey:@"sync"]);
+                    [defaults synchronize];
+                    
+                    [DataService sharedService].refreshing = YES;
+                    [AHAlertView applyCustomAlertAppearance];
+                    AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"订单已取消"];
+                    __block AHAlertView *alert = alertt;
+                    [alertt setCancelButtonTitle:@"确定" block:^{
+                        alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+                        alert = nil;
+                        [self.navigationController popToRootViewControllerAnimated:YES];
+                    }];
+                    [alertt show];
+                }else {
+                    [self errorAlert:@"订单取消失败"];
+                }
             }
         }
-    }
+    }];
+    [alertt show];
+    
 }
 
 
 #pragma mark -保存车辆品牌／型号到数据库
 -(void)addDataToBrandAndmodel {
-    NSArray *array = [[LanTaiOrderManager sharedInstance] loadDataFromTableName:@"carCapital" WithName:nil andPassWord:nil andCarNum:nil andBrand_id:nil andCar_brand_id:nil andProduct_id:nil andClassify_id:nil andCar_capital_id:nil];
+    NSArray *array = [[LanTaiOrderManager sharedInstance] loadDataFromTableName:@"carCapital" WithName:nil andPassWord:nil andCarNum:nil andBrand_id:nil andCar_brand_id:nil andProduct_id:nil andClassify_id:nil andCar_capital_id:nil andStore_id:nil];
     if (array.count == 0) {
         //保存车辆品牌／型号到数据库
         if (self.addOrderView.brandList.count>0) {
@@ -637,32 +741,29 @@
 }
 #pragma mark -数据库获取车辆品牌／型号
 -(void)getDataFromBrandAndmodel {
-    NSArray *array = [[LanTaiOrderManager sharedInstance] loadDataFromTableName:@"carCapital" WithName:nil andPassWord:nil andCarNum:nil andBrand_id:nil andCar_brand_id:nil andProduct_id:nil andClassify_id:nil andCar_capital_id:nil];
+    NSArray *array = [[LanTaiOrderManager sharedInstance] loadDataFromTableName:@"carCapital" WithName:nil andPassWord:nil andCarNum:nil andBrand_id:nil andCar_brand_id:nil andProduct_id:nil andClassify_id:nil andCar_capital_id:nil andStore_id:nil];
     if (array.count != 0) {
         NSMutableArray *tempArray_capital = [NSMutableArray array];
         for (CarCapital *carCapital in array) {
             NSMutableArray *tempArray_brand = [NSMutableArray array];
             NSString *car_capital_id = [NSString stringWithFormat:@"%@",carCapital.capital_id];
-            NSArray *array_brand = [[LanTaiOrderManager sharedInstance]loadDataFromTableName:@"carBrand" WithName:nil andPassWord:nil andCarNum:nil andBrand_id:nil andCar_brand_id:nil andProduct_id:nil andClassify_id:nil andCar_capital_id:car_capital_id];
+            NSArray *array_brand = [[LanTaiOrderManager sharedInstance]loadDataFromTableName:@"carBrand" WithName:nil andPassWord:nil andCarNum:nil andBrand_id:nil andCar_brand_id:nil andProduct_id:nil andClassify_id:nil andCar_capital_id:car_capital_id andStore_id:nil];
             if (array_brand.count >0) {
                 for (CarBrand *carBrand in array_brand) {
                     NSMutableArray *tempArray_model = [NSMutableArray array];
                     NSString *car_brand_id = [NSString stringWithFormat:@"%@",carBrand.brand_id];
-                    NSArray *array_model = [[LanTaiOrderManager sharedInstance]loadDataFromTableName:@"carModel" WithName:nil andPassWord:nil andCarNum:nil andBrand_id:nil andCar_brand_id:car_brand_id andProduct_id:nil andClassify_id:nil andCar_capital_id:nil];
+                    NSArray *array_model = [[LanTaiOrderManager sharedInstance]loadDataFromTableName:@"carModel" WithName:nil andPassWord:nil andCarNum:nil andBrand_id:nil andCar_brand_id:car_brand_id andProduct_id:nil andClassify_id:nil andCar_capital_id:nil andStore_id:nil];
                     if (array_model.count>0) {
                         for (CarModel *carModel in array_model) {
                             NSDictionary *model_dic = [NSDictionary dictionaryWithObjectsAndKeys:[NSString stringWithFormat:@"%@",carModel.car_brand_id],@"car_brand_id",[NSString stringWithFormat:@"%@",carModel.model_id],@"id",[NSString stringWithFormat:@"%@",carModel.name],@"name",nil];
                             [tempArray_model addObject:model_dic];
                         }
-                    }else {
-                        [tempArray_model addObject:@""];
                     }
                     NSDictionary *brand_dic = [NSDictionary dictionaryWithObjectsAndKeys:[NSString stringWithFormat:@"%@",carBrand.name],@"name",[NSString stringWithFormat:@"%@",carBrand.brand_id],@"id",tempArray_model,@"models",[NSString stringWithFormat:@"%@",carBrand.car_capital_id],@"capital_id", nil];
                     [tempArray_brand addObject:brand_dic];
                 }
-            }else {
-                [tempArray_brand addObject:@""];
             }
+
             NSDictionary *capital_dic = [NSDictionary dictionaryWithObjectsAndKeys:[NSString stringWithFormat:@"%@",carCapital.name],@"name",[NSString stringWithFormat:@"%@",carCapital.capital_id],@"id",tempArray_brand,@"brands",nil];
             [tempArray_capital addObject:capital_dic];
         }
@@ -674,10 +775,10 @@
     NSArray *array = [[LanTaiOrderManager sharedInstance] loadDataFromTableName:@"products" WithStore_id:[DataService sharedService].store_id andClassify_id:nil andProduct_id:nil andType:nil];
     if (array.count == 0) {
         //保存产品到数据库
-        if (self.addOrderView.productList.count>0) {
+        if (self.addOrderView.titleArray.count>0) {
             NSMutableArray *tempArray = [NSMutableArray array];
-            for (int i = 0; i<self.addOrderView.productList.count-1; i++) {
-                NSArray *productArray = [self.addOrderView.productList objectAtIndex:i];
+            for (int i = 0; i<self.addOrderView.titleArray.count; i++) {
+                NSArray *productArray = [self.addOrderView.productList objectForKey:[self.addOrderView.titleArray objectAtIndex:i]];
                 if (productArray.count>0) {
                     for (int j=0; j<productArray.count; j++) {
                         NSDictionary *p_dic = [productArray objectAtIndex:j];
@@ -702,8 +803,8 @@
         }
     }else {
         if (self.addOrderView.productList.count>0) {
-            for (int i=0; i<self.addOrderView.productList.count-1; i++) {
-                NSArray *productArray = [self.addOrderView.productList objectAtIndex:i];
+            for (int i=0; i<self.addOrderView.titleArray.count; i++) {
+                NSArray *productArray = [self.addOrderView.productList objectForKey:[self.addOrderView.titleArray objectAtIndex:i]];
                 if (productArray.count>0) {
                     for (int j=0; j<productArray.count; j++) {
                         NSDictionary *p_dic = [productArray objectAtIndex:j];
@@ -742,30 +843,21 @@
 
 #pragma mark -数据库获取产品
 -(void)getDataFromProducts {
-    NSMutableArray *tempArray = [NSMutableArray array];
-    for (int i = 0; i < 4; i++) [tempArray addObject:[NSMutableArray array]];
-    for (int i=0; i<4; i++) {
+    NSMutableDictionary *tempDic = [NSMutableDictionary dictionary];
+    for (int i=0; i<self.addOrderView.titleArray.count; i++) {
         NSString *classify_id = [NSString stringWithFormat:@"%d",i];
         NSArray *array = [[LanTaiOrderManager sharedInstance]loadDataFromTableName:@"products" WithStore_id:[DataService sharedService].store_id andClassify_id:classify_id andProduct_id:nil andType:nil];
         if (array.count>0) {
+             NSMutableArray *tempArray = [NSMutableArray array];
             for (Products *products in array) {
                 NSDictionary *p_dic = [NSDictionary dictionaryWithObjectsAndKeys:[NSString stringWithFormat:@"%@",products.type],@"type",[NSString stringWithFormat:@"%@",products.product_id],@"id",[NSString stringWithFormat:@"%@",products.img],@"img",[NSString stringWithFormat:@"%@",products.name],@"name",[NSString stringWithFormat:@"%@",products.price],@"price",[NSString stringWithFormat:@"%@",products.classify_id],@"classify_id",[NSString stringWithFormat:@"%@",products.description],@"description", nil];
-                [[tempArray objectAtIndex:i]addObject:p_dic];
+                [tempArray addObject:p_dic];
             }
+            [tempDic setObject:tempArray forKey:[self.addOrderView.titleArray objectAtIndex:i]];
         }
     }
-    int count =0;
-    for (int j=0; j<tempArray.count; j++) {
-        NSArray *arrr = [tempArray objectAtIndex:j];
-        int num = arrr.count;
-        if (num > count) {
-            count = num;
-        }
-    }
-    NSString *str = [NSString stringWithFormat:@"%d",count];
-    [tempArray addObject:str];
     
-    self.addOrderView.productList = [NSMutableArray arrayWithArray:tempArray];
+    self.addOrderView.productList = [NSDictionary dictionaryWithDictionary:tempDic];
 }
 #pragma mark -点击下单按钮
 -(void)showAddView {
@@ -774,15 +866,17 @@
     [DataService sharedService].number = 0;
     self.addOrderView.step = @"0";
     //下单获取数据
-    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kBrandProduct]];
+    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kBrandProduct]];
     [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id", nil]];
     [r setPostDataEncoding:NSUTF8StringEncoding];
     NSError *error = nil;
     NSString *str = [r startSynchronousWithError:&error];
     NSDictionary *result = [str objectFromJSONString];
     if ([[result objectForKey:@"status"] intValue]==1) {
-        self.addOrderView.brandList = [NSMutableArray arrayWithArray:[result objectForKey:@"brands"]];
-        self.addOrderView.productList = [NSMutableArray arrayWithArray:[result objectForKey:@"products"]];
+        NSMutableDictionary *dictionary = [NSMutableDictionary dictionaryWithDictionary:[result objectForKey:@"all_infos"]];
+        self.addOrderView.brandList = [NSMutableArray arrayWithArray:[dictionary objectForKey:@"car_info"]];
+        self.addOrderView.productList = [NSMutableDictionary dictionaryWithDictionary:[dictionary objectForKey:@"products"]];
+        self.addOrderView.titleArray = [NSMutableArray arrayWithArray:[dictionary objectForKey:@"p_titles_order"]];
         [self addDataToBrandAndmodel];
         [self addDataToProducts];
     }
@@ -797,7 +891,7 @@
     self.addOrderView.car_num = self.car_num;//车牌号
     [DataService sharedService].number = 0;
     //下单获取数据
-    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kBrandProduct]];
+    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kBrandProduct]];
     [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id", nil]];
     [r setPostDataEncoding:NSUTF8StringEncoding];
     NSError *error = nil;
@@ -805,8 +899,10 @@
     NSDictionary *result = [str objectFromJSONString];
     
     if ([[result objectForKey:@"status"] intValue]==1) {
-        self.addOrderView.brandList = [NSMutableArray arrayWithArray:[result objectForKey:@"brands"]];
-        self.addOrderView.productList = [NSMutableArray arrayWithArray:[result objectForKey:@"products"]];
+        NSMutableDictionary *dictionary = [NSMutableDictionary dictionaryWithDictionary:[result objectForKey:@"all_infos"]];
+        self.addOrderView.brandList = [NSMutableArray arrayWithArray:[dictionary objectForKey:@"car_info"]];
+        self.addOrderView.productList = [NSMutableDictionary dictionaryWithDictionary:[dictionary objectForKey:@"products"]];
+        self.addOrderView.titleArray = [NSMutableArray arrayWithArray:[dictionary objectForKey:@"p_titles_order"]];
         [self addDataToBrandAndmodel];
         [self addDataToProducts];
     }
@@ -815,9 +911,72 @@
 }
 -(void)getDataFrom {
     [self getDataFromBrandAndmodel];
-    [self getDataFromProducts]; 
+    [self getDataFromProducts];
     [self.navigationController pushViewController:self.addOrderView animated:YES];
     [MBProgressHUD hideHUDForView:self.view animated:YES];
+}
+-(void)confirmView {
+    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kFinish]];
+    NSMutableDictionary *dic = [NSMutableDictionary dictionary];
+    
+    NSMutableString *prod_ids = [NSMutableString string];
+    for (int i=0; i<[DataService sharedService].package_product.count; i++) {
+        NSString *str = [[DataService sharedService].package_product objectAtIndex:i];
+        [prod_ids appendFormat:@"%@",str];
+    }
+    [dic setObject:@"1" forKey:@"from_pcard"];
+    [dic setObject:prod_ids forKey:@"prod_ids"];
+    [dic setObject:[DataService sharedService].store_id forKey:@"store_id"];
+    [dic setObject:[customer objectForKey:@"carNum"] forKey:@"carNum"];
+    [dic setObject:[customer objectForKey:@"name"] forKey:@"userName"];
+    [dic setObject:[customer objectForKey:@"phone"] forKey:@"phone"];
+    [dic setObject:[customer objectForKey:@"year"] forKey:@"year"];
+    if (![[customer objectForKey:@"birth"]isKindOfClass:[NSNull class]] && [customer objectForKey:@"birth"] !=nil) {
+        [dic setObject:[customer objectForKey:@"birth"] forKey:@"year"];
+    }
+    if (![[customer objectForKey:@"email"]isKindOfClass:[NSNull class]] && [customer objectForKey:@"email"] !=nil) {
+        [dic setObject:[customer objectForKey:@"email"] forKey:@"email"];
+    }
+    if (![[customer objectForKey:@"sex"]isKindOfClass:[NSNull class]] && [customer objectForKey:@"sex"] !=nil) {
+        [dic setObject:[customer objectForKey:@"sex"] forKey:@"sex"];
+    }
+    [dic setObject:[NSString stringWithFormat:@"%@_%@",[customer objectForKey:@"brand_name"],[customer objectForKey:@"model_name"]] forKey:@"brand"];
+    [r setPostDataEncoding:NSUTF8StringEncoding];
+    [r setPOSTDictionary:dic];
+    NSError *error = nil;
+    
+    NSString *dicc = [r startSynchronousWithError:&error];
+    NSDictionary *result = [dicc objectFromJSONString];
+    DLog(@"result = %@",result);
+    if ([[result objectForKey:@"status"] intValue]==1) {
+        ConfirmViewController *confirmView = [[ConfirmViewController alloc] initWithNibName:@"ConfirmViewController" bundle:nil];
+        confirmView.productList = [NSMutableArray array];
+        if ([result objectForKey:@"info"]) {
+            confirmView.orderInfo = [result objectForKey:@"info"];
+        }
+        if ([result objectForKey:@"products"]) {
+            [confirmView.productList addObjectsFromArray:[result objectForKey:@"products"]];
+        }
+        if ([result objectForKey:@"sales"]) {
+            [confirmView.productList addObjectsFromArray:[result objectForKey:@"sales"]];
+        }
+        if ([result objectForKey:@"svcards"]) {
+            [confirmView.productList addObjectsFromArray:[result objectForKey:@"svcards"]];
+        }
+        if ([result objectForKey:@"pcards"]) {
+            [confirmView.productList addObjectsFromArray:[result objectForKey:@"pcards"]];
+        }
+        if ([[result objectForKey:@"total"] floatValue] <0) {
+            confirmView.total_count = 0.0;
+            confirmView.total_count_temp = [[result objectForKey:@"total"] floatValue];
+        }else {
+            confirmView.total_count = [[result objectForKey:@"total"] floatValue];
+        }
+        [DataService sharedService].total_count = confirmView.total_count;//总价放到单例去
+        [self.navigationController pushViewController:confirmView animated:YES];
+    }else{
+        [self errorAlert:[result objectForKey:@"content"]];
+    }
 }
 - (IBAction)clickDone:(id)sender{
     UIButton *btn = (UIButton *)sender;
@@ -827,7 +986,7 @@
             self.addOrderView.step = @"0";
             self.addOrderView.car_num = self.car_num;//车牌号
             [DataService sharedService].number = 0;
-            
+            self.addOrderView.titleArray = [NSMutableArray arrayWithObjects:@"清洗美容类",@"汽车用品类",@"维修保养类",@"美容产品类",@"电子产品类",@"装饰产品类",@"汽车配件类",@"优惠卡类", nil];
             MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
             [hud showWhileExecuting:@selector(getDataFrom) onTarget:self withObject:nil animated:YES];
             hud.labelText = @"正在努力加载...";
@@ -841,40 +1000,40 @@
         }
     }else if (btn.tag==100){
         if ([[Utils connectToInternet] isEqualToString:@"locahost"]) {
+            if ([DataService sharedService].package_product.count == 0) {
             self.addOrderView.customer = [NSMutableDictionary dictionaryWithDictionary:self.customer];
             [DataService sharedService].car_num = self.lblCarNum.text;
             [DataService sharedService].number = 0;
             self.addOrderView.step = @"0";
-            
+            self.addOrderView.titleArray = [NSMutableArray arrayWithObjects:@"清洗美容类",@"汽车用品类",@"维修保养类",@"美容产品类",@"电子产品类",@"装饰产品类",@"汽车配件类",@"优惠卡类", nil];
             MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
             [hud showWhileExecuting:@selector(getDataFrom) onTarget:self withObject:nil animated:YES];
             hud.labelText = @"正在努力加载...";
             [self.view addSubview:hud];
-            
+            }else {
+                [self errorAlert:@"暂无网络，无法使用套餐卡下单!"];
+            }
         }else{
-            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
-            hud.dimBackground = NO;
-            [hud showWhileExecuting:@selector(showAddView) onTarget:self withObject:nil animated:YES];
-            hud.labelText = @"正在努力加载...";
-            [self.view addSubview:hud];
+            if ([DataService sharedService].package_product.count == 0) {
+                MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+                hud.dimBackground = NO;
+                [hud showWhileExecuting:@selector(showAddView) onTarget:self withObject:nil animated:YES];
+                hud.labelText = @"正在努力加载...";
+                [self.view addSubview:hud];
+            }else {//跳转订单详情页面
+                MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+                hud.dimBackground = NO;
+                [hud showWhileExecuting:@selector(confirmView) onTarget:self withObject:nil animated:YES];
+                hud.labelText = @"正在努力加载...";
+                [self.view addSubview:hud];
+            }//跳转订单详情页面
         }
     }
 }
 
-- (IBAction)clickOld:(id)sender{
-    self.orderTable.hidden = NO;
-    self.workingView.hidden = YES;
-    self.noWorkingView.hidden = YES;
-    UIColor *c = [UIColor colorWithRed:147.0/255.0 green:2.0/255.0 blue:5.0/255.0 alpha:1.0];
-    [btnOldRecord setTitleColor:c forState:UIControlStateNormal];
-    [btnOldRecord setTitleColor:c forState:UIControlStateHighlighted];
-    [btnOrderRecord setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
-    [btnOrderRecord setTitleColor:[UIColor lightGrayColor] forState:UIControlStateHighlighted];
-}
-
 #pragma mark -付款
 -(void)pay {
-    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kPayOrder]];
+    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kPayOrder]];
     [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[workingOrder objectForKey:@"id"],@"order_id",@"0",@"opt_type", nil]];
     [r setPostDataEncoding:NSUTF8StringEncoding];
     NSError *error = nil;
@@ -893,16 +1052,23 @@
         if ([[Utils connectToInternet] isEqualToString:@"locahost"]) {
             [DataService sharedService].netWorking = NO;
             
-            NSArray *paramarray = [[NSArray alloc] initWithObjects:@"",@"",@"",@"",[NSString stringWithFormat:@"%@",self.lblCarNum.text],@"",@"",@"",@"",@"",@"",[NSString stringWithFormat:@"%@",[self.workingOrder objectForKey:@"code"]],@"",nil];
+            NSArray *paramarray = [[NSArray alloc] initWithObjects:@"",@"",@"",@"",[NSString stringWithFormat:@"%@",self.lblCarNum.text],@"",@"",@"",[NSString stringWithFormat:@"%@",[DataService sharedService].store_id],@"",@"",[NSString stringWithFormat:@"%@",[self.workingOrder objectForKey:@"code"]],@"",nil];
             BOOL success = [[LanTaiOrderManager sharedInstance]addDataToTable:@"orderInfo" WithArray:paramarray];
             if (success) {
-                //判断同步按钮，避免访问数据库
+                //设置  判断是否要上传数据
                 NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-                int sync = [[defaults objectForKey:@"sync"]intValue];
-                if (sync != 1) {
+                NSString *syncStr = [defaults objectForKey:@"sync"];
+                int syncValue = 0;
+                if (syncStr==nil) {
+                    syncValue += 1;
+                    [defaults setObject:[NSString stringWithFormat:@"%d",syncValue] forKey:@"sync"];
+                }else {
+                    syncValue = [[defaults objectForKey:@"sync"]intValue];
+                    syncValue += 1;
                     [defaults removeObjectForKey:@"sync"];
-                    [defaults setObject:@"1" forKey:@"sync"];
+                    [defaults setObject:[NSString stringWithFormat:@"%d",syncValue] forKey:@"sync"];
                 }
+                DLog(@"sync = %@",[defaults objectForKey:@"sync"]);
                 [defaults synchronize];
                 
                 NSMutableDictionary *confirmDic = [NSMutableDictionary dictionary];
@@ -963,8 +1129,6 @@
             [confirmDic setObject:[self.workingOrder objectForKey:@"price"] forKey:@"total"];
             [confirmDic setObject:[self.workingOrder objectForKey:@"code"] forKey:@"code"];
         }
-        
-        
         PayViewController *payView  = [[PayViewController alloc] initWithNibName:@"PayViewController" bundle:nil];
         payView.orderInfo = [NSMutableDictionary dictionaryWithDictionary:confirmDic];
         [self.navigationController pushViewController:payView animated:YES];
@@ -976,7 +1140,7 @@
     picView = [[PicViewController alloc] initWithNibName:@"PicViewController" bundle:nil];
     picView.parentController = self;
     picView.delegate = self;
-    [self presentPopupViewController:picView animationType:MJPopupViewAnimationSlideBottomBottom];
+    [self presentPopupViewController:picView animationType:MJPopupViewAnimationSlideBottomTop];
 }
 
 #pragma mark -或登记信息
@@ -985,15 +1149,17 @@
     self.addOrderView.car_num = self.car_num;//车牌号
     [DataService sharedService].number = 1;
     //下单获取数据
-    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kBrandProduct]];
+    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kBrandProduct]];
     [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[DataService sharedService].store_id,@"store_id", nil]];
     [r setPostDataEncoding:NSUTF8StringEncoding];
     NSError *error = nil;
     NSDictionary *result = [[r startSynchronousWithError:&error] objectFromJSONString];
     
     if ([[result objectForKey:@"status"] intValue]==1) {
-        self.addOrderView.brandList = [NSMutableArray arrayWithArray:[result objectForKey:@"brands"]];
-        self.addOrderView.productList = [NSMutableArray arrayWithArray:[result objectForKey:@"products"]];
+        NSMutableDictionary *dictionary = [NSMutableDictionary dictionaryWithDictionary:[result objectForKey:@"all_infos"]];
+        self.addOrderView.brandList = [NSMutableArray arrayWithArray:[dictionary objectForKey:@"car_info"]];
+        self.addOrderView.productList = [NSMutableDictionary dictionaryWithDictionary:[dictionary objectForKey:@"products"]];
+        self.addOrderView.titleArray = [NSMutableArray arrayWithArray:[dictionary objectForKey:@"p_titles_order"]];
         [self addDataToBrandAndmodel];
         [self addDataToProducts];
     }
@@ -1007,10 +1173,11 @@
         self.addOrderView.step = @"1";
         self.addOrderView.car_num = self.car_num;//车牌号
         [DataService sharedService].number = 1;
-        
+        self.addOrderView.titleArray = [NSMutableArray arrayWithObjects:@"清洗美容类",@"汽车用品类",@"维修保养类",@"美容产品类",@"电子产品类",@"装饰产品类",@"汽车配件类",@"优惠卡类", nil];
         MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
         [hud showWhileExecuting:@selector(getDataFrom) onTarget:self withObject:nil animated:YES];
         hud.labelText = @"正在努力加载...";
+        [self.view addSubview:hud];
     }else {
         MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
         hud.dimBackground = NO;
@@ -1024,6 +1191,8 @@
     UIColor *c = [UIColor colorWithRed:147.0/255.0 green:2.0/255.0 blue:5.0/255.0 alpha:1.0];
     [btnOrderRecord setTitleColor:c forState:UIControlStateNormal];
     [btnOrderRecord setTitleColor:c forState:UIControlStateHighlighted];
+    [btnPackageRecord setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
+    [btnPackageRecord setTitleColor:[UIColor lightGrayColor] forState:UIControlStateHighlighted];
     [btnOldRecord setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
     [btnOldRecord setTitleColor:[UIColor lightGrayColor] forState:UIControlStateHighlighted];
     if(self.workingOrder.count != 0){
@@ -1034,12 +1203,40 @@
         self.noWorkingView.hidden = NO;
     }
     self.orderTable.hidden = YES;
+    self.packageTable.hidden = YES;
 }
-
+- (IBAction)clickOld:(id)sender{
+    self.orderTable.hidden = NO;
+    self.workingView.hidden = YES;
+    self.noWorkingView.hidden = YES;
+    self.packageTable.hidden = YES;
+    UIColor *c = [UIColor colorWithRed:147.0/255.0 green:2.0/255.0 blue:5.0/255.0 alpha:1.0];
+    [btnOldRecord setTitleColor:c forState:UIControlStateNormal];
+    [btnOldRecord setTitleColor:c forState:UIControlStateHighlighted];
+    [btnPackageRecord setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
+    [btnPackageRecord setTitleColor:[UIColor lightGrayColor] forState:UIControlStateHighlighted];
+    [btnOrderRecord setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
+    [btnOrderRecord setTitleColor:[UIColor lightGrayColor] forState:UIControlStateHighlighted];
+}
+-(IBAction)clickPackage:(id)sender {
+    self.orderTable.hidden = YES;
+    self.workingView.hidden = YES;
+    self.noWorkingView.hidden = YES;
+    self.packageTable.hidden = NO;
+    UIColor *c = [UIColor colorWithRed:147.0/255.0 green:2.0/255.0 blue:5.0/255.0 alpha:1.0];
+    [btnOrderRecord setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
+    [btnOrderRecord setTitleColor:[UIColor lightGrayColor] forState:UIControlStateHighlighted];
+    [btnOldRecord setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
+    [btnOldRecord setTitleColor:[UIColor lightGrayColor] forState:UIControlStateHighlighted];
+    [btnPackageRecord setTitleColor:c forState:UIControlStateNormal];
+    [btnPackageRecord setTitleColor:c forState:UIControlStateHighlighted];
+}
 //关闭弹出框
 - (void)closePopView:(PicViewController *)picViewController{
-    [self dismissPopupViewControllerWithanimationType:MJPopupViewAnimationFade];
+    [self dismissPopupViewControllerWithanimationType:MJPopupViewAnimationSlideBottomTop];
     picView = nil;
 }
-
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
+    return (interfaceOrientation == UIInterfaceOrientationLandscapeLeft || interfaceOrientation==UIInterfaceOrientationLandscapeRight);
+}
 @end

@@ -77,7 +77,7 @@
     DLog(@"%@",productList);
     [super viewDidLoad];
     if (![self.navigationItem rightBarButtonItem]) {
-        [self addRightnaviItemsWithImage:@"back" andImage:nil andImage:nil];
+        [self addRightnaviItemsWithImage:@"back" andImage:nil];
     }
     self.view.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"view_bg"]];
     self.orderBgView.backgroundColor = [UIColor colorWithPatternImage:[UIImage imageNamed:@"confirm_bg"]];
@@ -200,6 +200,7 @@
         payStyleView = nil;
         payStyleView = [[PayStyleViewController alloc] initWithNibName:@"PayStyleViewController" bundle:nil];
         payStyleView.delegate = self;
+        payStyleView.codeStr = self.lblBrand.text;
         NSMutableDictionary *dic = [NSMutableDictionary dictionary];
         if (![[orderInfo objectForKey:@"id"] isKindOfClass:[NSNull class]] && [orderInfo objectForKey:@"id"]!= nil){
             [dic setObject:[orderInfo objectForKey:@"id"] forKey:@"order_id"];
@@ -216,70 +217,113 @@
         
         [self presentPopupViewController:payStyleView animationType:MJPopupViewAnimationSlideBottomBottom];
     }else {
-        //取消订单
-        if ([[Utils connectToInternet] isEqualToString:@"locahost"] || [DataService sharedService].netWorking == NO) {
-            NSArray *array = [[LanTaiOrderManager sharedInstance]loadDataFromTableName:@"orderInfo" CarNum:nil andCodeID:[orderInfo objectForKey:@"code"]];
-            if (array.count >0) {
-                for (Order *order in array) {
-                    BOOL successful = NO;
-                    NSString *code = order.codeID;
+        [AHAlertView applyCustomAlertAppearance];
+        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"确定取消订单？"];
+        __block AHAlertView *alert = alertt;
+        [alertt setCancelButtonTitle:@"取消" block:^{
+            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+            alert = nil;
+        }];
+        [alertt addButtonWithTitle:@"确定" block:^{
+            alert.dismissalStyle = AHAlertViewDismissalStyleZoomDown;
+            alert = nil;
+            //取消订单
+            if ([[Utils connectToInternet] isEqualToString:@"locahost"] || [DataService sharedService].netWorking == NO) {
+                NSArray *array = [[LanTaiOrderManager sharedInstance]loadDataFromTableName:@"orderInfo" CarNum:nil andCodeID:[orderInfo objectForKey:@"code"] andStore_id:[DataService sharedService].store_id];
+                if (array.count >0) {
+                    for (Order *order in array) {
+                        BOOL successful = NO;
+                        NSString *code = order.codeID;
+                        NSArray *code_arr = [code componentsSeparatedByString:@"-"];
+                        if (code_arr.count == 1) {//原有订单=====修改
+                            successful = [[LanTaiOrderManager sharedInstance]updatetable:@"orderInfo" WithBilling:@"" WithRequest:nil WithReason:nil WithIs_please:@"" WithPayType:@"" WithStatus:[NSString stringWithFormat:@"%d",5] ByCarNum:[NSString stringWithFormat:@"%@",order.carNum] andCodeID:[NSString stringWithFormat:@"%@",order.codeID]];
+                            
+                        }else {//删除
+                            successful = [[LanTaiOrderManager sharedInstance]deleteTable:@"orderInfo" WithName:nil andPassWord:nil andCarNum:nil andProduct_id:nil andCodeID:code];
+                        }
+                        if (successful) {
+                            //设置  判断是否要上传数据
+                            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                            NSString *syncStr = [defaults objectForKey:@"sync"];
+                            int syncValue = 0;
+                            if (syncStr==nil) {
+                                syncValue -= 1;
+                                [defaults setObject:[NSString stringWithFormat:@"%d",syncValue] forKey:@"sync"];
+                            }else {
+                                syncValue = [[defaults objectForKey:@"sync"]intValue];
+                                syncValue -= 1;
+                                [defaults removeObjectForKey:@"sync"];
+                                [defaults setObject:[NSString stringWithFormat:@"%d",syncValue] forKey:@"sync"];
+                            }
+                            DLog(@"sync = %@",[defaults objectForKey:@"sync"]);
+                            [defaults synchronize];
+                            
+                            [DataService sharedService].refreshing = YES;
+                            [AHAlertView applyCustomAlertAppearance];
+                            AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"订单已取消"];
+                            __block AHAlertView *alert = alertt;
+                            [alertt setCancelButtonTitle:@"确定" block:^{
+                                alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+                                alert = nil;
+                                [self.navigationController popToRootViewControllerAnimated:YES];
+                            }];
+                            [alertt show];
+                        }else {
+                            [self errorAlert:@"订单取消失败"];
+                        }
+                    }
+                }else {//本地无相关数据
+                    NSString *code = self.lblBrand.text;
                     NSArray *code_arr = [code componentsSeparatedByString:@"-"];
-                    if (code_arr.count == 1) {//原有订单=====修改
-                        successful = [[LanTaiOrderManager sharedInstance]updatetable:@"orderInfo" WithBilling:@"" WithRequest:nil WithReason:nil WithIs_please:@"" WithPayType:@"" WithStatus:[NSString stringWithFormat:@"%d",5] ByCarNum:[NSString stringWithFormat:@"%@",order.carNum] andCodeID:[NSString stringWithFormat:@"%@",order.codeID]];
-                        
-                    }else {//删除
-                        successful = [[LanTaiOrderManager sharedInstance]deleteTable:@"orderInfo" WithName:nil andPassWord:nil andCarNum:nil andProduct_id:nil andCodeID:code];
-                    }
-                    
-                    if (successful) {
-                        [DataService sharedService].refreshing = YES;
-                        [AHAlertView applyCustomAlertAppearance];
-                        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"订单已取消"];
-                        __block AHAlertView *alert = alertt;
-                        [alertt setCancelButtonTitle:@"确定" block:^{
-                            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
-                            alert = nil;
-                            [self.navigationController popToRootViewControllerAnimated:YES];
-                        }];
-                        [alertt show];
-                    }else {
-                        [self errorAlert:@"订单取消失败"];
-                    }
-                }
-            }else {//本地无相关数据
-                NSString *code = self.lblBrand.text;
-                NSArray *code_arr = [code componentsSeparatedByString:@"-"];
-                if (code_arr.count == 1) {
-                    NSArray *paramarray = [[NSArray alloc] initWithObjects:@"",@"",@"",@"",@"",@"",@"",@"",@"",@"",@"",code,[NSString stringWithFormat:@"%d",5],nil];
-                    BOOL success = [[LanTaiOrderManager sharedInstance]addDataToTable:@"orderInfo" WithArray:paramarray];
-                    if (success) {
-                        [DataService sharedService].refreshing = YES;
-                        [AHAlertView applyCustomAlertAppearance];
-                        AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"订单已取消"];
-                        __block AHAlertView *alert = alertt;
-                        [alertt setCancelButtonTitle:@"确定" block:^{
-                            alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
-                            alert = nil;
-                            [self.navigationController popToRootViewControllerAnimated:YES];
-                        }];
-                        [alertt show];
-                    }else {
-                        [self errorAlert:@"订单取消失败"];
+                    if (code_arr.count == 1) {
+                        NSArray *paramarray = [[NSArray alloc] initWithObjects:@"",@"",@"",@"",@"",@"",@"",@"",[NSString stringWithFormat:@"%@",[DataService sharedService].store_id],@"",@"",code,[NSString stringWithFormat:@"%d",5],nil];
+                        BOOL success = [[LanTaiOrderManager sharedInstance]addDataToTable:@"orderInfo" WithArray:paramarray];
+                        if (success) {
+                            //设置  判断是否要上传数据
+                            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                            NSString *syncStr = [defaults objectForKey:@"sync"];
+                            int syncValue = 0;
+                            if (syncStr==nil) {
+                                syncValue += 1;
+                                [defaults setObject:[NSString stringWithFormat:@"%d",syncValue] forKey:@"sync"];
+                            }else {
+                                syncValue = [[defaults objectForKey:@"sync"]intValue];
+                                syncValue += 1;
+                                [defaults removeObjectForKey:@"sync"];
+                                [defaults setObject:[NSString stringWithFormat:@"%d",syncValue] forKey:@"sync"];
+                            }
+                            DLog(@"sync = %@",[defaults objectForKey:@"sync"]);
+                            [defaults synchronize];
+                            
+                            [DataService sharedService].refreshing = YES;
+                            [AHAlertView applyCustomAlertAppearance];
+                            AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:@"订单已取消"];
+                            __block AHAlertView *alert = alertt;
+                            [alertt setCancelButtonTitle:@"确定" block:^{
+                                alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+                                alert = nil;
+                                [self.navigationController popToRootViewControllerAnimated:YES];
+                            }];
+                            [alertt show];
+                        }else {
+                            [self errorAlert:@"订单取消失败"];
+                        }
                     }
                 }
+            }else {//有网
+                MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
+                hud.dimBackground = NO;
+                [hud showWhileExecuting:@selector(cancleOrderr) onTarget:self withObject:nil animated:YES];
+                hud.labelText = @"正在努力加载...";
+                [self.view addSubview:hud];
             }
-        }else {//有网
-            MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
-            hud.dimBackground = NO;
-            [hud showWhileExecuting:@selector(cancleOrderr) onTarget:self withObject:nil animated:YES];
-            hud.labelText = @"正在努力加载...";
-            [self.view addSubview:hud];
-        }
+        }];
+        [alertt show];
     }
 }
-#pragma mark -取消订单（未施工）
+#pragma mark -取消订单（排队等待中）
 -(void)cancleOrderr {
-    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kPayOrder]];
+    STHTTPRequest *r = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kPayOrder]];
     [r setPOSTDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[orderInfo objectForKey:@"id"],@"order_id",@"1",@"opt_type", nil]];
     [r setPostDataEncoding:NSUTF8StringEncoding];
     NSError *error = nil;
@@ -330,8 +374,10 @@
     }
 }
 
-- (void)closePopView:(PayStyleViewController *)payStyleViewController{
-    [self dismissPopupViewControllerWithanimationType:MJPopupViewAnimationFade];
+- (void)closePopVieww:(PayStyleViewController *)payStyleViewController{
+    [self dismissPopupViewControllerWithanimationType:MJPopupViewAnimationSlideBottomTop];
+    [payStyleView.timer invalidate];
+    payStyleView.timer = nil;
     if (payStyleViewController.isSuccess) {
         [self.navigationController popToRootViewControllerAnimated:YES];
     }

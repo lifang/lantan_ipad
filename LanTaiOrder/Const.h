@@ -5,9 +5,14 @@
 //  Created by Ruby on 13-1-23.
 //  Copyright (c) 2013年 LanTai. All rights reserved.
 //
+//
+#define kHost @"http://116.255.135.175:3004/api"
+#define kDomain @"http://116.255.135.175:3004"
 
+//#define kHost @"http://192.168.0.250:3001/api"
+//#define kDomain @"http://192.168.0.250:3001"
 
-#define kSendMeg @"/orders/get_user_svcard"
+#define kSendMeg @"/orders/get_user_svcard"      
 #define kSendVerifyCode @"/orders/use_svcard"
 
 #define kLogin @"/orders/login"
@@ -24,11 +29,12 @@
 #define kRefresh @"/orders/refresh"
 #define kPayOrder @"/orders/pay_order"
 #define kcheckIn @"/orders/checkin"
-
+#define kCustomerInfo @"/orders/search_by_car_num2"
 #define ksync @"/orders/sync_orders_and_customer"
+#define kwork_order @"/orders/work_order_finished"
 
 #define kTip @"澜泰提示"
-#define kNoReachable @"无网络连接"
+#define kNoReachable @"暂无网络连接"
 
 //钱方appid
 //#define kPosAppId @"15295652460"

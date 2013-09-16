@@ -15,7 +15,6 @@
 @implementation LoginViewController
 
 @synthesize txtName,txtPwd,loginView;
-@synthesize btn_ip;
 
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
@@ -26,28 +25,7 @@
     }
     return self;
 }
--(void)setIp {
-    [DataService sharedService].kDomain = nil;
-    [DataService sharedService].kHost = nil;
-    [DataService sharedService].str_ip = nil;
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    [defaults removeObjectForKey:@"IP"];
-    [defaults synchronize];
-    
-    [DataService sharedService].user_id = nil;
-    [DataService sharedService].reserve_list = nil;
-    [DataService sharedService].reserve_count = nil;
-    [DataService sharedService].store_id = nil;
-    [DataService sharedService].car_num = nil;
-    NSUserDefaults *defaultss = [NSUserDefaults standardUserDefaults];
-    [defaultss removeObjectForKey:@"userId"];
-    [defaultss removeObjectForKey:@"storeId"];
-    [defaultss synchronize];
-    
-    InitViewController *initView = [[InitViewController alloc]initWithNibName:@"InitViewController" bundle:nil];
-    [self presentViewController:initView animated:YES completion:nil];
 
-}
 -(void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
 }
@@ -68,10 +46,20 @@
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyBoardWillHide:) name: UIKeyboardWillHideNotification object:nil];
     
    
-    self.btn_ip = [[UIButton alloc]initWithFrame:CGRectMake(495, 0, 40, 42)];
-    [self.btn_ip setImage:[UIImage imageNamed:@"ip"] forState:UIControlStateNormal];
-    [self.btn_ip addTarget:self action:@selector(setIp) forControlEvents:UIControlEventTouchUpInside];
-    [self.loginView addSubview:self.btn_ip];
+    UILabel *versionLab = [[UILabel alloc]initWithFrame:CGRectMake(170, 10, 60, 30)];
+    versionLab.text = @"V2.1";
+    versionLab.backgroundColor = [UIColor clearColor];
+    versionLab.font = [UIFont boldSystemFontOfSize:16];
+    versionLab.textColor = [UIColor colorWithRed:0.80784341 green:0.57647059 blue:0.58039216 alpha:1.0];
+    [self.loginView addSubview:versionLab];
+    
+    
+    UIDeviceOrientation orientation = [[UIDevice currentDevice] orientation];
+    if (UIDeviceOrientationIsLandscape(orientation)) {
+        
+    }else{
+        
+    }
 }
 
 - (void)didReceiveMemoryWarning
@@ -103,7 +91,7 @@
 }
 
 -(void)login {
-    STHTTPRequest *request = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",[DataService sharedService].kHost,kLogin]];
+    STHTTPRequest *request = [STHTTPRequest requestWithURLString:[NSString stringWithFormat:@"%@%@",kHost,kLogin]];
     [request setPOSTDictionary:[NSMutableDictionary dictionaryWithObjectsAndKeys:self.txtName.text,@"user_name",self.txtPwd.text,@"user_password", nil]];
     [request setPostDataEncoding:NSUTF8StringEncoding];
     NSError *error = nil;
@@ -122,7 +110,7 @@
             [DataService sharedService].user_id = [NSString stringWithFormat:@"%@",[staff objectForKey:@"id"]];
             [DataService sharedService].store_id = [NSString stringWithFormat:@"%@",[staff objectForKey:@"store_id"]];
             //保存员工信息到数据库
-            NSArray *array = [[LanTaiOrderManager sharedInstance] loadDataFromTableName:@"employee" WithName:self.txtName.text andPassWord:self.txtPwd.text andCarNum:nil andBrand_id:nil andCar_brand_id:nil andProduct_id:nil andClassify_id:nil andCar_capital_id:nil];
+            NSArray *array = [[LanTaiOrderManager sharedInstance] loadDataFromTableName:@"employee" WithName:self.txtName.text andPassWord:self.txtPwd.text andCarNum:nil andBrand_id:nil andCar_brand_id:nil andProduct_id:nil andClassify_id:nil andCar_capital_id:nil andStore_id:nil];
             if (array.count == 0) {
                 NSArray *paramarray = [[NSArray alloc] initWithObjects:self.txtName.text,self.txtPwd.text,[NSString stringWithFormat:@"%@",[staff objectForKey:@"store_id"]],[NSString stringWithFormat:@"%@",[staff objectForKey:@"id"]],nil];
                 [[LanTaiOrderManager sharedInstance]addDataToTable:@"employee" WithArray:paramarray];
@@ -169,7 +157,7 @@
     [self.txtPwd resignFirstResponder];
     if ([self checkForm]) {
         if ([[Utils connectToInternet] isEqualToString:@"locahost"]) {
-            NSArray *array = [[LanTaiOrderManager sharedInstance] loadDataFromTableName:@"employee" WithName:self.txtName.text andPassWord:self.txtPwd.text andCarNum:nil andBrand_id:nil andCar_brand_id:nil andProduct_id:nil andClassify_id:nil andCar_capital_id:nil];
+            NSArray *array = [[LanTaiOrderManager sharedInstance] loadDataFromTableName:@"employee" WithName:self.txtName.text andPassWord:self.txtPwd.text andCarNum:nil andBrand_id:nil andCar_brand_id:nil andProduct_id:nil andClassify_id:nil andCar_capital_id:nil andStore_id:nil];
             if (array.count != 0) {
                 for (EmployeeInfo *employee in array) {
                     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -184,6 +172,14 @@
                 }
             }else {
                 //本地数据库没有此用户
+                [AHAlertView applyCustomAlertAppearance];
+                AHAlertView *alertt = [[AHAlertView alloc] initWithTitle:kTip message:kNoReachable];
+                __block AHAlertView *alert = alertt;
+                [alertt setCancelButtonTitle:@"确定" block:^{
+                    alert.dismissalStyle = AHAlertViewDismissalStyleTumble;
+                    alert = nil;
+                }];
+                [alertt show];
             }
         }else{
             MBProgressHUD *hud = [[MBProgressHUD alloc] initWithView:self.view];
@@ -215,4 +211,7 @@
     [UIView commitAnimations];
 }
 
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
+    return (interfaceOrientation == UIInterfaceOrientationLandscapeLeft || interfaceOrientation==UIInterfaceOrientationLandscapeRight);
+}
 @end
